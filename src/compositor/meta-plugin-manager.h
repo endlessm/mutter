@@ -37,6 +37,7 @@
 #define META_PLUGIN_MAP              (1<<3)
 #define META_PLUGIN_DESTROY          (1<<4)
 #define META_PLUGIN_SWITCH_WORKSPACE (1<<5)
+#define META_PLUGIN_UNMINIMIZE       (1<<6)
 
 #define META_PLUGIN_ALL_EFFECTS      (~0)
 
