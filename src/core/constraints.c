@@ -205,10 +205,10 @@ static void place_window_if_needed       (MetaWindow     *window,
                                           ConstraintInfo *info);
 static void update_onscreen_requirements (MetaWindow     *window,
                                           ConstraintInfo *info);
-static void extend_by_frame              (MetaRectangle           *rect,
-                                          const MetaFrameBorders  *borders);
-static void unextend_by_frame            (MetaRectangle           *rect,
-                                          const MetaFrameBorders  *borders);
+static void extend_by_frame              (MetaWindow     *window,
+                                          MetaRectangle  *rect);
+static void unextend_by_frame            (MetaWindow     *window,
+                                          MetaRectangle  *rect);
 static inline void get_size_limits       (const MetaWindow        *window,
                                           const MetaFrameBorders  *borders,
                                           gboolean include_frame,
@@ -526,10 +526,11 @@ place_window_if_needed(MetaWindow     *window,
       !window->minimized &&
       !window->fullscreen)
     {
-      MetaRectangle placed_rect = info->orig;
+      MetaRectangle placed_rect;
       MetaWorkspace *cur_workspace;
       const MetaMonitorInfo *monitor_info;
 
+      meta_window_get_outer_rect (window, &placed_rect);
       meta_window_place (window, info->borders, info->orig.x, info->orig.y,
                          &placed_rect.x, &placed_rect.y);
       did_placement = TRUE;
@@ -548,6 +549,7 @@ place_window_if_needed(MetaWindow     *window,
         meta_workspace_get_onmonitor_region (cur_workspace, 
                                              monitor_info->number);
 
+      meta_window_frame_rect_to_client_rect (window, &placed_rect, &placed_rect);
 
       info->current.x = placed_rect.x;
       info->current.y = placed_rect.y;
@@ -648,7 +650,7 @@ update_onscreen_requirements (MetaWindow     *window,
   /* The require onscreen/on-single-monitor and titlebar_visible
    * stuff is relative to the outer window, not the inner
    */
-  extend_by_frame (&info->current, info->borders);
+  extend_by_frame (window, &info->current);
 
   /* Update whether we want future constraint runs to require the
    * window to be on fully onscreen.
@@ -697,27 +699,21 @@ update_onscreen_requirements (MetaWindow     *window,
     }
 
   /* Don't forget to restore the position of the window */
-  unextend_by_frame (&info->current, info->borders);
+  unextend_by_frame (window, &info->current);
 }
 
 static void
-extend_by_frame (MetaRectangle           *rect,
-                 const MetaFrameBorders *borders)
+extend_by_frame (MetaWindow    *window,
+                 MetaRectangle *rect)
 {
-  rect->x -= borders->visible.left;
-  rect->y -= borders->visible.top;
-  rect->width  += borders->visible.left + borders->visible.right;
-  rect->height += borders->visible.top + borders->visible.bottom;
+  meta_window_client_rect_to_frame_rect (window, rect, rect);
 }
 
 static void
-unextend_by_frame (MetaRectangle           *rect,
-                   const MetaFrameBorders *borders)
+unextend_by_frame (MetaWindow    *window,
+                   MetaRectangle *rect)
 {
-  rect->x += borders->visible.left;
-  rect->y += borders->visible.top;
-  rect->width  -= borders->visible.left + borders->visible.right;
-  rect->height -= borders->visible.top + borders->visible.bottom;
+  meta_window_frame_rect_to_client_rect (window, rect, rect);
 }
 
 static inline void
@@ -777,13 +773,13 @@ constrain_modal_dialog (MetaWindow         *window,
   */
 
   child_rect = info->current;
-  extend_by_frame (&child_rect, info->borders);
+  extend_by_frame (window, &child_rect);
 
   meta_window_get_outer_rect (parent, &parent_rect);
 
   child_rect.x = parent_rect.x + (parent_rect.width / 2  - child_rect.width / 2);
   child_rect.y = parent_rect.y + (parent_rect.height / 2 - child_rect.height / 2);
-  unextend_by_frame (&child_rect, info->borders);
+  unextend_by_frame (window, &child_rect);
   x = child_rect.x;
   y = child_rect.y;
 
@@ -850,14 +846,14 @@ constrain_maximization (MetaWindow         *window,
       active_workspace_struts = window->screen->active_workspace->all_struts;
 
       target_size = info->current;
-      extend_by_frame (&target_size, info->borders);
+      extend_by_frame (window, &target_size);
       meta_rectangle_expand_to_avoiding_struts (&target_size,
                                                 &info->entire_monitor,
                                                 direction,
                                                 active_workspace_struts);
    }
   /* Now make target_size = maximized size of client window */
-  unextend_by_frame (&target_size, info->borders);
+  unextend_by_frame (window, &target_size);
 
   /* Check min size constraints; max size constraints are ignored for maximized
    * windows, as per bug 327543.
@@ -916,7 +912,7 @@ constrain_tiling (MetaWindow         *window,
    * use an external function for the actual calculation
    */
   meta_window_get_current_tile_area (window, &target_size);
-  unextend_by_frame (&target_size, info->borders);
+  unextend_by_frame (window, &target_size);
 
   /* Check min size constraints; max size constraints are ignored as for
    * maximized windows.
@@ -1266,7 +1262,7 @@ do_screen_and_monitor_relative_constraints (
   /* Determine whether constraint applies; exit if it doesn't */
   how_far_it_can_be_smushed = info->current;
   get_size_limits (window, info->borders, TRUE, &min_size, &max_size);
-  extend_by_frame (&info->current, info->borders);
+  extend_by_frame (window, &info->current);
 
   if (info->action_type != ACTION_MOVE)
     {
@@ -1286,7 +1282,7 @@ do_screen_and_monitor_relative_constraints (
                                         &info->current);
   if (exit_early || constraint_satisfied || check_only)
     {
-      unextend_by_frame (&info->current, info->borders);
+      unextend_by_frame (window, &info->current);
       return constraint_satisfied;
     }
 
@@ -1310,7 +1306,7 @@ do_screen_and_monitor_relative_constraints (
                                       info->fixed_directions,
                                       &info->current);
 
-  unextend_by_frame (&info->current, info->borders);
+  unextend_by_frame (window, &info->current);
   return TRUE;
 }
 
