@@ -249,9 +249,6 @@ meta_get_option_context (void)
 
   ctx = g_option_context_new (NULL);
   g_option_context_add_main_entries (ctx, meta_options, GETTEXT_PACKAGE);
-  g_option_context_add_group (ctx, clutter_get_option_group_without_init ());
-  g_option_context_add_group (ctx, cogl_get_option_group ());
-
   return ctx;
 }
 
