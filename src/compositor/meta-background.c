@@ -304,7 +304,7 @@ meta_background_paint_node_new (MetaBackground *self,
   guint8 color_component;
 
   opacity = clutter_actor_get_paint_opacity (actor);
-  color_component = (guint8) (0.5 + opacity * priv->brightness);
+  color_component = (guint8) (0.5 + opacity);
 
   cogl_pipeline_set_color4ub (priv->pipeline,
                               color_component,
