@@ -306,6 +306,7 @@ apply_config_dummy (MetaMonitorManager *manager,
 
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+      output->is_underscanning = output_info->is_underscanning;
     }
 
   /* Disable CRTCs not mentioned in the list */
@@ -827,6 +828,8 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
                              g_variant_new_boolean (output->is_primary));
       g_variant_builder_add (&properties, "{sv}", "presentation",
                              g_variant_new_boolean (output->is_presentation));
+      g_variant_builder_add (&properties, "{sv}", "underscanning",
+                             g_variant_new_boolean (output->is_underscanning));
 
       edid_file = manager_class->get_edid_file (manager, output);
       if (edid_file)
@@ -1116,7 +1119,7 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
   while (g_variant_iter_loop (&output_iter, "(u@a{sv})", &output_id, &properties))
     {
       MetaOutputInfo *output_info;
-      gboolean primary, presentation;
+      gboolean primary, presentation, underscanning;
 
       if (output_id >= manager->n_outputs)
         {
@@ -1134,6 +1137,9 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
 
       if (g_variant_lookup (properties, "presentation", "b", &presentation))
         output_info->is_presentation = presentation;
+
+      if (g_variant_lookup (properties, "underscanning", "b", &underscanning))
+        output_info->is_underscanning = underscanning;
 
       g_ptr_array_add (output_infos, output_info);
     }

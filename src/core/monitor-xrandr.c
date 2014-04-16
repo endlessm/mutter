@@ -166,6 +166,38 @@ output_get_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
   return value;
 }
 
+static gboolean
+output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                 MetaOutput               *output)
+{
+  MetaDisplay *display = meta_get_display ();
+  gboolean value = FALSE;
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
+  unsigned char *buffer;
+  char *str;
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan,
+                        0, G_MAXLONG, False, False, XA_ATOM,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+
+  if (actual_type != XA_ATOM || actual_format != 32 ||
+      nitems < 1)
+    goto out;
+
+  str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
+  value = !strcmp(str, "on") || !strcmp(str, "crop");
+  XFree (str);
+
+out:
+  XFree (buffer);
+  return value;
+}
+
 static int
 normalize_backlight (MetaOutput *output,
                      int         hw_value)
@@ -676,6 +708,7 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 
 	  meta_output->is_primary = ((XID)meta_output->output_id == primary_output);
 	  meta_output->is_presentation = output_get_presentation_xrandr (manager_xrandr, meta_output);
+	  meta_output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, meta_output);
 	  output_get_backlight_limits_xrandr (manager_xrandr, meta_output);
 
 	  if (!(meta_output->backlight_min == 0 && meta_output->backlight_max == 0))
@@ -795,6 +828,52 @@ output_set_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                            (XID)output->output_id,
                            display->atom__MUTTER_PRESENTATION_OUTPUT,
                            XA_CARDINAL, 32, PropModeReplace,
+                           (unsigned char*) &value, 1);
+  meta_error_trap_pop (display);
+}
+
+static void
+output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                 MetaOutput               *output,
+                                 gboolean                  underscanning)
+{
+  MetaDisplay *display = meta_get_display ();
+  Atom value;
+
+  if (underscanning) {
+    guint32 border_value;
+
+    /* For now, underscan to 95% of the claimed display size whenever this
+     * option is enabled. In the future there may be a UI to configure this
+     * value.
+     */
+    border_value = output->crtc->current_mode->width * 0.05;
+    meta_error_trap_push (display);
+    XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan_hborder,
+                           XA_INTEGER, 32, PropModeReplace,
+                           (unsigned char*) &border_value, 1);
+    meta_error_trap_pop (display);
+
+    border_value = output->crtc->current_mode->height * 0.05;
+    meta_error_trap_push (display);
+    XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan_vborder,
+                           XA_INTEGER, 32, PropModeReplace,
+                           (unsigned char*) &border_value, 1);
+    meta_error_trap_pop (display);
+
+    value = display->atom_on;
+  } else
+    value = display->atom_off;
+
+  meta_error_trap_push (display);
+  XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan,
+                           XA_ATOM, 32, PropModeReplace,
                            (unsigned char*) &value, 1);
   meta_error_trap_pop (display);
 }
@@ -1026,8 +1105,13 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
+      output_set_underscanning_xrandr (manager_xrandr,
+                                       output_info->output,
+                                       output_info->is_underscanning);
+
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+      output->is_underscanning = output_info->is_underscanning;
     }
 
   /* Disable outputs not mentioned in the list */

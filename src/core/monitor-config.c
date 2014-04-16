@@ -65,6 +65,7 @@ typedef struct {
 
   gboolean is_primary;
   gboolean is_presentation;
+  gboolean is_underscanning;
 } MetaOutputConfig;
 
 typedef struct {
@@ -680,6 +681,8 @@ handle_text (GMarkupParseContext *context,
           parser->output.is_primary = read_bool (text, text_len, error);
         else if (strcmp (parser->output_field, "presentation") == 0)
           parser->output.is_presentation = read_bool (text, text_len, error);
+        else if (strcmp (parser->output_field, "underscanning") == 0)
+          parser->output.is_underscanning = read_bool (text, text_len, error);
         else
           g_assert_not_reached ();
         return;
@@ -1063,6 +1066,14 @@ find_primary_output (MetaOutput *outputs,
   return best;
 }
 
+static gboolean
+is_hdtv(int width, int height)
+{
+  return (width == 1920 && height == 1080) ||
+         (width == 1440 && height == 1080) ||
+         (width == 1280 && height == 720);
+}
+
 static MetaConfiguration *
 make_default_config (MetaMonitorConfig *self,
                      MetaOutput        *outputs,
@@ -1091,6 +1102,8 @@ make_default_config (MetaMonitorConfig *self,
       ret->outputs[0].refresh_rate = outputs[0].preferred_mode->refresh_rate;
       ret->outputs[0].transform = WL_OUTPUT_TRANSFORM_NORMAL;
       ret->outputs[0].is_primary = TRUE;
+      ret->outputs[0].is_underscanning = is_hdtv(ret->outputs[0].rect.width,
+                                                 ret->outputs[0].rect.height);
 
       return ret;
     }
@@ -1296,6 +1309,7 @@ init_config_from_output (MetaOutputConfig *config,
   config->transform = output->crtc->transform;
   config->is_primary = output->is_primary;
   config->is_presentation = output->is_presentation;
+  config->is_underscanning = output->is_underscanning;
 }
 
 void
@@ -1477,7 +1491,8 @@ meta_monitor_config_save (MetaMonitorConfig *self)
                                       "      <reflect_x>%s</reflect_x>\n"
                                       "      <reflect_y>no</reflect_y>\n"
                                       "      <primary>%s</primary>\n"
-                                      "      <presentation>%s</presentation>\n",
+                                      "      <presentation>%s</presentation>\n"
+                                      "      <underscanning>%s</underscanning>\n",
                                       output->rect.width,
                                       output->rect.height,
                                       refresh_rate,
@@ -1486,7 +1501,8 @@ meta_monitor_config_save (MetaMonitorConfig *self)
                                       rotation_map[output->transform & 0x3],
                                       output->transform >= WL_OUTPUT_TRANSFORM_FLIPPED ? "yes" : "no",
                                       output->is_primary ? "yes" : "no",
-                                      output->is_presentation ? "yes" : "no");
+                                      output->is_presentation ? "yes" : "no",
+                                      output->is_underscanning ? "yes" : "no");
             }
 
           g_string_append (buffer, "    </output>\n");
@@ -1830,6 +1846,7 @@ meta_monitor_config_assign_crtcs (MetaConfiguration  *config,
                                                 &config->keys[i]);
       output_info->is_primary = output_config->is_primary;
       output_info->is_presentation = output_config->is_presentation;
+      output_info->is_underscanning = output_config->is_underscanning;
 
       g_ptr_array_add (outputs, output_info);
     }

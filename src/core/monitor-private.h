@@ -116,6 +116,7 @@ struct _MetaOutput
   */
   gboolean is_primary;
   gboolean is_presentation;
+  gboolean is_underscanning;
 
   /* get a new preferred mode on hotplug events, to handle dynamic guest resizing */
   gboolean hotplug_mode_update;
@@ -203,6 +204,7 @@ struct _MetaOutputInfo {
   MetaOutput  *output;
   gboolean     is_primary;
   gboolean     is_presentation;
+  gboolean     is_underscanning;
 };
 
 #define META_TYPE_MONITOR_MANAGER            (meta_monitor_manager_get_type ())
