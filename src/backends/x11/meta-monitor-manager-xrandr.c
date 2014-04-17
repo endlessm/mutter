@@ -940,7 +940,7 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                XA_INTEGER, 32, PropModeReplace,
                                (unsigned char*) &border_value, 1);
 
-      value = XInternAtom (manager_xrandr->xdisplay, "on", False);
+      value = XInternAtom (manager_xrandr->xdisplay, "crop", False);
     }
   else
     {
