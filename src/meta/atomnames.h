@@ -84,6 +84,7 @@ item(Backlight)
 item(hotplug_mode_update)
 item(on)
 item(off)
+item(crop)
 item(underscan)
 
 /* Oddities: These are used, and we need atoms for them,

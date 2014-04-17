@@ -865,7 +865,7 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                            (unsigned char*) &border_value, 1);
     meta_error_trap_pop (display);
 
-    value = display->atom_on;
+    value = display->atom_crop;
   } else
     value = display->atom_off;
 
