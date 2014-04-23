@@ -1091,6 +1091,7 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
     {
       MetaOutputInfo *output_info = outputs[i];
       MetaOutput *output = output_info->output;
+      gboolean is_currently_underscanning;
 
       if (output_info->is_primary)
         {
@@ -1105,12 +1106,17 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
-      output_set_underscanning_xrandr (manager_xrandr,
-                                       output_info->output,
-                                       output_info->is_underscanning);
-
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+
+      is_currently_underscanning = output_get_underscanning_xrandr (manager_xrandr, output_info->output);
+
+      if (is_currently_underscanning != output_info->is_underscanning)
+        {
+          output_set_underscanning_xrandr (manager_xrandr,
+                                           output_info->output,
+                                           output_info->is_underscanning);
+        }
       output->is_underscanning = output_info->is_underscanning;
     }
 
@@ -1217,6 +1223,10 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   MetaMonitorMode *old_modes;
   int n_old_outputs;
   gboolean new_config;
+  unsigned i, j, k;
+  XRRScreenChangeNotifyEvent *scevent;
+  Screen *screen;
+  gboolean needs_update = FALSE;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
     return FALSE;
@@ -1232,6 +1242,90 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   manager->serial++;
   meta_monitor_manager_xrandr_read_current (manager);
 
+  for (i = 0; i < (unsigned)manager->n_outputs; i++)
+    {
+      MetaOutput *output = &manager->outputs[i];
+      unsigned desired_width, desired_height;
+
+      if (output->is_underscanning)
+        {
+          desired_width = output->crtc->current_mode->width * 0.90;
+          desired_height = output->crtc->current_mode->height * 0.90;
+        }
+      else
+        {
+          desired_width = output->crtc->current_mode->width / 0.90;
+          desired_height = output->crtc->current_mode->height / 0.90;
+        }
+
+      for (j = 0; j < (unsigned)manager->n_modes; j++)
+        {
+          MetaMonitorMode *mode = &manager->modes[j];
+
+          if (desired_width == mode->width &&
+              desired_height == mode->height)
+            {
+              Screen *screen;
+              int width_mm, height_mm;
+              Status ok;
+
+              meta_display_grab (meta_get_display ());
+
+              XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                manager_xrandr->resources,
+                                (XID)output->crtc->crtc_id,
+                                manager_xrandr->time,
+                                0, 0,
+                                None,
+                                RR_Rotate_0,
+                                NULL, 0);
+
+              output->crtc->current_mode = mode;
+
+              width_mm = (mode->width / DPI_FALLBACK) * 25.4 + 0.5;
+              height_mm = (mode->height / DPI_FALLBACK) * 25.4 + 0.5;
+
+              meta_error_trap_push (meta_get_display ());
+              XRRSetScreenSize (manager_xrandr->xdisplay,
+                                DefaultRootWindow (manager_xrandr->xdisplay),
+                                mode->width, mode->height,
+                                width_mm, height_mm);
+              meta_error_trap_pop (meta_get_display ());
+
+              // The screen size will be updated on the next RRScreenChangeNotify,
+              // but we need the UI to update ASAP.
+              XSync (manager_xrandr->xdisplay, False);
+              manager->screen_width = mode->width;
+              manager->screen_height = mode->height;
+
+              meta_error_trap_push (meta_get_display ());
+              /* TODO: Send the list of output IDs for this CRTC */
+              ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                     manager_xrandr->resources,
+                                     (XID)output->crtc->crtc_id,
+                                     manager_xrandr->time,
+                                     output->crtc->rect.x, output->crtc->rect.y,
+                                     (XID)mode->mode_id,
+                                     wl_transform_to_xrandr (output->crtc->transform),
+                                     &output->output_id, 1);
+              meta_error_trap_pop (meta_get_display ());
+
+              meta_display_ungrab (meta_get_display ());
+
+              if (ok != Success)
+                {
+                  meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
+
+                  break;
+                }
+
+              needs_update = TRUE;
+
+              break;
+            }
+        }
+    }
+
   new_config = manager_xrandr->resources->timestamp >=
     manager_xrandr->resources->configTimestamp;
   if (meta_monitor_manager_has_hotplug_mode_update (manager))
@@ -1241,7 +1335,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
          XRandR call.  Otherwise, hotplug_mode_update tells us to get
          a new preferred mode on hotplug events to handle dynamic
          guest resizing. */
-      if (new_config)
+      if (new_config || needs_update)
         meta_monitor_manager_xrandr_rebuild_derived (manager);
       else
         meta_monitor_config_make_default (manager->config, manager);
@@ -1259,7 +1353,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
          outputs, because the X server might emit spurious events with new
          configTimestamps (bug 702804), and the driver may have changed
          the EDID for some other reason (old qxl and vbox drivers). */
-      if (new_config || meta_monitor_config_match_current (manager->config, manager))
+      if (new_config ||
+          meta_monitor_config_match_current (manager->config, manager) ||
+          needs_update)
         meta_monitor_manager_xrandr_rebuild_derived (manager);
       else if (!meta_monitor_config_apply_stored (manager->config, manager))
         meta_monitor_config_make_default (manager->config, manager);
