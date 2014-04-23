@@ -1138,6 +1138,7 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
     {
       MetaOutputInfo *output_info = outputs[i];
       MetaOutput *output = output_info->output;
+      gboolean is_currently_underscanning;
 
       if (output_info->is_primary)
         {
@@ -1150,12 +1151,17 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
-      output_set_underscanning_xrandr (manager_xrandr,
-                                       output_info->output,
-                                       output_info->is_underscanning);
-
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+
+      is_currently_underscanning = output_get_underscanning_xrandr (manager_xrandr, output_info->output);
+
+      if (is_currently_underscanning != output_info->is_underscanning)
+        {
+          output_set_underscanning_xrandr (manager_xrandr,
+                                           output_info->output,
+                                           output_info->is_underscanning);
+        }
       output->is_underscanning = output_info->is_underscanning;
     }
 
@@ -1296,12 +1302,94 @@ meta_monitor_manager_xrandr_class_init (MetaMonitorManagerXrandrClass *klass)
   manager_class->set_crtc_gamma = meta_monitor_manager_xrandr_set_crtc_gamma;
 }
 
+static gboolean
+check_underscanning_mode_change (MetaMonitorManagerXrandr *manager_xrandr)
+{
+  for (i = 0; i < (unsigned)manager->n_outputs; i++)
+    {
+      MetaOutput *output = &manager->outputs[i];
+      unsigned desired_width, desired_height;
+
+      if (output->is_underscanning)
+        {
+          desired_width = output->crtc->current_mode->width * 0.90;
+          desired_height = output->crtc->current_mode->height * 0.90;
+        }
+      else
+        {
+          desired_width = output->crtc->current_mode->width / 0.90;
+          desired_height = output->crtc->current_mode->height / 0.90;
+        }
+
+      for (j = 0; j < (unsigned)manager->n_modes; j++)
+        {
+          MetaMonitorMode *mode = &manager->modes[j];
+
+          if (desired_width == mode->width && desired_height == mode->height)
+            {
+              Screen *screen;
+              int width_mm, height_mm;
+              Status ok;
+
+              XGrabServer (manager_xrandr->xdisplay);
+
+              XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                manager_xrandr->resources,
+                                (XID)output->crtc->crtc_id,
+                                manager_xrandr->time,
+                                0, 0,
+                                None,
+                                RR_Rotate_0,
+                                NULL, 0);
+
+              output->crtc->current_mode = mode;
+
+              width_mm = (mode->width / DPI_FALLBACK) * 25.4 + 0.5;
+              height_mm = (mode->height / DPI_FALLBACK) * 25.4 + 0.5;
+
+              XRRSetScreenSize (manager_xrandr->xdisplay,
+                                DefaultRootWindow (manager_xrandr->xdisplay),
+                                mode->width, mode->height,
+                                width_mm, height_mm);
+
+              // The screen size will be updated on the next RRScreenChangeNotify,
+              // but we need the UI to update ASAP.
+              XSync (manager_xrandr->xdisplay, False);
+              manager->screen_width = mode->width;
+              manager->screen_height = mode->height;
+
+              /* TODO: Send the list of output IDs for this CRTC */
+              ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                     manager_xrandr->resources,
+                                     (XID)output->crtc->crtc_id,
+                                     manager_xrandr->time,
+                                     output->crtc->rect.x, output->crtc->rect.y,
+                                     (XID)mode->mode_id,
+                                     meta_monitor_transform_to_xrandr (output->crtc->transform),
+                                     &output->winsys_id, 1);
+
+              XUngrabServer (manager_xrandr->xdisplay);
+
+              if (ok != Success)
+                {
+                  meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
+                  break;
+                }
+
+              return TRUE;
+            }
+        }
+    }
+
+  return FALSE;
+}
+
 gboolean
 meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManagerXrandr *manager_xrandr,
 					   XEvent                   *event)
 {
   MetaMonitorManager *manager = META_MONITOR_MANAGER (manager_xrandr);
-  gboolean hotplug;
+  gboolean needs_update, hotplug;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
     return FALSE;
@@ -1310,8 +1398,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManagerXrandr *manager_xra
 
   meta_monitor_manager_read_current_config (manager);
 
+  needs_update = check_underscanning_mode_change (manager_xrandr);
   hotplug = manager_xrandr->resources->timestamp < manager_xrandr->resources->configTimestamp;
-  if (hotplug)
+  if (needs_update || hotplug)
     {
       /* This is a hotplug event, so go ahead and build a new configuration. */
       meta_monitor_manager_on_hotplug (manager);
