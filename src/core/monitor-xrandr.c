@@ -1204,11 +1204,15 @@ meta_monitor_manager_xrandr_set_crtc_gamma (MetaMonitorManager *manager,
 }
 
 static void
-meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager)
+meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager,
+                                             gboolean            persistent)
 {
   /* This will be a no-op if the change was from our side, as
      we already called it in the DBus method handler */
   meta_monitor_config_update_current (manager->config, manager);
+
+  if (persistent)
+    meta_monitor_config_make_persistent (manager->config);
 
   meta_monitor_manager_rebuild_derived (manager);
 }
@@ -1319,6 +1323,10 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
                   break;
                 }
 
+              output->crtc->rect.width = mode->width;
+              output->crtc->rect.height = mode->height;
+              output->crtc->current_mode = mode;
+
               needs_update = TRUE;
 
               break;
@@ -1336,7 +1344,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
          a new preferred mode on hotplug events to handle dynamic
          guest resizing. */
       if (new_config || needs_update)
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
+        meta_monitor_manager_xrandr_rebuild_derived (manager, needs_update);
       else
         meta_monitor_config_make_default (manager->config, manager);
     }
@@ -1356,7 +1364,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
       if (new_config ||
           meta_monitor_config_match_current (manager->config, manager) ||
           needs_update)
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
+        meta_monitor_manager_xrandr_rebuild_derived (manager, needs_update);
       else if (!meta_monitor_config_apply_stored (manager->config, manager))
         meta_monitor_config_make_default (manager->config, manager);
     }
