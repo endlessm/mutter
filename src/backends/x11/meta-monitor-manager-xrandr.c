@@ -1376,6 +1376,9 @@ check_underscanning_mode_change (MetaMonitorManagerXrandr *manager_xrandr)
                   break;
                 }
 
+              output->crtc->rect.width = mode->width;
+              output->crtc->rect.height = mode->height;
+              output->crtc->current_mode = mode;
               return TRUE;
             }
         }
