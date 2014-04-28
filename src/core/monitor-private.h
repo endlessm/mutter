@@ -109,6 +109,8 @@ struct _MetaOutput
 
   gboolean is_underscanning;
   gboolean needs_modeset;
+  int underscan_hborder;
+  int underscan_vborder;
 
   /* The low-level bits used to build the high-level info
      in MetaMonitorInfo

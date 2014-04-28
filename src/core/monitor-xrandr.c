@@ -49,6 +49,12 @@
  * for the reasoning */
 #define DPI_FALLBACK 96.0
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 struct _MetaMonitorManagerXrandr
 {
   MetaMonitorManager parent_instance;
@@ -171,7 +177,9 @@ output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output)
 {
   MetaDisplay *display = meta_get_display ();
-  gboolean value = FALSE;
+  gboolean underscanning = FALSE;
+  gint32 underscan_hborder = 0;
+  gint32 underscan_vborder = 0;
   Atom actual_type;
   int actual_format;
   unsigned long nitems, bytes_after;
@@ -185,17 +193,41 @@ output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                         &actual_type, &actual_format,
                         &nitems, &bytes_after, &buffer);
 
-  if (actual_type != XA_ATOM || actual_format != 32 ||
-      nitems < 1)
-    goto out;
+  if (actual_type == XA_ATOM && actual_format == 32 && nitems >= 1)
+    {
+      str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
+      underscanning = !strcmp(str, "on") || !strcmp(str, "crop");
+      XFree (str);
+    }
 
-  str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
-  value = !strcmp(str, "on") || !strcmp(str, "crop");
-  XFree (str);
-
-out:
+  output->is_underscanning = underscanning;
   XFree (buffer);
-  return value;
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan_hborder,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+  if (actual_type == XA_INTEGER && actual_format == 32 && nitems >= 1)
+    underscan_hborder = ((int*)buffer)[0];
+
+  output->underscan_hborder = underscan_hborder;
+  XFree (buffer);
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan_vborder,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+  if (actual_type == XA_INTEGER && actual_format == 32 && nitems >= 1)
+    underscan_vborder = ((int*)buffer)[0];
+
+  output->underscan_vborder = underscan_vborder;
+  XFree (buffer);
+
+  return underscanning;
 }
 
 static int
@@ -708,7 +740,7 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 
 	  meta_output->is_primary = ((XID)meta_output->output_id == primary_output);
 	  meta_output->is_presentation = output_get_presentation_xrandr (manager_xrandr, meta_output);
-	  meta_output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, meta_output);
+	  output_get_underscanning_xrandr (manager_xrandr, meta_output);
 	  output_get_backlight_limits_xrandr (manager_xrandr, meta_output);
 
 	  if (!(meta_output->backlight_min == 0 && meta_output->backlight_max == 0))
@@ -843,11 +875,7 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
   if (underscanning) {
     guint32 border_value;
 
-    /* For now, underscan to 95% of the claimed display size whenever this
-     * option is enabled. In the future there may be a UI to configure this
-     * value.
-     */
-    border_value = output->crtc->current_mode->width * 0.05;
+    border_value = round(output->crtc->current_mode->width * OVERSCAN_COMPENSATION_BORDER);
     meta_error_trap_push (display);
     XRRChangeOutputProperty (manager_xrandr->xdisplay,
                            (XID)output->output_id,
@@ -856,7 +884,9 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                            (unsigned char*) &border_value, 1);
     meta_error_trap_pop (display);
 
-    border_value = output->crtc->current_mode->height * 0.05;
+    output->underscan_hborder = border_value;
+
+    border_value = round(output->crtc->current_mode->height * OVERSCAN_COMPENSATION_BORDER);
     meta_error_trap_push (display);
     XRRChangeOutputProperty (manager_xrandr->xdisplay,
                            (XID)output->output_id,
@@ -864,6 +894,8 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                            XA_INTEGER, 32, PropModeReplace,
                            (unsigned char*) &border_value, 1);
     meta_error_trap_pop (display);
+
+    output->underscan_vborder = border_value;
 
     value = display->atom_crop;
   } else
@@ -1110,7 +1142,6 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
       output->is_presentation = output_info->is_presentation;
 
       is_currently_underscanning = output_get_underscanning_xrandr (manager_xrandr, output_info->output);
-
       if (is_currently_underscanning != output_info->is_underscanning)
         {
           output_set_underscanning_xrandr (manager_xrandr,
@@ -1249,25 +1280,29 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
       MetaOutput *output = &manager->outputs[i];
-      unsigned desired_width, desired_height;
+      unsigned current_width, current_height;
+      unsigned target_width, target_height;
+
+      current_width = output->crtc->current_mode->width;
+      current_height = output->crtc->current_mode->height;
 
       if (output->is_underscanning)
         {
-          desired_width = output->crtc->current_mode->width * 0.90;
-          desired_height = output->crtc->current_mode->height * 0.90;
+          target_width = current_width - output->underscan_hborder * 2;
+          target_height = current_height - output->underscan_vborder * 2;
         }
       else
         {
-          desired_width = output->crtc->current_mode->width / 0.90;
-          desired_height = output->crtc->current_mode->height / 0.90;
+          target_width = current_width + output->underscan_hborder * 2;
+          target_height = current_height + output->underscan_vborder * 2;
         }
 
       for (j = 0; j < (unsigned)manager->n_modes; j++)
         {
           MetaMonitorMode *mode = &manager->modes[j];
 
-          if (desired_width == mode->width &&
-              desired_height == mode->height)
+          if (target_width == mode->width &&
+              target_height == mode->height)
             {
               Screen *screen;
               int width_mm, height_mm;
