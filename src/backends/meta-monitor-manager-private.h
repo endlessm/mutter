@@ -134,6 +134,9 @@ struct _MetaOutput
   gboolean is_presentation;
   gboolean is_underscanning;
 
+  int underscan_hborder;
+  int underscan_vborder;
+
   gpointer driver_private;
   GDestroyNotify driver_notify;
 
