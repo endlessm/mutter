@@ -148,6 +148,7 @@ struct _MetaMonitorMode
   /* The low-level ID of this mode, used to apply back configuration */
   glong mode_id;
 
+  char *name;
   int width;
   int height;
   float refresh_rate;
@@ -393,6 +394,9 @@ void               meta_output_info_free (MetaOutputInfo *info);
 void               meta_monitor_manager_free_output_array (MetaOutput *old_outputs,
                                                            int         n_old_outputs);
 gboolean           meta_monitor_manager_has_hotplug_mode_update (MetaMonitorManager *manager);
+
+void               meta_monitor_manager_free_mode_array (MetaMonitorMode *old_modes,
+                                                         int              n_old_modes);
 
 /* Returns true if transform causes width and height to be inverted
    This is true for the odd transforms in the enum */

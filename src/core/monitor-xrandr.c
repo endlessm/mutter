@@ -586,6 +586,8 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
     {
       XRRModeInfo *xmode = &resources->modes[i];
       MetaMonitorMode *mode;
+      int width = xmode->width;
+      int height = xmode->height;
 
       mode = &manager->modes[i];
 
@@ -594,6 +596,14 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
       mode->height = xmode->height;
       mode->refresh_rate = (xmode->dotClock /
 			    ((float)xmode->hTotal * xmode->vTotal));
+
+      if (xmode->hSkew != 0)
+        {
+          width += 2 * (xmode->hSkew >> 8);
+          height += 2 * (xmode->hSkew & 0xff);
+        }
+
+      mode->name = g_strdup_printf("%dx%d", width, height);
     }
 
   for (i = 0; i < (unsigned)resources->ncrtc; i++)
@@ -1256,7 +1266,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   MetaOutput *old_outputs;
   MetaCRTC *old_crtcs;
   MetaMonitorMode *old_modes;
-  int n_old_outputs;
+  int n_old_outputs, n_old_modes;
   gboolean new_config;
   unsigned i, j, k;
   XRRScreenChangeNotifyEvent *scevent;
@@ -1272,6 +1282,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   old_outputs = manager->outputs;
   n_old_outputs = manager->n_outputs;
   old_modes = manager->modes;
+  n_old_modes = manager->n_modes;
   old_crtcs = manager->crtcs;
 
   manager->serial++;
@@ -1405,7 +1416,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
     }
 
   meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
-  g_free (old_modes);
+  meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
   g_free (old_crtcs);
 
   return TRUE;

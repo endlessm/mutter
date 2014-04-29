@@ -516,17 +516,18 @@ meta_monitor_manager_constructed (GObject *object)
       MetaOutput *old_outputs;
       MetaCRTC *old_crtcs;
       MetaMonitorMode *old_modes;
-      int n_old_outputs;
+      int n_old_outputs, n_old_modes;
 
       old_outputs = manager->outputs;
       n_old_outputs = manager->n_outputs;
       old_modes = manager->modes;
+      n_old_modes = manager->n_modes;
       old_crtcs = manager->crtcs;
 
       read_current_config (manager);
 
       meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
-      g_free (old_modes);
+      meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
       g_free (old_crtcs);
     }
 
@@ -573,6 +574,18 @@ meta_monitor_manager_free_output_array (MetaOutput *old_outputs,
   g_free (old_outputs);
 }
 
+void
+meta_monitor_manager_free_mode_array (MetaMonitorMode *old_modes,
+                                      int              n_old_modes)
+{
+  int i;
+
+  for (i = 0; i < n_old_modes; i++)
+    g_free (old_modes[i].name);
+
+  g_free (old_modes);
+}
+
 static void
 meta_monitor_manager_finalize (GObject *object)
 {
@@ -580,7 +593,7 @@ meta_monitor_manager_finalize (GObject *object)
 
   meta_monitor_manager_free_output_array (manager->outputs, manager->n_outputs);
   g_free (manager->monitor_infos);
-  g_free (manager->modes);
+  meta_monitor_manager_free_mode_array (manager->modes, manager->n_modes);
   g_free (manager->crtcs);
 
   G_OBJECT_CLASS (meta_monitor_manager_parent_class)->finalize (object);
@@ -759,7 +772,7 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
 
   g_variant_builder_init (&crtc_builder, G_VARIANT_TYPE ("a(uxiiiiiuaua{sv})"));
   g_variant_builder_init (&output_builder, G_VARIANT_TYPE ("a(uxiausauaua{sv})"));
-  g_variant_builder_init (&mode_builder, G_VARIANT_TYPE ("a(uxuud)"));
+  g_variant_builder_init (&mode_builder, G_VARIANT_TYPE ("a(usxuud)"));
 
   for (i = 0; i < manager->n_crtcs; i++)
     {
@@ -865,8 +878,9 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
     {
       MetaMonitorMode *mode = &manager->modes[i];
 
-      g_variant_builder_add (&mode_builder, "(uxuud)",
+      g_variant_builder_add (&mode_builder, "(usxuud)",
                              i, /* ID */
+                             mode->name,
                              (gint64)mode->mode_id,
                              (guint32)mode->width,
                              (guint32)mode->height,
