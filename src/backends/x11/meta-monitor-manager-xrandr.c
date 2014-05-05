@@ -1364,7 +1364,8 @@ check_underscanning_mode_change (MetaMonitorManagerXrandr *manager_xrandr)
         {
           MetaMonitorMode *mode = &manager->modes[j];
 
-          if (target_width == mode->width && target_height == mode->height)
+          if (target_width == mode->width && target_height == mode->height &&
+              (current_width != mode->width || current_height != mode->height))
             {
               Screen *screen;
               int width_mm, height_mm;
