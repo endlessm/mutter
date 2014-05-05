@@ -1313,7 +1313,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
           MetaMonitorMode *mode = &manager->modes[j];
 
           if (target_width == mode->width &&
-              target_height == mode->height)
+              target_height == mode->height &&
+              (current_width != mode->width ||
+               current_height != mode->height))
             {
               Screen *screen;
               int width_mm, height_mm;
