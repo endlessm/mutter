@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 3.10\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-23 00:17+0100\n"
+"POT-Creation-Date: 2014-05-06 13:24-0700\n"
 "PO-Revision-Date: 2013-09-23 00:20+0000\n"
 "Last-Translator: Duarte Loreto <happyguy_pt@hotmail.com>\n"
 "Language-Team: Portuguese <gnome_pt@yahoogroups.com>\n"
@@ -314,18 +314,25 @@ msgstr ""
 "Incapaz de encontrar um tema! Certifique-se que %s existe e contém os temas "
 "normais.\n"
 
-#: ../src/core/monitor.c:696
+#: ../src/core/monitor.c:702
 msgid "Built-in display"
 msgstr "Ecrã embutido"
 
-#. TRANSLATORS: this is a monitor name (in case we don't know
-#. the vendor), it's Unknown followed by a size in inches,
-#. like 'Unknown 15"'
+#: ../src/core/monitor.c:727
+msgid "Unknown"
+msgstr "Desconhecido"
+
+#: ../src/core/monitor.c:729
+msgid "Unknown Display"
+msgstr "Ecrã desconhecido"
+
+#. TRANSLATORS: this is a monitor vendor name, followed by a
+#. * size in inches, like 'Dell 15"'
 #.
-#: ../src/core/monitor.c:724
+#: ../src/core/monitor.c:737
 #, c-format
-msgid "Unknown %s"
-msgstr "%s desconhecido"
+msgid "%s %s"
+msgstr ""
 
 #: ../src/core/mutter.c:40
 #, c-format
@@ -388,12 +395,12 @@ msgstr ""
 msgid "Workspace %d"
 msgstr "Área de Trabalho %d"
 
-#: ../src/core/screen.c:537
+#: ../src/core/screen.c:542
 #, c-format
 msgid "Screen %d on display '%s' is invalid\n"
 msgstr "Ecrã %d no monitor '%s' é inválido\n"
 
-#: ../src/core/screen.c:553
+#: ../src/core/screen.c:558
 #, c-format
 msgid ""
 "Screen %d on display \"%s\" already has a window manager; try using the --"
@@ -402,19 +409,19 @@ msgstr ""
 "Ecrã %d no monitor \"%s\" já tem um gestor de janelas; tente utilizar a "
 "opção --replace para substituir o gestor de janelas atual.\n"
 
-#: ../src/core/screen.c:580
+#: ../src/core/screen.c:585
 #, c-format
 msgid ""
 "Could not acquire window manager selection on screen %d display \"%s\"\n"
 msgstr ""
 "Incapaz de obter seleção do gestor de janelas no ecrã %d monitor \"%s\"\n"
 
-#: ../src/core/screen.c:658
+#: ../src/core/screen.c:663
 #, c-format
 msgid "Screen %d on display \"%s\" already has a window manager\n"
 msgstr "Ecrã %d no monitor \"%s\" já tem um gestor de janelas\n"
 
-#: ../src/core/screen.c:850
+#: ../src/core/screen.c:855
 #, c-format
 msgid "Could not release screen %d on display \"%s\"\n"
 msgstr "Incapaz libertar ecrã %d no monitor \"%s\"\n"
@@ -511,7 +518,7 @@ msgid "Window manager error: "
 msgstr "Erro do gestor de janelas: "
 
 #. first time through
-#: ../src/core/window.c:7515
+#: ../src/core/window.c:7522
 #, c-format
 msgid ""
 "Window %s sets SM_CLIENT_ID on itself, instead of on the WM_CLIENT_LEADER "
@@ -527,7 +534,7 @@ msgstr ""
 #. * MWM but not WM_NORMAL_HINTS are basically broken. We complain
 #. * about these apps but make them work.
 #.
-#: ../src/core/window.c:8345
+#: ../src/core/window.c:8439
 #, c-format
 msgid ""
 "Window %s sets an MWM hint indicating it isn't resizable, but sets min size "
