@@ -29,6 +29,7 @@
 #include <meta/prefs.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #if 0
@@ -325,6 +326,8 @@ setup_constraint_info (ConstraintInfo      *info,
   const MetaMonitorInfo *monitor_info;
   MetaWorkspace *cur_workspace;
 
+  memset (info, 0, sizeof (ConstraintInfo));
+
   info->orig    = *orig;
   info->current = *new;
 
@@ -370,31 +373,41 @@ setup_constraint_info (ConstraintInfo      *info,
   if (!info->is_user_action)
     info->fixed_directions = FIXED_DIRECTION_NONE;
 
+  cur_workspace = window->screen->active_workspace;
   monitor_info =
     meta_screen_get_monitor_for_rect (window->screen, &info->current);
-  meta_window_get_work_area_for_monitor (window,
-                                         monitor_info->number,
-                                         &info->work_area_monitor);
 
-  if (!window->fullscreen || window->fullscreen_monitors[0] == -1)
+  if (monitor_info)
     {
-      info->entire_monitor = monitor_info->rect;
-    }
-  else
-    {
-      int i = 0;
-      long monitor;
+      meta_window_get_work_area_for_monitor (window,
+                                             monitor_info->number,
+                                             &info->work_area_monitor);
 
-      monitor = window->fullscreen_monitors[i];
-      info->entire_monitor =
-        window->screen->monitor_infos[monitor].rect;
-      for (i = 1; i <= 3; i++)
+      if (!window->fullscreen || window->fullscreen_monitors[0] == -1)
         {
-          monitor = window->fullscreen_monitors[i];
-          meta_rectangle_union (&info->entire_monitor,
-                                &window->screen->monitor_infos[monitor].rect,
-                                &info->entire_monitor);
+          info->entire_monitor = monitor_info->rect;
         }
+      else
+        {
+          int i = 0;
+          long monitor;
+
+          monitor = window->fullscreen_monitors[i];
+          info->entire_monitor =
+            window->screen->monitor_infos[monitor].rect;
+          for (i = 1; i <= 3; i++)
+            {
+              monitor = window->fullscreen_monitors[i];
+              meta_rectangle_union (&info->entire_monitor,
+                                    &window->screen->monitor_infos[monitor].rect,
+                                    &info->entire_monitor);
+            }
+        }
+      info->usable_screen_region  =
+        meta_workspace_get_onscreen_region (cur_workspace);
+      info->usable_monitor_region =
+        meta_workspace_get_onmonitor_region (cur_workspace,
+                                             monitor_info->number);
     }
 
   cur_workspace = window->screen->active_workspace;
