@@ -856,6 +856,8 @@ meta_window_place (MetaWindow        *window,
 
   /* Warning, this is a round trip! */
   xi = meta_screen_get_current_monitor_info (window->screen);
+  if (!xi)
+    goto done;
 
   /* Maximize windows if they are too big for their work area (bit of
    * a hack here). Assume undecorated windows probably don't intend to
