@@ -17,6 +17,7 @@
 #include <clutter/x11/clutter-x11.h>
 #include <cogl/cogl-texture-pixmap-x11.h>
 #include <gdk/gdk.h> /* for gdk_rectangle_union() */
+#include <gtk/gtk.h> /* top bar shadow style */
 #include <string.h>
 
 #include <meta/display.h>
@@ -32,6 +33,8 @@
 #include "meta-texture-rectangle.h"
 #include "region-utils.h"
 #include "monitor-private.h"
+
+#define TOP_BAR_SHADOW_CLASS_NAME "mutter-topbar-shadow"
 
 enum {
   POSITION_CHANGED,
@@ -141,6 +144,8 @@ struct _MetaWindowActorPrivate
   /* This is used to detect fullscreen windows that need to be unredirected */
   guint             full_damage_frames_count;
   guint             does_full_damage  : 1;
+
+  GtkStyleContext *top_bar_shadow_style;
 };
 
 typedef struct _FrameData FrameData;
@@ -360,6 +365,7 @@ meta_window_actor_constructed (GObject *object)
   MetaWindow             *window   = priv->window;
   Display                *xdisplay = meta_display_get_xdisplay (display);
   XRenderPictFormat      *format;
+  GtkWidgetPath          *path;
 
   priv->damage = XDamageCreate (xdisplay, xwindow,
                                 XDamageReportBoundingBox);
@@ -403,6 +409,15 @@ meta_window_actor_constructed (GObject *object)
   /* Start off with an empty region to maintain the invariant that
      the shape region is always set */
   priv->shape_region = cairo_region_create ();
+
+  /* Style to draw the shadow underneath the top bar */
+  priv->top_bar_shadow_style = gtk_style_context_new ();
+
+  path = gtk_widget_path_new ();
+  gtk_widget_path_append_type (path, GTK_TYPE_FRAME);
+  gtk_widget_path_iter_add_class (path, -1, TOP_BAR_SHADOW_CLASS_NAME);
+  gtk_style_context_set_path (priv->top_bar_shadow_style, path);
+  gtk_widget_path_free (path);
 }
 
 static void
@@ -461,6 +476,8 @@ meta_window_actor_dispose (GObject *object)
    * Release the extra reference we took on the actor.
    */
   g_clear_object (&priv->actor);
+
+  g_clear_object (&priv->top_bar_shadow_style);
 
   G_OBJECT_CLASS (meta_window_actor_parent_class)->dispose (object);
 }
@@ -650,6 +667,52 @@ clip_shadow_under_window (MetaWindowActor *self)
   return (priv->argb32 || priv->opacity != 0xff) && priv->window->frame;
 }
 
+/* If the window has a frame with a visible top bar, paint a shadow beneath it,
+ * on top of the window's content.
+ * The style is defined in the CSS class "mutter-topbar-shadow":
+ * "border-width" is the vertical size of the shadow,
+ * "border-color" is the initial color.
+ */
+static void
+paint_top_bar_shadow (MetaWindowActor *self)
+{
+  MetaWindowActorPrivate *priv = self->priv;
+  MetaFrame *frame;
+  MetaFrameBorders borders;
+  GtkBorder border;
+  GdkRGBA border_color;
+  gint steps, i;
+
+  frame = meta_window_get_frame (priv->window);
+  if (frame == NULL)
+    return;
+
+  meta_frame_calc_borders (frame, &borders);
+  if (borders.visible.top == 0)
+    return;
+
+  gtk_style_context_get_border (priv->top_bar_shadow_style,
+                                GTK_STATE_FLAG_NORMAL,
+                                &border);
+
+  gtk_style_context_get_border_color (priv->top_bar_shadow_style,
+                                      GTK_STATE_FLAG_NORMAL,
+                                      &border_color);
+
+  steps = MAX (border.top, border.bottom);
+
+  for (i = 0; i < steps; i++)
+    {
+      /* lineal fade to fully transparent */
+      cogl_set_source_color4f (border_color.red, border_color.green, border_color.blue,
+                               border_color.alpha * (steps - i) / steps);
+      cogl_rectangle (borders.total.left,
+                      borders.total.top + i,
+                      frame->rect.width - borders.total.right,
+                      borders.total.top + i + 1);
+    }
+}
+
 static void
 meta_window_actor_paint (ClutterActor *actor)
 {
@@ -705,6 +768,8 @@ meta_window_actor_paint (ClutterActor *actor)
     }
 
   CLUTTER_ACTOR_CLASS (meta_window_actor_parent_class)->paint (actor);
+
+  paint_top_bar_shadow (self);
 }
 
 static gboolean
