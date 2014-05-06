@@ -32,6 +32,7 @@
 #include "backends/meta-monitor-manager-private.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #if 0
@@ -337,6 +338,8 @@ setup_constraint_info (ConstraintInfo      *info,
   MetaLogicalMonitor *logical_monitor;
   MetaWorkspace *cur_workspace;
 
+  memset (info, 0, sizeof (ConstraintInfo));
+
   info->orig    = *orig;
   info->current = *new;
 
@@ -390,33 +393,36 @@ setup_constraint_info (ConstraintInfo      *info,
   logical_monitor =
     meta_monitor_manager_get_logical_monitor_from_rect (monitor_manager,
                                                         &info->current);
-  meta_window_get_work_area_for_logical_monitor (window,
-                                                 logical_monitor,
-                                                 &info->work_area_monitor);
-
-  if (!window->fullscreen || !meta_window_has_fullscreen_monitors (window))
+  if (logical_monitor)
     {
-      info->entire_monitor = logical_monitor->rect;
-    }
-  else
-    {
-      info->entire_monitor = window->fullscreen_monitors.top->rect;
-      meta_rectangle_union (&info->entire_monitor,
-                            &window->fullscreen_monitors.bottom->rect,
-                            &info->entire_monitor);
-      meta_rectangle_union (&info->entire_monitor,
-                            &window->fullscreen_monitors.left->rect,
-                            &info->entire_monitor);
-      meta_rectangle_union (&info->entire_monitor,
-                            &window->fullscreen_monitors.right->rect,
-                            &info->entire_monitor);
-    }
+      meta_window_get_work_area_for_logical_monitor (window,
+                                                     logical_monitor,
+                                                     &info->work_area_monitor);
 
-  cur_workspace = window->screen->active_workspace;
-  info->usable_screen_region   =
-    meta_workspace_get_onscreen_region (cur_workspace);
-  info->usable_monitor_region =
-    meta_workspace_get_onmonitor_region (cur_workspace, logical_monitor);
+      if (!window->fullscreen || !meta_window_has_fullscreen_monitors (window))
+        {
+          info->entire_monitor = logical_monitor->rect;
+        }
+      else
+        {
+          info->entire_monitor = window->fullscreen_monitors.top->rect;
+          meta_rectangle_union (&info->entire_monitor,
+                                &window->fullscreen_monitors.bottom->rect,
+                                &info->entire_monitor);
+          meta_rectangle_union (&info->entire_monitor,
+                                &window->fullscreen_monitors.left->rect,
+                                &info->entire_monitor);
+          meta_rectangle_union (&info->entire_monitor,
+                                &window->fullscreen_monitors.right->rect,
+                                &info->entire_monitor);
+        }
+
+      cur_workspace = window->screen->active_workspace;
+      info->usable_screen_region   =
+        meta_workspace_get_onscreen_region (cur_workspace);
+      info->usable_monitor_region =
+        meta_workspace_get_onmonitor_region (cur_workspace, logical_monitor);
+    }
 
   /* Log all this information for debugging */
   meta_topic (META_DEBUG_GEOMETRY,
