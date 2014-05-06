@@ -9651,7 +9651,11 @@ find_last_time_predicate (Display  *display,
    * GDK will handle later these events, and eventually
    * free the cookie data itself.
    */
-  XGetEventData (display, &ev->xcookie);
+   /* We do NOT call XGetEventData (display, &ev->xcookie); here
+     because we're not supposed to call X functions from within a predicate.
+     XGetEventData has a lock, which fails as XCheckIfEvent has
+     already locked.  */
+  _XFetchEventCookie(display, &ev->xcookie);
   xev = (XIEvent *) ev->xcookie.data;
 
   if (xev->evtype != XI_Motion)
