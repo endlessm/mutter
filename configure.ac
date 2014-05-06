@@ -376,11 +376,6 @@ if test "$enable_compile_warnings" != no ; then
     esac
 
     case " $CFLAGS " in
-    *[\ \	]-Wcast-align[\ \	]*) ;;
-    *) CFLAGS="$CFLAGS -Wcast-align" ;;
-    esac
-
-    case " $CFLAGS " in
     *[\ \	]-Wsign-compare[\ \	]*) ;;
     *) CFLAGS="$CFLAGS -Wsign-compare" ;;
     esac
