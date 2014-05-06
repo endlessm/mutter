@@ -2757,7 +2757,8 @@ window_state_on_map (MetaWindow *window,
     case META_WINDOW_NORMAL:
     case META_WINDOW_DIALOG:
     case META_WINDOW_MODAL_DIALOG:
-      /* The default is correct for these */
+      *takes_focus = TRUE;
+      *places_on_top = TRUE;
       break;
     }
 }
