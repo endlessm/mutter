@@ -335,6 +335,115 @@ output_get_hotplug_mode_update (MetaMonitorManagerXrandr *manager_xrandr,
 
 
 static void
+prefer_mode_with_resolution(MetaOutput *meta_output, int width, int height)
+{
+  unsigned int i;
+  for (i = 0; i < meta_output->n_modes; i++) {
+    MetaMonitorMode *mode = meta_output->modes[i];
+    if (mode->width == width && mode->height == height) {
+      fprintf(stderr, "Selected preferred mode %dx%d\n", width, height);
+      meta_output->preferred_mode = mode;
+      return;
+    }
+  }
+
+  fprintf(stderr, "Failed to select preferred mode %dx%d\n", width, height);
+}
+
+/* Prefer the best resolution mode found in the standard EDID block,
+ * ignoring the CEA extension. */
+static void
+prefer_best_standard_mode(MetaOutput *meta_output, MonitorInfo *parsed_edid)
+{
+  DetailedTiming *dt0 = &parsed_edid->detailed_timings[0];
+  int width = 0;
+  int height = 0;
+  int i;
+
+  /* The best/native mode is usually placed in detailed timing 0. */
+  if (dt0->pixel_clock != 0) {
+    fprintf(stderr, "Preferring detailed timing 0\n");
+    width = dt0->h_addr;
+    height = dt0->v_addr;
+  } else {
+    /* Find the higest resolution established mode */
+    fprintf(stderr, "Preferring best established mode\n");
+    for (i = 0; i < 24; i++) {
+      Timing *timing = &parsed_edid->established[i];
+      if (timing->width > width && timing->height > height) {
+        width = timing->width;
+        height = timing->height;
+      }
+    }
+  }
+
+  if (width > 0)
+    prefer_mode_with_resolution(meta_output, width, height);
+}
+
+static gboolean
+has_chr_cea(const unsigned char *data, gsize len)
+{
+  gchar *csum;
+  const char *chr_cea_csum = "327417833521ee123cdccaf58a7a9e13";
+  gboolean ret;
+
+  if (len != 256)
+    return FALSE;
+
+  /* When this adapter is used, a constant CEA extension block seems to be
+   * given, so we just checksum it */
+  csum = g_compute_checksum_for_data(G_CHECKSUM_MD5, data + 128, 128);
+  ret = strcmp(csum, chr_cea_csum) == 0;
+  g_free(csum);
+  return ret;
+}
+
+/* We aim to support cheap VGA-HDMI converters. Under such a configuration,
+ * we want the system to output at an optimal resolution supported by the
+ * target VGA display, so that the converter does not have to do any
+ * rescaling. Unfortunately, some adapters modify the remote display's EDID
+ * to suggest that HDTV modes are supported, which X favours. In this
+ * script we use some tricks to detect when this is the case, and ignore
+ * the "faked" modes, selecting a resolution that was offered by the remote
+ * display.
+ *
+ * A further challenge is presented in situations where the HDMI-VGA adapter
+ * appears to fail to read the EDID of the remote display, and presents
+ * its own hardcoded internal EDID (the same one presented when no display
+ * is connected). We don't know why this is the case, but this happens with
+ * our selected configuration in Guatemala. In this case we take a guess at
+ * what resolution is appropriate.
+ */
+static void
+hdmi_vga_detect(MetaOutput *meta_output, GBytes *edid, MonitorInfo *parsed_edid)
+{
+  gsize len;
+  const unsigned char *data;
+
+  if (parsed_edid->product_code == 50040 &&
+      strcmp(parsed_edid->manufacturer_code, "CHR") == 0) {
+    /* CHR/Patuoxun HDMI-VGA adapter detected, with either no display, or
+     * a failure to read the remote display's EDID. We see this in Guatemala,
+     * where our displays all run at native resolution 1280x1024. */
+    fprintf(stderr, "HDMI-VGA: Detected CHR internal EDID\n");
+    prefer_mode_with_resolution(meta_output, 1280, 1024);
+    return;
+  }
+
+  data = g_bytes_get_data(edid, &len);
+
+  if (has_chr_cea(data, len)) {
+    /* CHR/Patuoxun HDMI adapter detected. The standard EDID block (mostly)
+     * comes from the remote display, so we can trust it. The CEA extension
+     * is hardcoded and therefore probably LIES. Select the best mode from
+     * the standard EDID block. */
+    fprintf(stderr, "HDMI-VGA: Detected CHR adapter\n");
+    prefer_best_standard_mode(meta_output, parsed_edid);
+  }
+}
+
+static void
 meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 {
   MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
@@ -476,6 +585,20 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 	  meta_output->output_id = resources->outputs[i];
 	  meta_output->name = g_strdup (output->name);
 
+	  meta_output->n_modes = output->nmode;
+	  meta_output->modes = g_new0 (MetaMonitorMode *, meta_output->n_modes);
+	  for (j = 0; j < meta_output->n_modes; j++)
+	    {
+	      for (k = 0; k < manager->n_modes; k++)
+		{
+		  if (output->modes[j] == (XID)manager->modes[k].mode_id)
+		    {
+		      meta_output->modes[j] = &manager->modes[k];
+		      break;
+		    }
+		}
+	    }
+
           edid = read_output_edid (manager_xrandr, meta_output->output_id);
           if (edid)
             {
@@ -494,6 +617,7 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
                   else
                     meta_output->serial = g_strdup_printf ("0x%08x", parsed_edid->serial_number);
 
+                  hdmi_vga_detect(meta_output, edid, parsed_edid);
                   g_free (parsed_edid);
                 }
 
@@ -512,20 +636,8 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
           meta_output->hotplug_mode_update =
               output_get_hotplug_mode_update (manager_xrandr, meta_output->output_id);
 
-	  meta_output->n_modes = output->nmode;
-	  meta_output->modes = g_new0 (MetaMonitorMode *, meta_output->n_modes);
-	  for (j = 0; j < meta_output->n_modes; j++)
-	    {
-	      for (k = 0; k < manager->n_modes; k++)
-		{
-		  if (output->modes[j] == (XID)manager->modes[k].mode_id)
-		    {
-		      meta_output->modes[j] = &manager->modes[k];
-		      break;
-		    }
-		}
-	    }
-	  meta_output->preferred_mode = meta_output->modes[0];
+	  if (!meta_output->preferred_mode)
+	    meta_output->preferred_mode = meta_output->modes[0];
 
 	  meta_output->n_possible_crtcs = output->ncrtc;
 	  meta_output->possible_crtcs = g_new0 (MetaCRTC *, meta_output->n_possible_crtcs);
