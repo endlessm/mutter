@@ -1356,7 +1356,8 @@ meta_window_new (MetaDisplay   *display,
       meta_window_update_struts (window);
     }
 
-  g_signal_emit_by_name (window->screen, "window-entered-monitor", window->monitor->number, window);
+  if (window->monitor)
+    g_signal_emit_by_name (window->screen, "window-entered-monitor", window->monitor->number, window);
 
   /* Must add window to stack before doing move/resize, since the
    * window might have fullscreen size (i.e. should have been
@@ -3690,6 +3691,9 @@ meta_window_is_monitor_sized (MetaWindow *window)
   if (meta_window_is_screen_sized (window))
     return TRUE;
 
+  if (!window->monitor)
+    return FALSE;
+
   if (window->override_redirect)
     {
       MetaRectangle window_rect, monitor_rect;
@@ -3713,7 +3717,10 @@ meta_window_is_monitor_sized (MetaWindow *window)
 gboolean
 meta_window_is_on_primary_monitor (MetaWindow *window)
 {
-  return window->monitor->is_primary;
+  if (window->monitor)
+    return window->monitor->is_primary;
+  else
+    return FALSE;
 }
 
 /**
@@ -4717,7 +4724,10 @@ maybe_move_attached_dialog (MetaWindow *window,
 int
 meta_window_get_monitor (MetaWindow *window)
 {
-  return window->monitor->number;
+  if (window->monitor)
+    return window->monitor->number;
+  else
+    return -1;
 }
 
 /* This is called when the monitor setup has changed. The window->monitor
@@ -4731,13 +4741,14 @@ meta_window_update_for_monitors_changed (MetaWindow *window)
   if (window->type == META_WINDOW_DESKTOP)
     return;
 
-  if (window->override_redirect)
+  old = window->monitor;
+  
+  if (!old ||
+      window->override_redirect)
     {
       meta_window_update_monitor (window);
       return;
     }
-
-  old = window->monitor;
 
   /* Start on primary */
   new = &window->screen->monitor_infos[window->screen->primary_monitor_index];
@@ -9950,9 +9961,18 @@ meta_window_get_work_area_current_monitor (MetaWindow    *window,
   monitor = meta_screen_get_monitor_for_window (window->screen,
                                                 window);
 
-  meta_window_get_work_area_for_monitor (window,
-                                         monitor->number,
-                                         area);
+  if (monitor)
+    {
+      meta_window_get_work_area_for_monitor (window,
+                                             monitor->number,
+                                             area);
+    }
+  else
+    {
+      MetaRectangle empty = { 0, 0, 0, 0 };
+      if (area)
+        *area = empty;
+    }
 }
 
 /**

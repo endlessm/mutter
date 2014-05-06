@@ -396,7 +396,10 @@ meta_screen_monitor_index_to_xinerama_index (MetaScreen *screen,
 
   meta_screen_ensure_xinerama_indices (screen);
 
-  return screen->monitor_infos[index].xinerama_index;
+  if (index >= 0 && index < screen->n_monitor_infos)
+    return screen->monitor_infos[index].xinerama_index;
+
+  return -1;
 }
 
 int
@@ -1868,7 +1871,10 @@ meta_screen_get_monitor_index_for_rect (MetaScreen    *screen,
                                         MetaRectangle *rect)
 {
   const MetaMonitorInfo *monitor = meta_screen_get_monitor_for_rect (screen, rect);
-  return monitor->number;
+  if (monitor)
+    return monitor->number;
+  else
+    return -1;
 }
 
 const MetaMonitorInfo* 

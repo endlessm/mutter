@@ -860,7 +860,9 @@ meta_window_place (MetaWindow        *window,
 
   /* Warning, this is a round trip! */
   xi = meta_screen_get_current_monitor_info (window->screen);
-  
+  if (!xi)
+    goto done;
+
   /* "Origin" placement algorithm */
   x = xi->rect.x;
   y = xi->rect.y;
