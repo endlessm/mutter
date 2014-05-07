@@ -1268,9 +1268,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   MetaMonitorMode *old_modes;
   int n_old_outputs, n_old_modes;
   gboolean new_config;
-  unsigned i, j, k;
-  XRRScreenChangeNotifyEvent *scevent;
-  Screen *screen;
+  unsigned i, j;
   gboolean needs_update = FALSE;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
@@ -1291,8 +1289,8 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
       MetaOutput *output = &manager->outputs[i];
-      unsigned current_width, current_height;
-      unsigned target_width, target_height;
+      int current_width, current_height;
+      int target_width, target_height;
 
       current_width = output->crtc->current_mode->width;
       current_height = output->crtc->current_mode->height;
@@ -1317,7 +1315,6 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
               (current_width != mode->width ||
                current_height != mode->height))
             {
-              Screen *screen;
               int width_mm, height_mm;
               Status ok;
 
@@ -1359,7 +1356,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
                                      output->crtc->rect.x, output->crtc->rect.y,
                                      (XID)mode->mode_id,
                                      wl_transform_to_xrandr (output->crtc->transform),
-                                     &output->output_id, 1);
+                                     (RROutput *)&output->output_id, 1);
               meta_error_trap_pop (meta_get_display ());
 
               meta_display_ungrab (meta_get_display ());
