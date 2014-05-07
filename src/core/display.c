@@ -502,6 +502,8 @@ meta_display_open (void)
 #define item(x) #x,
 #include <meta/atomnames.h>
 #undef item
+    "underscan hborder",
+    "underscan vborder",
   };
   Atom atoms[G_N_ELEMENTS(atom_names)];
   
@@ -568,6 +570,8 @@ meta_display_open (void)
 #define item(x) the_display->atom_##x = atoms[i++];
 #include <meta/atomnames.h>
 #undef item
+    the_display->atom_underscan_hborder = atoms[i++];
+    the_display->atom_underscan_vborder = atoms[i++];
   }
 
   the_display->prop_hooks = NULL;

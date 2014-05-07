@@ -107,6 +107,11 @@ struct _MetaOutput
   /* Used when changing configuration */
   gboolean is_dirty;
 
+  gboolean is_underscanning;
+  gboolean needs_modeset;
+  int underscan_hborder;
+  int underscan_vborder;
+
   /* The low-level bits used to build the high-level info
      in MetaMonitorInfo
 
@@ -143,6 +148,7 @@ struct _MetaMonitorMode
   /* The low-level ID of this mode, used to apply back configuration */
   glong mode_id;
 
+  char *name;
   int width;
   int height;
   float refresh_rate;
@@ -203,6 +209,7 @@ struct _MetaOutputInfo {
   MetaOutput  *output;
   gboolean     is_primary;
   gboolean     is_presentation;
+  gboolean     is_underscanning;
 };
 
 #define META_TYPE_MONITOR_MANAGER            (meta_monitor_manager_get_type ())
@@ -387,6 +394,9 @@ void               meta_output_info_free (MetaOutputInfo *info);
 void               meta_monitor_manager_free_output_array (MetaOutput *old_outputs,
                                                            int         n_old_outputs);
 gboolean           meta_monitor_manager_has_hotplug_mode_update (MetaMonitorManager *manager);
+
+void               meta_monitor_manager_free_mode_array (MetaMonitorMode *old_modes,
+                                                         int              n_old_modes);
 
 /* Returns true if transform causes width and height to be inverted
    This is true for the odd transforms in the enum */

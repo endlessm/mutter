@@ -103,6 +103,10 @@ struct _MetaDisplay
 #include <meta/atomnames.h>
 #undef item
 
+  /* Special-casing because the strings these atoms refer to have spaces */
+  Atom atom_underscan_hborder;
+  Atom atom_underscan_vborder;
+
   /* The window and serial of the most recent FocusIn event. */
   Window server_focus_window;
   gulong server_focus_serial;

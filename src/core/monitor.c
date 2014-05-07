@@ -306,6 +306,7 @@ apply_config_dummy (MetaMonitorManager *manager,
 
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+      output->is_underscanning = output_info->is_underscanning;
     }
 
   /* Disable CRTCs not mentioned in the list */
@@ -515,17 +516,18 @@ meta_monitor_manager_constructed (GObject *object)
       MetaOutput *old_outputs;
       MetaCRTC *old_crtcs;
       MetaMonitorMode *old_modes;
-      int n_old_outputs;
+      int n_old_outputs, n_old_modes;
 
       old_outputs = manager->outputs;
       n_old_outputs = manager->n_outputs;
       old_modes = manager->modes;
+      n_old_modes = manager->n_modes;
       old_crtcs = manager->crtcs;
 
       read_current_config (manager);
 
       meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
-      g_free (old_modes);
+      meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
       g_free (old_crtcs);
     }
 
@@ -572,6 +574,18 @@ meta_monitor_manager_free_output_array (MetaOutput *old_outputs,
   g_free (old_outputs);
 }
 
+void
+meta_monitor_manager_free_mode_array (MetaMonitorMode *old_modes,
+                                      int              n_old_modes)
+{
+  int i;
+
+  for (i = 0; i < n_old_modes; i++)
+    g_free (old_modes[i].name);
+
+  g_free (old_modes);
+}
+
 static void
 meta_monitor_manager_finalize (GObject *object)
 {
@@ -579,7 +593,7 @@ meta_monitor_manager_finalize (GObject *object)
 
   meta_monitor_manager_free_output_array (manager->outputs, manager->n_outputs);
   g_free (manager->monitor_infos);
-  g_free (manager->modes);
+  meta_monitor_manager_free_mode_array (manager->modes, manager->n_modes);
   g_free (manager->crtcs);
 
   G_OBJECT_CLASS (meta_monitor_manager_parent_class)->finalize (object);
@@ -758,7 +772,7 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
 
   g_variant_builder_init (&crtc_builder, G_VARIANT_TYPE ("a(uxiiiiiuaua{sv})"));
   g_variant_builder_init (&output_builder, G_VARIANT_TYPE ("a(uxiausauaua{sv})"));
-  g_variant_builder_init (&mode_builder, G_VARIANT_TYPE ("a(uxuud)"));
+  g_variant_builder_init (&mode_builder, G_VARIANT_TYPE ("a(usxuud)"));
 
   for (i = 0; i < manager->n_crtcs; i++)
     {
@@ -827,6 +841,8 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
                              g_variant_new_boolean (output->is_primary));
       g_variant_builder_add (&properties, "{sv}", "presentation",
                              g_variant_new_boolean (output->is_presentation));
+      g_variant_builder_add (&properties, "{sv}", "underscanning",
+                             g_variant_new_boolean (output->is_underscanning));
 
       edid_file = manager_class->get_edid_file (manager, output);
       if (edid_file)
@@ -862,8 +878,9 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
     {
       MetaMonitorMode *mode = &manager->modes[i];
 
-      g_variant_builder_add (&mode_builder, "(uxuud)",
+      g_variant_builder_add (&mode_builder, "(usxuud)",
                              i, /* ID */
+                             mode->name,
                              (gint64)mode->mode_id,
                              (guint32)mode->width,
                              (guint32)mode->height,
@@ -1116,7 +1133,7 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
   while (g_variant_iter_loop (&output_iter, "(u@a{sv})", &output_id, &properties))
     {
       MetaOutputInfo *output_info;
-      gboolean primary, presentation;
+      gboolean primary, presentation, underscanning;
 
       if (output_id >= manager->n_outputs)
         {
@@ -1134,6 +1151,9 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
 
       if (g_variant_lookup (properties, "presentation", "b", &presentation))
         output_info->is_presentation = presentation;
+
+      if (g_variant_lookup (properties, "underscanning", "b", &underscanning))
+        output_info->is_underscanning = underscanning;
 
       g_ptr_array_add (output_infos, output_info);
     }

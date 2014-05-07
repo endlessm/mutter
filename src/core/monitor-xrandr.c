@@ -49,6 +49,12 @@
  * for the reasoning */
 #define DPI_FALLBACK 96.0
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 struct _MetaMonitorManagerXrandr
 {
   MetaMonitorManager parent_instance;
@@ -164,6 +170,64 @@ output_get_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
 
   XFree (buffer);
   return value;
+}
+
+static gboolean
+output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                 MetaOutput               *output)
+{
+  MetaDisplay *display = meta_get_display ();
+  gboolean underscanning = FALSE;
+  gint32 underscan_hborder = 0;
+  gint32 underscan_vborder = 0;
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
+  unsigned char *buffer;
+  char *str;
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan,
+                        0, G_MAXLONG, False, False, XA_ATOM,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+
+  if (actual_type == XA_ATOM && actual_format == 32 && nitems >= 1)
+    {
+      str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
+      underscanning = !strcmp(str, "on") || !strcmp(str, "crop");
+      XFree (str);
+    }
+
+  output->is_underscanning = underscanning;
+  XFree (buffer);
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan_hborder,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+  if (actual_type == XA_INTEGER && actual_format == 32 && nitems >= 1)
+    underscan_hborder = ((int*)buffer)[0];
+
+  output->underscan_hborder = underscan_hborder;
+  XFree (buffer);
+
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->output_id,
+                        display->atom_underscan_vborder,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &buffer);
+  if (actual_type == XA_INTEGER && actual_format == 32 && nitems >= 1)
+    underscan_vborder = ((int*)buffer)[0];
+
+  output->underscan_vborder = underscan_vborder;
+  XFree (buffer);
+
+  return underscanning;
 }
 
 static int
@@ -522,6 +586,8 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
     {
       XRRModeInfo *xmode = &resources->modes[i];
       MetaMonitorMode *mode;
+      int width = xmode->width;
+      int height = xmode->height;
 
       mode = &manager->modes[i];
 
@@ -530,6 +596,14 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
       mode->height = xmode->height;
       mode->refresh_rate = (xmode->dotClock /
 			    ((float)xmode->hTotal * xmode->vTotal));
+
+      if (xmode->hSkew != 0)
+        {
+          width += 2 * (xmode->hSkew >> 8);
+          height += 2 * (xmode->hSkew & 0xff);
+        }
+
+      mode->name = g_strdup_printf("%dx%d", width, height);
     }
 
   for (i = 0; i < (unsigned)resources->ncrtc; i++)
@@ -676,6 +750,7 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 
 	  meta_output->is_primary = ((XID)meta_output->output_id == primary_output);
 	  meta_output->is_presentation = output_get_presentation_xrandr (manager_xrandr, meta_output);
+	  output_get_underscanning_xrandr (manager_xrandr, meta_output);
 	  output_get_backlight_limits_xrandr (manager_xrandr, meta_output);
 
 	  if (!(meta_output->backlight_min == 0 && meta_output->backlight_max == 0))
@@ -795,6 +870,52 @@ output_set_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                            (XID)output->output_id,
                            display->atom__MUTTER_PRESENTATION_OUTPUT,
                            XA_CARDINAL, 32, PropModeReplace,
+                           (unsigned char*) &value, 1);
+  meta_error_trap_pop (display);
+}
+
+static void
+output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                 MetaOutput               *output,
+                                 gboolean                  underscanning)
+{
+  MetaDisplay *display = meta_get_display ();
+  Atom value;
+
+  if (underscanning) {
+    guint32 border_value;
+
+    border_value = round(output->crtc->current_mode->width * OVERSCAN_COMPENSATION_BORDER);
+    meta_error_trap_push (display);
+    XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan_hborder,
+                           XA_INTEGER, 32, PropModeReplace,
+                           (unsigned char*) &border_value, 1);
+    meta_error_trap_pop (display);
+
+    output->underscan_hborder = border_value;
+
+    border_value = round(output->crtc->current_mode->height * OVERSCAN_COMPENSATION_BORDER);
+    meta_error_trap_push (display);
+    XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan_vborder,
+                           XA_INTEGER, 32, PropModeReplace,
+                           (unsigned char*) &border_value, 1);
+    meta_error_trap_pop (display);
+
+    output->underscan_vborder = border_value;
+
+    value = display->atom_crop;
+  } else
+    value = display->atom_off;
+
+  meta_error_trap_push (display);
+  XRRChangeOutputProperty (manager_xrandr->xdisplay,
+                           (XID)output->output_id,
+                           display->atom_underscan,
+                           XA_ATOM, 32, PropModeReplace,
                            (unsigned char*) &value, 1);
   meta_error_trap_pop (display);
 }
@@ -1012,6 +1133,7 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
     {
       MetaOutputInfo *output_info = outputs[i];
       MetaOutput *output = output_info->output;
+      gboolean is_currently_underscanning;
 
       if (output_info->is_primary)
         {
@@ -1028,6 +1150,15 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
 
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
+
+      is_currently_underscanning = output_get_underscanning_xrandr (manager_xrandr, output_info->output);
+      if (is_currently_underscanning != output_info->is_underscanning)
+        {
+          output_set_underscanning_xrandr (manager_xrandr,
+                                           output_info->output,
+                                           output_info->is_underscanning);
+        }
+      output->is_underscanning = output_info->is_underscanning;
     }
 
   /* Disable outputs not mentioned in the list */
@@ -1114,11 +1245,15 @@ meta_monitor_manager_xrandr_set_crtc_gamma (MetaMonitorManager *manager,
 }
 
 static void
-meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager)
+meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager,
+                                             gboolean            persistent)
 {
   /* This will be a no-op if the change was from our side, as
      we already called it in the DBus method handler */
   meta_monitor_config_update_current (manager->config, manager);
+
+  if (persistent)
+    meta_monitor_config_make_persistent (manager->config);
 
   meta_monitor_manager_rebuild_derived (manager);
 }
@@ -1131,8 +1266,12 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   MetaOutput *old_outputs;
   MetaCRTC *old_crtcs;
   MetaMonitorMode *old_modes;
-  int n_old_outputs;
+  int n_old_outputs, n_old_modes;
   gboolean new_config;
+  unsigned i, j, k;
+  XRRScreenChangeNotifyEvent *scevent;
+  Screen *screen;
+  gboolean needs_update = FALSE;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
     return FALSE;
@@ -1143,10 +1282,105 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   old_outputs = manager->outputs;
   n_old_outputs = manager->n_outputs;
   old_modes = manager->modes;
+  n_old_modes = manager->n_modes;
   old_crtcs = manager->crtcs;
 
   manager->serial++;
   meta_monitor_manager_xrandr_read_current (manager);
+
+  for (i = 0; i < (unsigned)manager->n_outputs; i++)
+    {
+      MetaOutput *output = &manager->outputs[i];
+      unsigned current_width, current_height;
+      unsigned target_width, target_height;
+
+      current_width = output->crtc->current_mode->width;
+      current_height = output->crtc->current_mode->height;
+
+      if (output->is_underscanning)
+        {
+          target_width = current_width - output->underscan_hborder * 2;
+          target_height = current_height - output->underscan_vborder * 2;
+        }
+      else
+        {
+          target_width = current_width + output->underscan_hborder * 2;
+          target_height = current_height + output->underscan_vborder * 2;
+        }
+
+      for (j = 0; j < (unsigned)manager->n_modes; j++)
+        {
+          MetaMonitorMode *mode = &manager->modes[j];
+
+          if (target_width == mode->width &&
+              target_height == mode->height &&
+              (current_width != mode->width ||
+               current_height != mode->height))
+            {
+              Screen *screen;
+              int width_mm, height_mm;
+              Status ok;
+
+              meta_display_grab (meta_get_display ());
+
+              XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                manager_xrandr->resources,
+                                (XID)output->crtc->crtc_id,
+                                manager_xrandr->time,
+                                0, 0,
+                                None,
+                                RR_Rotate_0,
+                                NULL, 0);
+
+              output->crtc->current_mode = mode;
+
+              width_mm = (mode->width / DPI_FALLBACK) * 25.4 + 0.5;
+              height_mm = (mode->height / DPI_FALLBACK) * 25.4 + 0.5;
+
+              meta_error_trap_push (meta_get_display ());
+              XRRSetScreenSize (manager_xrandr->xdisplay,
+                                DefaultRootWindow (manager_xrandr->xdisplay),
+                                mode->width, mode->height,
+                                width_mm, height_mm);
+              meta_error_trap_pop (meta_get_display ());
+
+              // The screen size will be updated on the next RRScreenChangeNotify,
+              // but we need the UI to update ASAP.
+              XSync (manager_xrandr->xdisplay, False);
+              manager->screen_width = mode->width;
+              manager->screen_height = mode->height;
+
+              meta_error_trap_push (meta_get_display ());
+              /* TODO: Send the list of output IDs for this CRTC */
+              ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                     manager_xrandr->resources,
+                                     (XID)output->crtc->crtc_id,
+                                     manager_xrandr->time,
+                                     output->crtc->rect.x, output->crtc->rect.y,
+                                     (XID)mode->mode_id,
+                                     wl_transform_to_xrandr (output->crtc->transform),
+                                     &output->output_id, 1);
+              meta_error_trap_pop (meta_get_display ());
+
+              meta_display_ungrab (meta_get_display ());
+
+              if (ok != Success)
+                {
+                  meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
+
+                  break;
+                }
+
+              output->crtc->rect.width = mode->width;
+              output->crtc->rect.height = mode->height;
+              output->crtc->current_mode = mode;
+
+              needs_update = TRUE;
+
+              break;
+            }
+        }
+    }
 
   new_config = manager_xrandr->resources->timestamp >=
     manager_xrandr->resources->configTimestamp;
@@ -1157,8 +1391,8 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
          XRandR call.  Otherwise, hotplug_mode_update tells us to get
          a new preferred mode on hotplug events to handle dynamic
          guest resizing. */
-      if (new_config)
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
+      if (new_config || needs_update)
+        meta_monitor_manager_xrandr_rebuild_derived (manager, needs_update);
       else
         meta_monitor_config_make_default (manager->config, manager);
     }
@@ -1175,14 +1409,16 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
          outputs, because the X server might emit spurious events with new
          configTimestamps (bug 702804), and the driver may have changed
          the EDID for some other reason (old qxl and vbox drivers). */
-      if (new_config || meta_monitor_config_match_current (manager->config, manager))
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
+      if (new_config ||
+          meta_monitor_config_match_current (manager->config, manager) ||
+          needs_update)
+        meta_monitor_manager_xrandr_rebuild_derived (manager, needs_update);
       else if (!meta_monitor_config_apply_stored (manager->config, manager))
         meta_monitor_config_make_default (manager->config, manager);
     }
 
   meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
-  g_free (old_modes);
+  meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
   g_free (old_crtcs);
 
   return TRUE;
