@@ -1301,3 +1301,31 @@ meta_background_get_filename (MetaBackground *self)
 {
     return self->priv->filename;
 }
+
+/**
+ * meta_background_get_texture_rect:
+ * @self: a #MetaBackground
+ *
+ * Returns: (transfer full): the newly allocated #ClutterRect with the
+ * rectangular region of the background. Use clutter_rect_free() to free its
+ * resources.
+ */
+ClutterRect *
+meta_background_get_texture_rect (MetaBackground *self)
+{
+    MetaBackgroundPrivate *priv = self->priv;
+    MetaRectangle monitor_geometry;
+    ClutterActorBox actor_box;
+    float texture_x_scale, texture_y_scale;
+    cairo_rectangle_int_t texture_area;
+
+    meta_screen_get_monitor_geometry (priv->screen, priv->monitor, &monitor_geometry);
+    actor_box.x1 = 0;
+    actor_box.y1 = 0;
+    actor_box.x2 = monitor_geometry.width;
+    actor_box.y2 = monitor_geometry.height;
+
+    get_texture_area_and_scale (self, &actor_box, &texture_area, &texture_x_scale, &texture_y_scale);
+
+    return clutter_rect_init (clutter_rect_alloc (), 0, 0, texture_area.width, texture_area.height);
+}
