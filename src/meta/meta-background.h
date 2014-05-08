@@ -109,5 +109,7 @@ GDesktopBackgroundStyle meta_background_get_style (MetaBackground *self);
 GDesktopBackgroundShading meta_background_get_shading (MetaBackground *self);
 const ClutterColor *meta_background_get_color (MetaBackground *self);
 const ClutterColor *meta_background_get_second_color (MetaBackground *self);
+gboolean meta_background_get_has_alpha (MetaBackground *self);
+ClutterRect *meta_background_get_texture_rect (MetaBackground *self);
 
 #endif /* META_BACKGROUND_H */
