@@ -80,6 +80,8 @@ struct _MetaBackgroundPrivate
 
   float brightness;
   float vignette_sharpness;
+
+  gboolean has_alpha;
 };
 
 enum
@@ -93,6 +95,7 @@ enum
 
 static void clutter_content_iface_init (ClutterContentIface *iface);
 static void unset_texture (MetaBackground *self);
+static void set_has_alpha (MetaBackground *self, gboolean has_alpha);
 
 G_DEFINE_TYPE_WITH_CODE (MetaBackground, meta_background, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (CLUTTER_TYPE_CONTENT,
@@ -734,6 +737,29 @@ set_texture (MetaBackground *self,
 }
 
 static void
+set_has_alpha (MetaBackground *self,
+             gboolean has_alpha)
+{
+  MetaBackgroundPrivate *priv = self->priv;
+
+  priv->has_alpha = has_alpha;
+}
+
+/**
+ * meta_background_get_has_alpha:
+ * @self: a #MetaBackground
+ *
+ * Returns true if the background has alpha.
+ *
+ * Return value: a #gboolean
+ */
+gboolean
+meta_background_get_has_alpha (MetaBackground *self)
+{
+    return self->priv->has_alpha;
+}
+
+static void
 set_style (MetaBackground          *self,
            GDesktopBackgroundStyle  style)
 {
@@ -1081,6 +1107,7 @@ meta_background_load_file_finish (MetaBackground  *self,
   set_style (self, task_data->style);
   set_filename (self, task_data->filename);
   set_texture (self, texture);
+  set_has_alpha (self, has_alpha);
 
   clutter_content_invalidate (CLUTTER_CONTENT (self));
   loaded = TRUE;
@@ -1121,6 +1148,7 @@ meta_background_copy (MetaBackground        *self,
   background->priv->color = self->priv->color;
   background->priv->second_color = self->priv->second_color;
   background->priv->filename = g_strdup (self->priv->filename);
+  background->priv->has_alpha = self->priv->has_alpha;
 
   /* we can reuse the pipeline if it has no effects applied, or
    * if it has the same effects applied
