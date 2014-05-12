@@ -47,6 +47,12 @@
 #include "meta-dbus-display-config.h"
 #include "meta-cursor.h"
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 typedef struct _MetaMonitorConfigClass    MetaMonitorConfigClass;
 typedef struct _MetaMonitorConfig         MetaMonitorConfig;
 
