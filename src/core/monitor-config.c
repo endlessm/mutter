@@ -374,7 +374,8 @@ handle_start_element (GMarkupParseContext  *context,
              strcmp (element_name, "reflect_x") == 0 ||
              strcmp (element_name, "reflect_y") == 0 ||
              strcmp (element_name, "primary") == 0 ||
-             strcmp (element_name, "presentation") == 0) && parser->unknown_count == 0)
+             strcmp (element_name, "presentation") == 0 ||
+             strcmp (element_name, "underscanning") == 0) && parser->unknown_count == 0)
           {
             parser->state = STATE_OUTPUT_FIELD;
 
