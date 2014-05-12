@@ -66,6 +66,7 @@ typedef struct {
   gboolean is_primary;
   gboolean is_presentation;
   gboolean is_underscanning;
+  gboolean is_default_config;
 } MetaOutputConfig;
 
 typedef struct {
@@ -1120,6 +1121,7 @@ init_config_from_preferred_mode (MetaOutputConfig *config,
   config->is_primary = FALSE;
   config->is_presentation = FALSE;
   config->is_underscanning = is_hdtv(config->rect.width, config->rect.height);
+  config->is_default_config = TRUE;
 }
 
 /* This function handles configuring the outputs when the driver provides a
@@ -1422,6 +1424,7 @@ init_config_from_output (MetaOutputConfig *config,
   config->is_primary = output->is_primary;
   config->is_presentation = output->is_presentation;
   config->is_underscanning = output->is_underscanning;
+  config->is_default_config = output->is_default_config;
 }
 
 void
@@ -1958,6 +1961,7 @@ meta_monitor_config_assign_crtcs (MetaConfiguration  *config,
       output_info->is_primary = output_config->is_primary;
       output_info->is_presentation = output_config->is_presentation;
       output_info->is_underscanning = output_config->is_underscanning;
+      output_info->is_default_config = output_config->is_default_config;
 
       g_ptr_array_add (outputs, output_info);
     }

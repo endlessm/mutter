@@ -133,6 +133,7 @@ struct _MetaOutput
   gboolean is_primary;
   gboolean is_presentation;
   gboolean is_underscanning;
+  gboolean is_default_config;
 
   int underscan_hborder;
   int underscan_vborder;
@@ -235,6 +236,7 @@ struct _MetaOutputInfo {
   gboolean     is_primary;
   gboolean     is_presentation;
   gboolean     is_underscanning;
+  gboolean     is_default_config;
 };
 
 #define META_TYPE_MONITOR_MANAGER            (meta_monitor_manager_get_type ())
