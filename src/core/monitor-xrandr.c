@@ -49,12 +49,6 @@
  * for the reasoning */
 #define DPI_FALLBACK 96.0
 
-/* For now, underscan to 95% of the claimed display size whenever that
- * option is enabled. In the future there may be a UI to configure this
- * value.
- */
-#define OVERSCAN_COMPENSATION_BORDER 0.025
-
 struct _MetaMonitorManagerXrandr
 {
   MetaMonitorManager parent_instance;
