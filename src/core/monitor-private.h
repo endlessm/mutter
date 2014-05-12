@@ -51,6 +51,12 @@
 
 #include "meta-dbus-xrandr.h"
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 typedef struct _MetaMonitorManagerClass    MetaMonitorManagerClass;
 typedef struct _MetaMonitorManager         MetaMonitorManager;
 typedef struct _MetaMonitorConfigClass    MetaMonitorConfigClass;
@@ -107,8 +113,8 @@ struct _MetaOutput
   /* Used when changing configuration */
   gboolean is_dirty;
 
+  gboolean is_default_config;
   gboolean is_underscanning;
-  gboolean needs_modeset;
   int underscan_hborder;
   int underscan_vborder;
 
@@ -210,6 +216,7 @@ struct _MetaOutputInfo {
   gboolean     is_primary;
   gboolean     is_presentation;
   gboolean     is_underscanning;
+  gboolean     is_default_config;
 };
 
 #define META_TYPE_MONITOR_MANAGER            (meta_monitor_manager_get_type ())

@@ -49,12 +49,6 @@
  * for the reasoning */
 #define DPI_FALLBACK 96.0
 
-/* For now, underscan to 95% of the claimed display size whenever that
- * option is enabled. In the future there may be a UI to configure this
- * value.
- */
-#define OVERSCAN_COMPENSATION_BORDER 0.025
-
 struct _MetaMonitorManagerXrandr
 {
   MetaMonitorManager parent_instance;
@@ -1134,6 +1128,7 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
       MetaOutputInfo *output_info = outputs[i];
       MetaOutput *output = output_info->output;
       gboolean is_currently_underscanning;
+      gboolean should_underscan;
 
       if (output_info->is_primary)
         {
@@ -1152,13 +1147,33 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
       output->is_presentation = output_info->is_presentation;
 
       is_currently_underscanning = output_get_underscanning_xrandr (manager_xrandr, output_info->output);
-      if (is_currently_underscanning != output_info->is_underscanning)
+      should_underscan = output_info->is_underscanning;
+      if (output_info->is_default_config)
+        {
+          if (is_currently_underscanning)
+            {
+              /* If this is the default config being set, and underscan is on,
+                 it is because GDM has already guessed we need it. */
+              should_underscan = TRUE;
+            }
+          else
+            {
+              MetaMonitorMode *mode = output->crtc->current_mode;
+              /* If this is the default config being set, and underscan isn't
+                 on yet, check if it is a HD resolution. */
+              should_underscan = (mode->width == 1920 && mode->height == 1080) ||
+                                 (mode->width == 1440 && mode->height == 1080) ||
+                                 (mode->width == 1280 && mode->height == 720);
+            }
+        }
+
+      if (is_currently_underscanning != should_underscan)
         {
           output_set_underscanning_xrandr (manager_xrandr,
                                            output_info->output,
-                                           output_info->is_underscanning);
+                                           should_underscan);
         }
-      output->is_underscanning = output_info->is_underscanning;
+      output->is_underscanning = should_underscan;
     }
 
   /* Disable outputs not mentioned in the list */
