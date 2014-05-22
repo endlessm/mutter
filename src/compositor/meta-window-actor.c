@@ -1429,8 +1429,17 @@ meta_window_actor_should_unredirect (MetaWindowActor *self)
   if (!meta_window_is_monitor_sized (metaWindow))
     return FALSE;
 
+  /*
+   * FIXME: The Mali library on ODROID prevents unredirected fullscreen
+   * buffers from working correctly. Disable unredirection due to
+   * _NET_WM_BYPASS_COMPOSITOR until that's fixed.
+   *
+   * https://github.com/endlessm/eos-shell/issues/2548
+   */
+#ifndef __arm__
   if (meta_window_requested_bypass_compositor (metaWindow))
     return TRUE;
+#endif
 
   if (meta_window_is_override_redirect (metaWindow))
     return TRUE;
