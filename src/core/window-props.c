@@ -1703,6 +1703,24 @@ reload_bypass_compositor (MetaWindow    *window,
   else if (requested_value != _NET_WM_BYPASS_COMPOSITOR_HINT_AUTO)
     return;
 
+  /*
+   * FIXME: The Mali library on ODROID prevents unredirected fullscreen
+   * buffers from working correctly. Disable unredirection due to
+   * _NET_WM_BYPASS_COMPOSITOR until that's fixed.
+   *
+   * https://github.com/endlessm/eos-shell/issues/2548
+   */
+#ifdef __arm__
+  if (requested_value == _NET_WM_BYPASS_COMPOSITOR_HINT_ON &&
+      g_getenv ("MUTTER_ALLOW_BYPASS_COMPOSITOR") == NULL)
+    {
+      meta_verbose ("Ignoring request to bypass compositor on ARM.\n");
+      meta_verbose ("Set the envvar MUTTER_ALLOW_BYPASS_COMPOSITOR to "
+                    "allow bypassing.\n");
+      return;
+    }
+#endif
+
   window->bypass_compositor = requested_value;
 }
 
