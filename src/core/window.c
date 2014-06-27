@@ -7734,6 +7734,9 @@ void
 meta_window_set_opaque_region (MetaWindow     *window,
                                cairo_region_t *region)
 {
+  if (cairo_region_equal (window->opaque_region, region))
+    return;
+
   g_clear_pointer (&window->opaque_region, cairo_region_destroy);
 
   if (region != NULL)
@@ -7820,6 +7823,9 @@ void
 meta_window_set_shape_region (MetaWindow     *window,
                               cairo_region_t *region)
 {
+  if (cairo_region_equal (window->shape_region, region))
+    return;
+
   g_clear_pointer (&window->shape_region, cairo_region_destroy);
 
   if (region != NULL)
@@ -7905,6 +7911,9 @@ void
 meta_window_set_input_region (MetaWindow     *window,
                               cairo_region_t *region)
 {
+  if (cairo_region_equal (window->input_region, region))
+    return;
+
   g_clear_pointer (&window->input_region, cairo_region_destroy);
 
   if (region != NULL)
