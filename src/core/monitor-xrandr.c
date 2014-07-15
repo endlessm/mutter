@@ -1161,9 +1161,10 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
               MetaMonitorMode *mode = output->crtc->current_mode;
               /* If this is the default config being set, and underscan isn't
                  on yet, check if it is a HD resolution. */
-              should_underscan = (mode->width == 1920 && mode->height == 1080) ||
-                                 (mode->width == 1440 && mode->height == 1080) ||
-                                 (mode->width == 1280 && mode->height == 720);
+              should_underscan = strncmp(output->name, "HDMI", 4) == 0 &&
+                                 ((mode->width == 1920 && mode->height == 1080) ||
+                                  (mode->width == 1440 && mode->height == 1080) ||
+                                  (mode->width == 1280 && mode->height == 720));
             }
         }
 
