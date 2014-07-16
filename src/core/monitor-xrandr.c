@@ -1158,6 +1158,7 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
             }
           else
             {
+#if 0
               MetaMonitorMode *mode = output->crtc->current_mode;
               /* If this is the default config being set, and underscan isn't
                  on yet, check if it is a HD resolution. */
@@ -1165,6 +1166,12 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
                                  ((mode->width == 1920 && mode->height == 1080) ||
                                   (mode->width == 1440 && mode->height == 1080) ||
                                   (mode->width == 1280 && mode->height == 720));
+#else
+              /* Automatic overscan compensation is currently disabled
+               * as we imagine that non-overscanning widescreen HDMI monitors are
+               * more common than overscanning TVs. */
+              should_underscan = FALSE;
+#endif
             }
         }
 
