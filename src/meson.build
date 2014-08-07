@@ -22,6 +22,7 @@ mutter_pkg_deps = [
 ]
 
 mutter_pkg_private_deps = [
+  eosmetrics_dep,
   gmodule_no_export_dep,
   gnome_desktop_dep,
   gnome_settings_daemon_dep,

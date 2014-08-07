@@ -21,9 +21,27 @@
 
 #include "config.h"
 
+#include <eosmetrics/eosmetrics.h>
+
 #include "backends/meta-gpu.h"
 
 #include "backends/meta-output.h"
+
+/*
+ * Recorded when a monitor is connected to a machine. The auxiliary payload
+ * is a 7-tuple composed of the monitor's name as a string, vendor as a string,
+ * product as a string, serial code as a string, width (mm) as an integer,
+ * height (mm) as an integer, and EDID as an array of unsigned bytes (or NULL if
+ * the EDID couldn't be obtained; a GVariant NULL array is treated as a
+ * semantically empty array of the given type.)
+ */
+#define MONITOR_CONNECTED "fa82f422-a685-46e4-91a7-7b7bfb5b289f"
+
+/*
+ * Recorded when a monitor is disconnected from a machine. The auxiliary
+ * payload is of the same format as for MONITOR_CONNECTED events.
+ */
+#define MONITOR_DISCONNECTED "5e8c3f40-22a2-4d5d-82f3-e3bf927b5b74"
 
 enum
 {
@@ -46,6 +64,106 @@ typedef struct _MetaGpuPrivate
 } MetaGpuPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (MetaGpu, meta_gpu, G_TYPE_OBJECT)
+
+
+static GVariant *
+get_output_auxiliary_payload (MetaGpu    *gpu,
+                              MetaOutput *output)
+{
+  MetaGpuPrivate *priv = meta_gpu_get_instance_private (gpu);
+  g_autoptr(GBytes) edid = NULL;
+  GVariant *edid_variant;
+  const guint8 *raw_edid = NULL;
+  gsize edid_length = 0;
+  MetaMonitorManagerClass *manager_class =
+    META_MONITOR_MANAGER_GET_CLASS (priv->monitor_manager);
+
+  edid = manager_class->read_edid (priv->monitor_manager, output);
+  if (edid != NULL)
+    raw_edid = g_bytes_get_data (edid, &edid_length);
+
+  edid_variant =
+    g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
+                               raw_edid,
+                               edid_length,
+                               sizeof (guint8));
+
+  return g_variant_new ("(ssssii@ay)", output->name, output->vendor,
+                        output->product, output->serial, output->width_mm,
+                        output->height_mm, edid_variant);
+}
+
+static void
+record_connect_events (MetaGpu *gpu,
+                       GList   *old_outputs)
+{
+  MetaGpuPrivate *priv = meta_gpu_get_instance_private (gpu);
+  GList *l;
+
+  for (l = priv->outputs; l != NULL; l = l->next)
+    {
+      MetaOutput *new_output = l->data;
+      GList *k;
+
+      for (k = old_outputs; k != NULL; k = k->next)
+        {
+          MetaOutput *old_output = k->data;
+          if (new_output->winsys_id == old_output->winsys_id)
+            break;
+        }
+
+      if (k == NULL)
+        {
+          /* Output is connected now but wasn't previously. */
+          GVariant *auxiliary_payload =
+            get_output_auxiliary_payload (gpu, new_output);
+
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_CONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+record_disconnect_events (MetaGpu *gpu,
+                          GList   *old_outputs)
+{
+  MetaGpuPrivate *priv = meta_gpu_get_instance_private (gpu);
+  GList *l;
+
+  for (l = old_outputs; l != NULL; l = l->next)
+    {
+      MetaOutput *old_output = l->data;
+      GList *k;
+
+      for (k = priv->outputs; k != NULL; k = k->next)
+        {
+          MetaOutput *new_output = k->data;
+          if (old_output->winsys_id == new_output->winsys_id)
+            break;
+        }
+
+      if (k == NULL)
+        {
+          /* Output was connected previously but isn't now. */
+          GVariant *auxiliary_payload =
+            get_output_auxiliary_payload (gpu, old_output);
+
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_DISCONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+record_connection_changes (MetaGpu *gpu,
+                           GList   *old_outputs)
+{
+  record_connect_events (gpu, old_outputs);
+  record_disconnect_events (gpu, old_outputs);
+}
 
 gboolean
 meta_gpu_has_hotplug_mode_update (MetaGpu *gpu)
@@ -80,6 +198,8 @@ meta_gpu_read_current (MetaGpu  *gpu,
   old_modes = priv->modes;
 
   ret = META_GPU_GET_CLASS (gpu)->read_current (gpu, error);
+
+  record_connection_changes (gpu, old_outputs);
 
   g_list_free_full (old_outputs, g_object_unref);
   g_list_free_full (old_modes, g_object_unref);

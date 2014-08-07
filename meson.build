@@ -120,6 +120,7 @@ xinerama_dep = dependency('xinerama')
 ice_dep = dependency('ice')
 atk_dep = dependency('atk', version: atk_req)
 libcanberra_dep = dependency('libcanberra', version: libcanberra_req)
+eosmetrics_dep = dependency('eosmetrics-0')
 
 # For now always require X11 support
 have_x11 = true
