@@ -86,6 +86,7 @@ MUTTER_PC_MODULES="
    x11-xcb
    xcb-randr
    xcb-res
+   eosmetrics-0
 "
 
 GLIB_GSETTINGS
