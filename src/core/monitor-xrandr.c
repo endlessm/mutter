@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <clutter/clutter.h>
+#include <eosmetrics/eosmetrics.h>
 
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrandr.h>
@@ -48,6 +49,21 @@
  * http://git.gnome.org/browse/gnome-settings-daemon/tree/plugins/xsettings/gsd-xsettings-manager.c
  * for the reasoning */
 #define DPI_FALLBACK 96.0
+
+/*
+ * Recorded when a monitor is connected to a machine. The auxiliary payload
+ * is a 7-tuple composed of the monitor's name as a string, vendor as a string,
+ * product as a string, serial code as a string, width (mm) as an integer,
+ * height (mm) as an integer, and EDID as an array of unsigned bytes (or NULL if
+ * the EDID couldn't be obtained).
+ */
+#define MONITOR_CONNECTED "566adb36-7701-4067-a971-a398312c2874"
+
+/*
+ * Recorded when a monitor is disconnected from a machine. The auxiliary
+ * payload is of the same format as for MONITOR_CONNECTED events.
+ */
+#define MONITOR_DISCONNECTED "ce179909-dacb-4b7e-83a5-690480bf21eb"
 
 struct _MetaMonitorManagerXrandr
 {
@@ -1281,6 +1297,114 @@ meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager,
   meta_monitor_manager_rebuild_derived (manager);
 }
 
+static GVariant *
+meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
+                                                   MetaOutput         *output)
+{
+  GBytes *edid;
+  GVariant *edid_variant;
+  const guint8 *raw_edid;
+  gsize edid_length;
+
+  edid = meta_monitor_manager_xrandr_read_edid (manager, output);
+  if (edid == NULL)
+    {
+      edid_variant = NULL;
+    }
+  else
+    {
+      raw_edid = g_bytes_get_data (edid, &edid_length);
+
+      edid_variant =
+        g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, raw_edid, edid_length,
+                                   sizeof (guint8));
+      g_bytes_unref (edid);
+    }
+
+  return g_variant_new ("(ssssiim@ay)", output->name, output->vendor,
+                        output->product, output->serial, output->width_mm,
+                        output->height_mm, edid_variant);
+}
+
+static void
+meta_monitor_manager_xrandr_record_connect_events (MetaMonitorManager *manager,
+                                                   MetaOutput         *old_outputs,
+                                                   gsize               n_old_outputs)
+{
+  gsize new_output_index;
+  for (new_output_index = 0; new_output_index < manager->n_outputs;
+       new_output_index++)
+    {
+      MetaOutput *new_output = manager->outputs + new_output_index;
+      gsize old_output_index;
+
+      for (old_output_index = 0; old_output_index < n_old_outputs;
+           old_output_index++)
+        {
+          MetaOutput *old_output = old_outputs + old_output_index;
+          if (new_output->output_id == old_output->output_id)
+            break;
+        }
+
+      if (old_output_index == n_old_outputs)
+        {
+          // Output is connected now but wasn't previously.
+
+          GVariant *auxiliary_payload =
+            meta_monitor_manager_get_output_auxiliary_payload (manager,
+                                                               new_output);
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_CONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+meta_monitor_manager_xrandr_record_disconnect_events (MetaMonitorManager *manager,
+                                                      MetaOutput         *old_outputs,
+                                                      gsize               n_old_outputs)
+{
+  gsize old_output_index;
+  for (old_output_index = 0; old_output_index < n_old_outputs;
+       old_output_index++)
+    {
+      MetaOutput *old_output = old_outputs + old_output_index;
+      gsize new_output_index;
+
+      for (new_output_index = 0; new_output_index < manager->n_outputs;
+           new_output_index++)
+        {
+          MetaOutput *new_output = manager->outputs + new_output_index;
+          if (old_output->output_id == new_output->output_id)
+            break;
+        }
+
+      if (new_output_index == manager->n_outputs)
+        {
+          // Output was connected previously but isn't now.
+
+          GVariant *auxiliary_payload =
+            meta_monitor_manager_get_output_auxiliary_payload (manager,
+                                                               old_output);
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_DISCONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+meta_monitor_manager_xrandr_record_connection_changes (MetaMonitorManager *manager,
+                                                       MetaOutput         *old_outputs,
+                                                       gsize               n_old_outputs)
+{
+  meta_monitor_manager_xrandr_record_connect_events (manager, old_outputs,
+                                                     n_old_outputs);
+  meta_monitor_manager_xrandr_record_disconnect_events (manager, old_outputs,
+                                                        n_old_outputs);
+}
+
 static gboolean
 meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 					   XEvent             *event)
@@ -1440,6 +1564,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
         meta_monitor_config_make_default (manager->config, manager);
     }
 
+  meta_monitor_manager_xrandr_record_connection_changes (manager,
+                                                         old_outputs,
+                                                         n_old_outputs);
   meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
   meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
   g_free (old_crtcs);
