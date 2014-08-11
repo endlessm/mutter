@@ -78,6 +78,7 @@ MUTTER_PC_MODULES="
    cogl-1.0 >= 1.15.6
    upower-glib > 0.9.11
    gnome-desktop-3.0
+   eosmetrics-0
 "
 
 GLIB_GSETTINGS
