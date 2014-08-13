@@ -416,6 +416,8 @@ meta_init (void)
   if (g_getenv ("MUTTER_DEBUG"))
     meta_set_debugging (TRUE);
 
+  clutter_set_windowing_backend (CLUTTER_WINDOWING_X11);
+
   if (g_get_home_dir ())
     if (chdir (g_get_home_dir ()) < 0)
       meta_warning ("Could not change to home directory %s.\n",
