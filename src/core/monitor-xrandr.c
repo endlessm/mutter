@@ -1538,9 +1538,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
       XSync (manager_xrandr->xdisplay, False);
       manager->screen_width = screen_width;
       manager->screen_height = screen_height;
-
-      meta_display_ungrab (meta_get_display ());
     }
+
+  meta_display_ungrab (meta_get_display ());
 
   new_config = manager_xrandr->resources->timestamp >=
     manager_xrandr->resources->configTimestamp;
