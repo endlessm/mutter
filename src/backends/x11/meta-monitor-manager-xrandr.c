@@ -1450,6 +1450,8 @@ check_underscanning_mode_change (MetaMonitorManagerXrandr *manager_xrandr)
 
   if (screen_width > 0 && screen_height > 0)
     {
+      int width_mm, height_mm;
+
       width_mm = (screen_width / DPI_FALLBACK) * 25.4 + 0.5;
       height_mm = (screen_height / DPI_FALLBACK) * 25.4 + 0.5;
 
