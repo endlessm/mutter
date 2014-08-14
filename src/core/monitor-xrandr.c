@@ -1413,7 +1413,6 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   gboolean new_config;
   unsigned i, j;
   gboolean needs_update = FALSE;
-  int width_mm, height_mm;
   int screen_width = 0;
   int screen_height = 0;
 
@@ -1522,6 +1521,8 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 
   if (screen_width > 0 && screen_height > 0)
     {
+      int width_mm, height_mm;
+
       width_mm = (screen_width / DPI_FALLBACK) * 25.4 + 0.5;
       height_mm = (screen_height / DPI_FALLBACK) * 25.4 + 0.5;
 
