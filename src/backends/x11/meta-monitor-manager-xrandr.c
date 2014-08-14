@@ -1465,9 +1465,9 @@ check_underscanning_mode_change (MetaMonitorManagerXrandr *manager_xrandr)
       XSync (manager_xrandr->xdisplay, False);
       manager->screen_width = screen_width;
       manager->screen_height = screen_height;
-
-      XUngrabServer (manager_xrandr->xdisplay);
     }
+
+  XUngrabServer (manager_xrandr->xdisplay);
 }
 
 gboolean
