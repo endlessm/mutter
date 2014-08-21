@@ -81,6 +81,7 @@ static GDesktopFocusMode focus_mode = G_DESKTOP_FOCUS_MODE_CLICK;
 static GDesktopFocusNewWindows focus_new_windows = G_DESKTOP_FOCUS_NEW_WINDOWS_SMART;
 static gboolean raise_on_click = TRUE;
 static gboolean center_new_windows = FALSE;
+static int display_configuration_timeout = 20;
 static gboolean attach_modal_dialogs = FALSE;
 static int num_workspaces = 4;
 static GDesktopTitlebarAction action_double_click_titlebar = G_DESKTOP_TITLEBAR_ACTION_TOGGLE_MAXIMIZE;
@@ -492,6 +493,13 @@ static MetaIntPreference preferences_int[] =
         META_PREF_DRAG_THRESHOLD,
       },
       &drag_threshold
+    },
+    {
+      { "display-configuration-timeout",
+        SCHEMA_MUTTER,
+        META_PREF_DISPLAY_CONFIGURATION_TIMEOUT,
+      },
+      &display_configuration_timeout
     },
     { { NULL, 0, 0 }, NULL },
   };
@@ -1327,6 +1335,12 @@ meta_prefs_get_center_new_windows (void)
   return center_new_windows;
 }
 
+int
+meta_prefs_get_display_configuration_timeout (void)
+{
+  return display_configuration_timeout;
+}
+
 gboolean
 meta_prefs_get_attach_modal_dialogs (void)
 {
@@ -1764,6 +1778,9 @@ meta_preference_to_string (MetaPreference pref)
 
     case META_PREF_CENTER_NEW_WINDOWS:
       return "CENTER_NEW_WINDOWS";
+
+    case META_PREF_DISPLAY_CONFIGURATION_TIMEOUT:
+      return "DISPLAY_CONFIGURATION_TIMEOUT";
 
     case META_PREF_ATTACH_MODAL_DIALOGS:
       return "ATTACH_MODAL_DIALOGS";

@@ -102,6 +102,15 @@
       </description>
     </key>
 
+    <key name="display-configuration-timeout" type="i">
+      <default>20</default>
+      <summary>Display configuration timeout</summary>
+      <description>
+        The timeout, in seconds, before a display configuration is reverted to the
+        previous one, if the user hasn't confirmed it.
+      </description>
+    </key>
+
     <child name="keybindings" schema="org.gnome.mutter.keybindings"/>
 
   </schema>

@@ -1183,7 +1183,9 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
   meta_monitor_config_update_current (manager->config, manager);
   if (persistent)
     {
-      manager->persistent_timeout_id = g_timeout_add_seconds (20, save_config_timeout, manager);
+      manager->persistent_timeout_id =
+        g_timeout_add_seconds (meta_prefs_get_display_configuration_timeout (),
+                               save_config_timeout, manager);
       g_source_set_name_by_id (manager->persistent_timeout_id, "[mutter] save_config_timeout");
       g_signal_emit (manager, signals[CONFIRM_DISPLAY_CHANGE], 0);
     }
