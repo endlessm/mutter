@@ -36,4 +36,6 @@ gint meta_monitor_manager_get_monitor_for_output (MetaMonitorManager *manager,
 
 gboolean meta_monitor_manager_get_is_builtin_display_on (MetaMonitorManager *manager);
 
+gint meta_monitor_manager_get_display_configuration_timeout (void);
+
 #endif /* META_MONITOR_MANAGER_H */

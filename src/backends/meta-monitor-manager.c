@@ -43,6 +43,8 @@
 #include "backends/x11/meta-monitor-manager-xrandr.h"
 #include "meta-backend-private.h"
 
+#define DEFAULT_DISPLAY_CONFIGURATION_TIMEOUT 20
+
 enum {
   CONFIRM_DISPLAY_CHANGE,
   LID_IS_CLOSED_CHANGED,
@@ -894,6 +896,12 @@ legacy_restore_previous_config (MetaMonitorManager *manager)
   meta_monitor_config_restore_previous (manager->legacy_config, manager);
 }
 
+gint
+meta_monitor_manager_get_display_configuration_timeout (void)
+{
+  return DEFAULT_DISPLAY_CONFIGURATION_TIMEOUT;
+}
+
 static gboolean
 save_config_timeout (gpointer user_data)
 {
@@ -1142,7 +1150,9 @@ meta_monitor_manager_legacy_handle_apply_configuration  (MetaDBusDisplayConfig *
   meta_monitor_config_update_current (manager->legacy_config, manager);
   if (persistent)
     {
-      manager->persistent_timeout_id = g_timeout_add_seconds (20, save_config_timeout, manager);
+      manager->persistent_timeout_id = g_timeout_add_seconds (meta_monitor_manager_get_display_configuration_timeout (),
+                                                              save_config_timeout,
+                                                              manager);
       g_source_set_name_by_id (manager->persistent_timeout_id, "[mutter] save_config_timeout");
       g_signal_emit (manager, signals[CONFIRM_DISPLAY_CHANGE], 0);
     }
