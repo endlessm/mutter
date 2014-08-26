@@ -39,6 +39,7 @@
 #include <config.h>
 #include "theme-private.h"
 #include "frames.h" /* for META_TYPE_FRAMES */
+#include "ui.h"
 #include <meta/util.h>
 #include <meta/gradient.h>
 #include <meta/prefs.h>
@@ -3981,6 +3982,9 @@ meta_draw_op_draw_with_env (const MetaDrawOp    *op,
 
           rx = parse_x_position_unchecked (op->data.title.x, env);
           ry = parse_y_position_unchecked (op->data.title.y, env);
+
+          if (meta_ui_get_direction () == META_UI_DIRECTION_RTL)
+            rx = rect.x + rect.width - (rx - rect.x) - env->title_width;
 
           if (op->data.title.ellipsize_width)
             {

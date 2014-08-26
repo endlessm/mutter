@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <clutter/clutter.h>
+#include <eosmetrics/eosmetrics.h>
 
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrandr.h>
@@ -48,6 +49,21 @@
  * http://git.gnome.org/browse/gnome-settings-daemon/tree/plugins/xsettings/gsd-xsettings-manager.c
  * for the reasoning */
 #define DPI_FALLBACK 96.0
+
+/*
+ * Recorded when a monitor is connected to a machine. The auxiliary payload
+ * is a 7-tuple composed of the monitor's name as a string, vendor as a string,
+ * product as a string, serial code as a string, width (mm) as an integer,
+ * height (mm) as an integer, and EDID as an array of unsigned bytes (or NULL if
+ * the EDID couldn't be obtained).
+ */
+#define MONITOR_CONNECTED "566adb36-7701-4067-a971-a398312c2874"
+
+/*
+ * Recorded when a monitor is disconnected from a machine. The auxiliary
+ * payload is of the same format as for MONITOR_CONNECTED events.
+ */
+#define MONITOR_DISCONNECTED "ce179909-dacb-4b7e-83a5-690480bf21eb"
 
 struct _MetaMonitorManagerXrandr
 {
@@ -1277,6 +1293,114 @@ meta_monitor_manager_xrandr_rebuild_derived (MetaMonitorManager *manager)
   meta_monitor_manager_rebuild_derived (manager);
 }
 
+static GVariant *
+meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
+                                                   MetaOutput         *output)
+{
+  GBytes *edid;
+  GVariant *edid_variant;
+  const guint8 *raw_edid;
+  gsize edid_length;
+
+  edid = meta_monitor_manager_xrandr_read_edid (manager, output);
+  if (edid == NULL)
+    {
+      edid_variant = NULL;
+    }
+  else
+    {
+      raw_edid = g_bytes_get_data (edid, &edid_length);
+
+      edid_variant =
+        g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE, raw_edid, edid_length,
+                                   sizeof (guint8));
+      g_bytes_unref (edid);
+    }
+
+  return g_variant_new ("(ssssiim@ay)", output->name, output->vendor,
+                        output->product, output->serial, output->width_mm,
+                        output->height_mm, edid_variant);
+}
+
+static void
+meta_monitor_manager_xrandr_record_connect_events (MetaMonitorManager *manager,
+                                                   MetaOutput         *old_outputs,
+                                                   gsize               n_old_outputs)
+{
+  gsize new_output_index;
+  for (new_output_index = 0; new_output_index < manager->n_outputs;
+       new_output_index++)
+    {
+      MetaOutput *new_output = manager->outputs + new_output_index;
+      gsize old_output_index;
+
+      for (old_output_index = 0; old_output_index < n_old_outputs;
+           old_output_index++)
+        {
+          MetaOutput *old_output = old_outputs + old_output_index;
+          if (new_output->output_id == old_output->output_id)
+            break;
+        }
+
+      if (old_output_index == n_old_outputs)
+        {
+          // Output is connected now but wasn't previously.
+
+          GVariant *auxiliary_payload =
+            meta_monitor_manager_get_output_auxiliary_payload (manager,
+                                                               new_output);
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_CONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+meta_monitor_manager_xrandr_record_disconnect_events (MetaMonitorManager *manager,
+                                                      MetaOutput         *old_outputs,
+                                                      gsize               n_old_outputs)
+{
+  gsize old_output_index;
+  for (old_output_index = 0; old_output_index < n_old_outputs;
+       old_output_index++)
+    {
+      MetaOutput *old_output = old_outputs + old_output_index;
+      gsize new_output_index;
+
+      for (new_output_index = 0; new_output_index < manager->n_outputs;
+           new_output_index++)
+        {
+          MetaOutput *new_output = manager->outputs + new_output_index;
+          if (old_output->output_id == new_output->output_id)
+            break;
+        }
+
+      if (new_output_index == manager->n_outputs)
+        {
+          // Output was connected previously but isn't now.
+
+          GVariant *auxiliary_payload =
+            meta_monitor_manager_get_output_auxiliary_payload (manager,
+                                                               old_output);
+          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                            MONITOR_DISCONNECTED,
+                                            auxiliary_payload);
+        }
+    }
+}
+
+static void
+meta_monitor_manager_xrandr_record_connection_changes (MetaMonitorManager *manager,
+                                                       MetaOutput         *old_outputs,
+                                                       gsize               n_old_outputs)
+{
+  meta_monitor_manager_xrandr_record_connect_events (manager, old_outputs,
+                                                     n_old_outputs);
+  meta_monitor_manager_xrandr_record_disconnect_events (manager, old_outputs,
+                                                        n_old_outputs);
+}
+
 static gboolean
 meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 					   XEvent             *event)
@@ -1289,6 +1413,8 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   gboolean new_config;
   unsigned i, j;
   gboolean needs_update = FALSE;
+  int screen_width = 0;
+  int screen_height = 0;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
     return FALSE;
@@ -1304,6 +1430,8 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 
   manager->serial++;
   meta_monitor_manager_xrandr_read_current (manager);
+
+  meta_display_grab (meta_get_display ());
 
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
@@ -1337,10 +1465,7 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
               (current_width != mode->width ||
                current_height != mode->height))
             {
-              int width_mm, height_mm;
               Status ok;
-
-              meta_display_grab (meta_get_display ());
 
               XRRSetCrtcConfig (manager_xrandr->xdisplay,
                                 manager_xrandr->resources,
@@ -1353,22 +1478,6 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 
               output->crtc->current_mode = mode;
 
-              width_mm = (mode->width / DPI_FALLBACK) * 25.4 + 0.5;
-              height_mm = (mode->height / DPI_FALLBACK) * 25.4 + 0.5;
-
-              meta_error_trap_push (meta_get_display ());
-              XRRSetScreenSize (manager_xrandr->xdisplay,
-                                DefaultRootWindow (manager_xrandr->xdisplay),
-                                mode->width, mode->height,
-                                width_mm, height_mm);
-              meta_error_trap_pop (meta_get_display ());
-
-              // The screen size will be updated on the next RRScreenChangeNotify,
-              // but we need the UI to update ASAP.
-              XSync (manager_xrandr->xdisplay, False);
-              manager->screen_width = mode->width;
-              manager->screen_height = mode->height;
-
               meta_error_trap_push (meta_get_display ());
               /* TODO: Send the list of output IDs for this CRTC */
               ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
@@ -1380,8 +1489,6 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
                                      wl_transform_to_xrandr (output->crtc->transform),
                                      (RROutput *)&output->output_id, 1);
               meta_error_trap_pop (meta_get_display ());
-
-              meta_display_ungrab (meta_get_display ());
 
               if (ok != Success)
                 {
@@ -1399,7 +1506,41 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
               break;
             }
         }
+
+      if (meta_monitor_transform_is_rotated (output->crtc->transform))
+        {
+          screen_width = MAX (screen_width, output->crtc->rect.x + output->crtc->rect.height);
+          screen_height = MAX (screen_height, output->crtc->rect.y + output->crtc->rect.width);
+        }
+      else
+        {
+          screen_width = MAX (screen_width, output->crtc->rect.x + output->crtc->rect.width);
+          screen_height = MAX (screen_height, output->crtc->rect.y + output->crtc->rect.height);
+        }
     }
+
+  if (screen_width > 0 && screen_height > 0)
+    {
+      int width_mm, height_mm;
+
+      width_mm = (screen_width / DPI_FALLBACK) * 25.4 + 0.5;
+      height_mm = (screen_height / DPI_FALLBACK) * 25.4 + 0.5;
+
+      meta_error_trap_push (meta_get_display ());
+      XRRSetScreenSize (manager_xrandr->xdisplay,
+                      DefaultRootWindow (manager_xrandr->xdisplay),
+                      screen_width, screen_height,
+                      width_mm, height_mm);
+      meta_error_trap_pop (meta_get_display ());
+
+      // The screen size will be updated on the next RRScreenChangeNotify,
+      // but we need the UI to update ASAP.
+      XSync (manager_xrandr->xdisplay, False);
+      manager->screen_width = screen_width;
+      manager->screen_height = screen_height;
+    }
+
+  meta_display_ungrab (meta_get_display ());
 
   new_config = manager_xrandr->resources->timestamp >=
     manager_xrandr->resources->configTimestamp;
@@ -1436,6 +1577,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
         meta_monitor_config_make_default (manager->config, manager);
     }
 
+  meta_monitor_manager_xrandr_record_connection_changes (manager,
+                                                         old_outputs,
+                                                         n_old_outputs);
   meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
   meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
   g_free (old_crtcs);
