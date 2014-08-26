@@ -564,21 +564,13 @@ place_window_if_needed(MetaWindow     *window,
           window->maximize_vertically_after_placement   ||
           window->fullscreen_after_placement)
         {
-          /* define a sane saved_rect so that the user can unmaximize or
-           * make unfullscreen to something reasonable.
-           */
-          if (info->current.width >= info->work_area_monitor.width)
-            {
-              info->current.width = .75 * info->work_area_monitor.width;
-              info->current.x = info->work_area_monitor.x +
-                       .125 * info->work_area_monitor.width;
-            }
-          if (info->current.height >= info->work_area_monitor.height)
-            {
-              info->current.height = .75 * info->work_area_monitor.height;
-              info->current.y = info->work_area_monitor.y +
-                       .083 * info->work_area_monitor.height;
-            }
+          /* Force the unmaximized size for apps that start up maximized
+           * to be 75% of the workarea. */
+          info->current.width = .75 * info->work_area_monitor.width;
+          info->current.x = (info->work_area_monitor.x + (info->current.width - info->work_area_monitor.width) / 2);
+
+          info->current.height = .75 * info->work_area_monitor.height;
+          info->current.y = (info->work_area_monitor.y + (info->current.height - info->work_area_monitor.height) / 2);
 
           /* idle_move_resize() uses the user_rect, so make sure it uses the
            * placed coordinates (bug #556696).
