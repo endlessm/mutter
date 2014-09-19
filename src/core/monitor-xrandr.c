@@ -1612,10 +1612,10 @@ static void
 output_property_notify (MetaMonitorManager *manager,
                         XEvent             *event)
 {
-  MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
   XRROutputPropertyNotifyEvent *notify_event = (XRROutputPropertyNotifyEvent *) event;
+  MetaDisplay *display = meta_get_display ();
 
-  MetaOutput *output = find_output_by_rr_output (notify_event->output);
+  MetaOutput *output = find_output_by_rr_output (manager, notify_event->output);
 
   if (output == NULL)
     return;
