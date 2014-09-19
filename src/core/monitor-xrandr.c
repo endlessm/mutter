@@ -1401,23 +1401,16 @@ meta_monitor_manager_xrandr_record_connection_changes (MetaMonitorManager *manag
                                                         n_old_outputs);
 }
 
-static gboolean
-meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
-					   XEvent             *event)
+static void
+screen_change_notify (MetaMonitorManager *manager,
+                      XEvent             *event)
 {
   MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
   MetaOutput *old_outputs;
   MetaCRTC *old_crtcs;
   MetaMonitorMode *old_modes;
-  int n_old_outputs, n_old_modes;
+  unsigned int n_old_outputs, n_old_modes;
   gboolean new_config;
-  unsigned i, j;
-  gboolean needs_update = FALSE;
-  int screen_width = 0;
-  int screen_height = 0;
-
-  if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
-    return FALSE;
 
   XRRUpdateConfiguration (event);
 
@@ -1431,7 +1424,136 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   manager->serial++;
   meta_monitor_manager_xrandr_read_current (manager);
 
+  new_config = manager_xrandr->resources->timestamp >= manager_xrandr->resources->configTimestamp;
+  if (meta_monitor_manager_has_hotplug_mode_update (manager))
+    {
+      /* Check if the current intended configuration is a result of an
+         XRandR call.  Otherwise, hotplug_mode_update tells us to get
+         a new preferred mode on hotplug events to handle dynamic
+         guest resizing. */
+      if (new_config)
+        meta_monitor_manager_xrandr_rebuild_derived (manager);
+      else
+        meta_monitor_config_make_default (manager->config, manager);
+    }
+  else
+    {
+      /* Check if the current intended configuration has the same outputs
+         as the new real one, or if the event is a result of an XRandR call.
+         If so, we can go straight to rebuild the logical config and tell
+         the outside world.
+         Otherwise, this event was caused by hotplug, so give a chance to
+         MetaMonitorConfig.
+
+         Note that we need to check both the timestamps and the list of
+         outputs, because the X server might emit spurious events with new
+         configTimestamps (bug 702804), and the driver may have changed
+         the EDID for some other reason (old qxl and vbox drivers). */
+      if (new_config || meta_monitor_config_match_current (manager->config, manager))
+        meta_monitor_manager_xrandr_rebuild_derived (manager);
+      else if (!meta_monitor_config_apply_stored (manager->config, manager))
+        meta_monitor_config_make_default (manager->config, manager);
+    }
+
+  meta_monitor_manager_xrandr_record_connection_changes (manager,
+                                                         old_outputs,
+                                                         n_old_outputs);
+  meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
+  meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
+  g_free (old_crtcs);
+}
+
+static MetaOutput *
+find_output_by_rr_output (MetaMonitorManager *manager, RROutput output_id)
+{
+  for (i = 0; i < (unsigned)manager->n_outputs; i++)
+    {
+      MetaOutput *output = &manager->outputs[i];
+      if (output->output_id == output_id)
+        return output;
+    }
+
+  return NULL;
+}
+
+static void
+update_modes_for_overscan (MetaMonitorManager *manager,
+                           MetaOutput         *target_output)
+{
+  MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
+  unsigned i, j;
+  gboolean needs_update = FALSE;
+  int screen_width = 0;
+  int screen_height = 0;
+
   meta_display_grab (meta_get_display ());
+
+  {
+    int current_width, current_height;
+    int target_width, target_height;
+
+    if (target_output->is_underscanning)
+      {
+        target_width = current_width - output->underscan_hborder * 2;
+        target_height = current_height - output->underscan_vborder * 2;
+      }
+    else
+      {
+        target_width = current_width + output->underscan_hborder * 2;
+        target_height = current_height + output->underscan_vborder * 2;
+      }
+
+    for (j = 0; j < (unsigned)manager->n_modes; j++)
+      {
+        MetaMonitorMode *mode = &manager->modes[j];
+
+        if (target_width == mode->width &&
+            target_height == mode->height &&
+            (current_width != mode->width ||
+             current_height != mode->height))
+          {
+            Status ok;
+
+            XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                              manager_xrandr->resources,
+                              (XID)output->crtc->crtc_id,
+                              manager_xrandr->time,
+                              0, 0,
+                              None,
+                              RR_Rotate_0,
+                              NULL, 0);
+
+            output->crtc->current_mode = mode;
+
+            meta_error_trap_push (meta_get_display ());
+            /* TODO: Send the list of output IDs for this CRTC */
+            ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
+                                   manager_xrandr->resources,
+                                   (XID)output->crtc->crtc_id,
+                                   manager_xrandr->time,
+                                   output->crtc->rect.x, output->crtc->rect.y,
+                                   (XID)mode->mode_id,
+                                   wl_transform_to_xrandr (output->crtc->transform),
+                                   (RROutput *)&output->output_id, 1);
+            meta_error_trap_pop (meta_get_display ());
+
+            if (ok != Success)
+              {
+                meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
+
+                break;
+              }
+
+            output->crtc->rect.width = mode->width;
+            output->crtc->rect.height = mode->height;
+            output->crtc->current_mode = mode;
+
+            needs_update = TRUE;
+
+            break;
+          }
+      }
+  }
 
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
@@ -1445,68 +1567,6 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
       current_width = output->crtc->current_mode->width;
       current_height = output->crtc->current_mode->height;
 
-      if (output->is_underscanning)
-        {
-          target_width = current_width - output->underscan_hborder * 2;
-          target_height = current_height - output->underscan_vborder * 2;
-        }
-      else
-        {
-          target_width = current_width + output->underscan_hborder * 2;
-          target_height = current_height + output->underscan_vborder * 2;
-        }
-
-      for (j = 0; j < (unsigned)manager->n_modes; j++)
-        {
-          MetaMonitorMode *mode = &manager->modes[j];
-
-          if (target_width == mode->width &&
-              target_height == mode->height &&
-              (current_width != mode->width ||
-               current_height != mode->height))
-            {
-              Status ok;
-
-              XRRSetCrtcConfig (manager_xrandr->xdisplay,
-                                manager_xrandr->resources,
-                                (XID)output->crtc->crtc_id,
-                                manager_xrandr->time,
-                                0, 0,
-                                None,
-                                RR_Rotate_0,
-                                NULL, 0);
-
-              output->crtc->current_mode = mode;
-
-              meta_error_trap_push (meta_get_display ());
-              /* TODO: Send the list of output IDs for this CRTC */
-              ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
-                                     manager_xrandr->resources,
-                                     (XID)output->crtc->crtc_id,
-                                     manager_xrandr->time,
-                                     output->crtc->rect.x, output->crtc->rect.y,
-                                     (XID)mode->mode_id,
-                                     wl_transform_to_xrandr (output->crtc->transform),
-                                     (RROutput *)&output->output_id, 1);
-              meta_error_trap_pop (meta_get_display ());
-
-              if (ok != Success)
-                {
-                  meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
-
-                  break;
-                }
-
-              output->crtc->rect.width = mode->width;
-              output->crtc->rect.height = mode->height;
-              output->crtc->current_mode = mode;
-
-              needs_update = TRUE;
-
-              break;
-            }
-        }
-
       if (meta_monitor_transform_is_rotated (output->crtc->transform))
         {
           screen_width = MAX (screen_width, output->crtc->rect.x + output->crtc->rect.height);
@@ -1519,7 +1579,9 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
         }
     }
 
-  if (screen_width > 0 && screen_height > 0)
+  if (screen_width > 0 && screen_height > 0 &&
+      manager->screen_width != screen_width &&
+      manager->screen_height != screen_height)
     {
       int width_mm, height_mm;
 
@@ -1540,51 +1602,45 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
       manager->screen_height = screen_height;
     }
 
+  if (needs_update)
+    meta_monitor_manager_rebuild_derived (manager);
+  
   meta_display_ungrab (meta_get_display ());
+}
 
-  new_config = manager_xrandr->resources->timestamp >=
-    manager_xrandr->resources->configTimestamp;
-  if (meta_monitor_manager_has_hotplug_mode_update (manager))
+static void
+output_property_notify (MetaMonitorManager *manager,
+                        XEvent             *event)
+{
+  MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
+  XRROutputPropertyNotifyEvent *notify_event = (XRROutputPropertyNotifyEvent *) event;
 
+  MetaOutput *output = find_output_by_rr_output (notify_event->output);
+
+  if (output == NULL)
+    return;
+
+  if (notify_event->property == display->atom_underscan)
+    update_modes_for_overscan (manager, output);
+}
+
+static gboolean
+meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
+					   XEvent             *event)
+{
+  MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
+
+  switch (event->type - manager_xrandr->rr_event_base)
     {
-      /* Check if the current intended configuration is a result of an
-         XRandR call.  Otherwise, hotplug_mode_update tells us to get
-         a new preferred mode on hotplug events to handle dynamic
-         guest resizing. */
-      if (new_config || needs_update)
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
-      else
-        meta_monitor_config_make_default (manager->config, manager);
-    }
-  else
-    {
-      /* Check if the current intended configuration has the same outputs
-         as the new real one, or if the event is a result of an XRandR call.
-         If so, we can go straight to rebuild the logical config and tell
-         the outside world.
-         Otherwise, this event was caused by hotplug, so give a chance to
-         MetaMonitorConfig.
-
-         Note that we need to check both the timestamps and the list of
-         outputs, because the X server might emit spurious events with new
-         configTimestamps (bug 702804), and the driver may have changed
-         the EDID for some other reason (old qxl and vbox drivers). */
-      if (new_config ||
-          meta_monitor_config_match_current (manager->config, manager) ||
-          needs_update)
-        meta_monitor_manager_xrandr_rebuild_derived (manager);
-      else if (!meta_monitor_config_apply_stored (manager->config, manager))
-        meta_monitor_config_make_default (manager->config, manager);
+    case RRScreenChangeNotify:
+      screen_change_notify (manager, event);
+      return TRUE;
+    case RROutputPropertyNotify:
+      output_property_notify (manager, event);
+      return TRUE;
     }
 
-  meta_monitor_manager_xrandr_record_connection_changes (manager,
-                                                         old_outputs,
-                                                         n_old_outputs);
-  meta_monitor_manager_free_output_array (old_outputs, n_old_outputs);
-  meta_monitor_manager_free_mode_array (old_modes, n_old_modes);
-  g_free (old_crtcs);
-
-  return TRUE;
+  return FALSE;
 }
 
 static void
