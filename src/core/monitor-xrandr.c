@@ -1466,10 +1466,12 @@ screen_change_notify (MetaMonitorManager *manager,
 static MetaOutput *
 find_output_by_rr_output (MetaMonitorManager *manager, RROutput output_id)
 {
+  unsigned i;
+
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
       MetaOutput *output = &manager->outputs[i];
-      if (output->output_id == output_id)
+      if ((RROutput)output->output_id == output_id)
         return output;
     }
 
