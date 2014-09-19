@@ -1494,15 +1494,18 @@ update_modes_for_overscan (MetaMonitorManager *manager,
     int current_width, current_height;
     int target_width, target_height;
 
+    current_width = target_output->crtc->current_mode->width;
+    current_height = target_output->crtc->current_mode->height;
+
     if (target_output->is_underscanning)
       {
-        target_width = current_width - output->underscan_hborder * 2;
-        target_height = current_height - output->underscan_vborder * 2;
+        target_width = current_width - target_output->underscan_hborder * 2;
+        target_height = current_height - target_output->underscan_vborder * 2;
       }
     else
       {
-        target_width = current_width + output->underscan_hborder * 2;
-        target_height = current_height + output->underscan_vborder * 2;
+        target_width = current_width + target_output->underscan_hborder * 2;
+        target_height = current_height + target_output->underscan_vborder * 2;
       }
 
     for (j = 0; j < (unsigned)manager->n_modes; j++)
@@ -1518,25 +1521,25 @@ update_modes_for_overscan (MetaMonitorManager *manager,
 
             XRRSetCrtcConfig (manager_xrandr->xdisplay,
                               manager_xrandr->resources,
-                              (XID)output->crtc->crtc_id,
+                              (XID)target_output->crtc->crtc_id,
                               manager_xrandr->time,
                               0, 0,
                               None,
                               RR_Rotate_0,
                               NULL, 0);
 
-            output->crtc->current_mode = mode;
+            target_output->crtc->current_mode = mode;
 
             meta_error_trap_push (meta_get_display ());
             /* TODO: Send the list of output IDs for this CRTC */
             ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
                                    manager_xrandr->resources,
-                                   (XID)output->crtc->crtc_id,
+                                   (XID)target_output->crtc->crtc_id,
                                    manager_xrandr->time,
-                                   output->crtc->rect.x, output->crtc->rect.y,
+                                   target_output->crtc->rect.x, target_output->crtc->rect.y,
                                    (XID)mode->mode_id,
-                                   wl_transform_to_xrandr (output->crtc->transform),
-                                   (RROutput *)&output->output_id, 1);
+                                   wl_transform_to_xrandr (target_output->crtc->transform),
+                                   (RROutput *)&target_output->output_id, 1);
             meta_error_trap_pop (meta_get_display ());
 
             if (ok != Success)
@@ -1546,9 +1549,9 @@ update_modes_for_overscan (MetaMonitorManager *manager,
                 break;
               }
 
-            output->crtc->rect.width = mode->width;
-            output->crtc->rect.height = mode->height;
-            output->crtc->current_mode = mode;
+            target_output->crtc->rect.width = mode->width;
+            target_output->crtc->rect.height = mode->height;
+            target_output->crtc->current_mode = mode;
 
             needs_update = TRUE;
 
@@ -1560,14 +1563,9 @@ update_modes_for_overscan (MetaMonitorManager *manager,
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
       MetaOutput *output = &manager->outputs[i];
-      int current_width, current_height;
-      int target_width, target_height;
 
       if (!output->crtc)
         continue;
-
-      current_width = output->crtc->current_mode->width;
-      current_height = output->crtc->current_mode->height;
 
       if (meta_monitor_transform_is_rotated (output->crtc->transform))
         {
