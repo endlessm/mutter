@@ -1609,10 +1609,9 @@ update_modes_for_overscan (MetaMonitorManager *manager,
 }
 
 static void
-output_property_notify (MetaMonitorManager *manager,
-                        XEvent             *event)
+output_property_notify (MetaMonitorManager           *manager,
+                        XRROutputPropertyNotifyEvent *notify_event)
 {
-  XRROutputPropertyNotifyEvent *notify_event = (XRROutputPropertyNotifyEvent *) event;
   MetaDisplay *display = meta_get_display ();
 
   MetaOutput *output = find_output_by_rr_output (manager, notify_event->output);
@@ -1629,15 +1628,20 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 					   XEvent             *event)
 {
   MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (manager);
+  XRROutputPropertyNotifyEvent *notify_event = (XRROutputPropertyNotifyEvent *) event;
 
   switch (event->type - manager_xrandr->rr_event_base)
     {
     case RRScreenChangeNotify:
       screen_change_notify (manager, event);
       return TRUE;
-    case RROutputPropertyNotify:
-      output_property_notify (manager, event);
-      return TRUE;
+    case RRNotify:
+      if (notify_event->subtype == RRNotify_OutputProperty)
+        {
+          output_property_notify (manager, notify_event);
+          return TRUE;
+        }
+      break;
     }
 
   return FALSE;
