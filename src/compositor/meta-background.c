@@ -76,7 +76,7 @@ struct _MetaBackgroundPrivate
   ClutterColor              color;
   ClutterColor              second_color;
 
-  char  *filename;
+  GFile *file;
 
   float brightness;
   float vignette_sharpness;
@@ -481,7 +481,7 @@ meta_background_finalize (GObject *object)
   MetaBackground        *self = META_BACKGROUND (object);
   MetaBackgroundPrivate *priv = self->priv;
 
-  g_free (priv->filename);
+  g_clear_object (&priv->file);
 
   G_OBJECT_CLASS (meta_background_parent_class)->finalize (object);
 }
@@ -773,13 +773,14 @@ set_style (MetaBackground          *self,
 }
 
 static void
-set_filename (MetaBackground *self,
-              const char     *filename)
+set_file (MetaBackground *self,
+          GFile          *file)
 {
   MetaBackgroundPrivate *priv = self->priv;
 
-  g_free (priv->filename);
-  priv->filename = g_strdup (filename);
+  g_clear_object (&priv->file);
+  if (file != NULL)
+    priv->file = g_object_ref (file);
 }
 
 static Pixmap
@@ -966,18 +967,18 @@ meta_background_load_color (MetaBackground *self,
 typedef struct
 {
   GDesktopBackgroundStyle style;
-  char *filename;
+  GFile *file;
 } LoadFileTaskData;
 
 static LoadFileTaskData *
-load_file_task_data_new (const char              *filename,
+load_file_task_data_new (GFile                   *file,
                          GDesktopBackgroundStyle  style)
 {
   LoadFileTaskData *task_data;
 
   task_data = g_slice_new (LoadFileTaskData);
   task_data->style = style;
-  task_data->filename = g_strdup (filename);
+  task_data->file = g_object_ref (file);
 
   return task_data;
 }
@@ -985,7 +986,7 @@ load_file_task_data_new (const char              *filename,
 static void
 load_file_task_data_free (LoadFileTaskData *task_data)
 {
-  g_free (task_data->filename);
+  g_clear_object (&task_data->file);
   g_slice_free (LoadFileTaskData, task_data);
 }
 
@@ -996,10 +997,18 @@ load_file (GTask            *task,
            GCancellable     *cancellable)
 {
   GError *error = NULL;
+  GFileInputStream *stream;
   GdkPixbuf *pixbuf;
 
-  pixbuf = gdk_pixbuf_new_from_file (task_data->filename,
-                                     &error);
+  stream = g_file_read (task_data->file, NULL, &error);
+  if (stream == NULL)
+    {
+      g_task_return_error (task, error);
+      return;
+    }
+
+  pixbuf = gdk_pixbuf_new_from_stream (G_INPUT_STREAM (stream), NULL, &error);
+  g_object_unref (stream);
 
   if (pixbuf == NULL)
     {
@@ -1013,7 +1022,7 @@ load_file (GTask            *task,
 /**
  * meta_background_load_file_async:
  * @self: the #MetaBackground
- * @filename: the image file to load
+ * @file: the image file to load
  * @style: a #GDesktopBackgroundStyle to specify how background is laid out
  * @cancellable: a #GCancellable
  * @callback: call back to call when file is loaded or failed to load
@@ -1023,7 +1032,7 @@ load_file (GTask            *task,
  */
 void
 meta_background_load_file_async (MetaBackground          *self,
-                                 const char              *filename,
+                                 GFile                   *file,
                                  GDesktopBackgroundStyle  style,
                                  GCancellable            *cancellable,
                                  GAsyncReadyCallback      callback,
@@ -1034,7 +1043,7 @@ meta_background_load_file_async (MetaBackground          *self,
 
     task = g_task_new (self, cancellable, callback, user_data);
 
-    task_data = load_file_task_data_new (filename, style);
+    task_data = load_file_task_data_new (file, style);
     g_task_set_task_data (task, task_data, (GDestroyNotify) load_file_task_data_free);
 
     g_task_run_in_thread (task, (GTaskThreadFunc) load_file);
@@ -1105,7 +1114,7 @@ meta_background_load_file_finish (MetaBackground  *self,
   ensure_pipeline (self);
   unset_texture (self);
   set_style (self, task_data->style);
-  set_filename (self, task_data->filename);
+  set_file (self, task_data->file);
   set_texture (self, texture);
   set_has_alpha (self, has_alpha);
 
@@ -1147,7 +1156,7 @@ meta_background_copy (MetaBackground        *self,
   background->priv->shading_direction = self->priv->shading_direction;
   background->priv->color = self->priv->color;
   background->priv->second_color = self->priv->second_color;
-  background->priv->filename = g_strdup (self->priv->filename);
+  background->priv->file = self->priv->file ? g_object_ref (self->priv->file) : NULL;
   background->priv->has_alpha = self->priv->has_alpha;
 
   /* we can reuse the pipeline if it has no effects applied, or
@@ -1287,19 +1296,19 @@ meta_background_get_second_color (MetaBackground *self)
 }
 
 /**
- * meta_background_get_filename:
+ * meta_background_get_file:
  * @self: a #MetaBackground
  *
- * Returns the filename of the currently loaded file.
+ * Returns the #GFile of the currently loaded file.
  * IF @self is not loaded from a file this function is
  * undefined.
  *
- * Return value: (transfer none): the filename
+ * Return value: (transfer none): a #GFile
  */
-const char *
-meta_background_get_filename (MetaBackground *self)
+GFile *
+meta_background_get_file (MetaBackground *self)
 {
-    return self->priv->filename;
+    return self->priv->file;
 }
 
 /**
