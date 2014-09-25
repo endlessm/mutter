@@ -95,7 +95,7 @@ void meta_background_load_color (MetaBackground *self,
                                  ClutterColor   *color);
 void meta_background_load_still_frame (MetaBackground *self);
 void meta_background_load_file_async (MetaBackground          *self,
-                                      const char              *filename,
+                                      GFile                   *file,
                                       GDesktopBackgroundStyle  style,
                                       GCancellable            *cancellable,
                                       GAsyncReadyCallback      callback,
@@ -104,7 +104,7 @@ gboolean meta_background_load_file_finish (MetaBackground       *self,
                                            GAsyncResult         *result,
                                            GError              **error);
 
-const char *meta_background_get_filename (MetaBackground *self);
+GFile *meta_background_get_file (MetaBackground *self);
 GDesktopBackgroundStyle meta_background_get_style (MetaBackground *self);
 GDesktopBackgroundShading meta_background_get_shading (MetaBackground *self);
 const ClutterColor *meta_background_get_color (MetaBackground *self);
