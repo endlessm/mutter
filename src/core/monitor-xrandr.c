@@ -55,15 +55,16 @@
  * is a 7-tuple composed of the monitor's name as a string, vendor as a string,
  * product as a string, serial code as a string, width (mm) as an integer,
  * height (mm) as an integer, and EDID as an array of unsigned bytes (or NULL if
- * the EDID couldn't be obtained).
+ * the EDID couldn't be obtained; a GVariant NULL array is treated as a
+ * semantically empty array of the given type.)
  */
-#define MONITOR_CONNECTED "566adb36-7701-4067-a971-a398312c2874"
+#define MONITOR_CONNECTED "fa82f422-a685-46e4-91a7-7b7bfb5b289f"
 
 /*
  * Recorded when a monitor is disconnected from a machine. The auxiliary
  * payload is of the same format as for MONITOR_CONNECTED events.
  */
-#define MONITOR_DISCONNECTED "ce179909-dacb-4b7e-83a5-690480bf21eb"
+#define MONITOR_DISCONNECTED "5e8c3f40-22a2-4d5d-82f3-e3bf927b5b74"
 
 struct _MetaMonitorManagerXrandr
 {
@@ -1305,7 +1306,9 @@ meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
   edid = meta_monitor_manager_xrandr_read_edid (manager, output);
   if (edid == NULL)
     {
-      edid_variant = NULL;
+      edid_variant = g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
+                                                NULL /* elements */, 0,
+                                                sizeof (guint8));
     }
   else
     {
@@ -1317,7 +1320,7 @@ meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
       g_bytes_unref (edid);
     }
 
-  return g_variant_new ("(ssssiim@ay)", output->name, output->vendor,
+  return g_variant_new ("(ssssii@ay)", output->name, output->vendor,
                         output->product, output->serial, output->width_mm,
                         output->height_mm, edid_variant);
 }
