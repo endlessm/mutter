@@ -1482,6 +1482,24 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
               output->crtc->current_mode = mode;
 
               meta_error_trap_push (meta_get_display ());
+
+              // if we're increasing the size (eg when disabling the underscan)
+              // we must tell X to increas the CRTC size or it will reject our
+              // new CRTC configuration as invalid in ProcRRSetCrtcConfig:
+              if (mode->width > current_width || mode->height > current_height)
+                {
+                  int width_mm = (mode->width / DPI_FALLBACK) * 25.4 + 0.5;
+                  int height_mm = (mode->height / DPI_FALLBACK) * 25.4 + 0.5;
+
+                  XRRSetScreenSize (manager_xrandr->xdisplay,
+                                    DefaultRootWindow (manager_xrandr->xdisplay),
+                                    mode->width,
+                                    mode->height,
+                                    width_mm, height_mm);
+                  meta_warning ("increase CRTC size for transition { %d x %d } -> { %d x %d }\n",
+                                current_width, current_height, mode->width, mode->height);
+                }
+
               /* TODO: Send the list of output IDs for this CRTC */
               ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
                                      manager_xrandr->resources,
