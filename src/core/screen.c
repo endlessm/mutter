@@ -1821,6 +1821,9 @@ meta_screen_get_monitor_for_rect (MetaScreen    *screen,
   if (screen->n_monitor_infos == 1)
     return &screen->monitor_infos[0];
 
+  if (screen->n_monitor_infos == 0)
+    return NULL;
+
   best_monitor = 0;
   monitor_score = -1;
 

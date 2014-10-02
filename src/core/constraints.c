@@ -539,23 +539,27 @@ place_window_if_needed(MetaWindow     *window,
        */
       monitor_info =
         meta_screen_get_monitor_for_rect (window->screen, &placed_rect);
-      info->entire_monitor = monitor_info->rect;
-      meta_window_get_work_area_for_monitor (window,
-                                             monitor_info->number,
-                                             &info->work_area_monitor);
-      cur_workspace = window->screen->active_workspace;
-      info->usable_monitor_region = 
-        meta_workspace_get_onmonitor_region (cur_workspace, 
-                                             monitor_info->number);
+
+      if (monitor_info)
+        {
+          info->entire_monitor = monitor_info->rect;
+          meta_window_get_work_area_for_monitor (window,
+                                                 monitor_info->number,
+                                                 &info->work_area_monitor);
+          cur_workspace = window->screen->active_workspace;
+          info->usable_monitor_region =
+            meta_workspace_get_onmonitor_region (cur_workspace,
+                                                 monitor_info->number);
 
 
-      info->current.x = placed_rect.x;
-      info->current.y = placed_rect.y;
+          info->current.x = placed_rect.x;
+          info->current.y = placed_rect.y;
 
-      /* Since we just barely placed the window, there's no reason to
-       * consider any of the directions fixed.
-       */
-      info->fixed_directions = FIXED_DIRECTION_NONE;
+          /* Since we just barely placed the window, there's no reason to
+           * consider any of the directions fixed.
+           */
+          info->fixed_directions = FIXED_DIRECTION_NONE;
+        }
     }
 
   if (window->placed || did_placement)

@@ -4788,7 +4788,7 @@ meta_window_update_monitor (MetaWindow *window)
 
   old = window->monitor;
   window->monitor = meta_screen_get_monitor_for_window (window->screen, window);
-  if (old != window->monitor)
+  if (window->monitor && old != window->monitor)
     {
       meta_window_update_on_all_workspaces (window);
 
@@ -9223,7 +9223,7 @@ update_move (MetaWindow  *window,
               /* move the saved rect if window will become maximized on an
                * other monitor so user isn't surprised on a later unmaximize
                */
-              if (wmonitor->number != monitor)
+              if (wmonitor && wmonitor->number != monitor)
                 {
                   window->saved_rect.x = work_area.x;
                   window->saved_rect.y = work_area.y;
