@@ -1404,6 +1404,37 @@ meta_monitor_manager_xrandr_record_connection_changes (MetaMonitorManager *manag
                                                         n_old_outputs);
 }
 
+static inline void output_get_xy (MetaOutput *output, int *cur_x, int * cur_y, int *x, int *y)
+{
+  *cur_x = output->crtc->current_mode->width;
+  *cur_y = output->crtc->current_mode->height;
+
+  if (output->is_underscanning)
+    {
+      *x = *cur_x - output->underscan_hborder * 2;
+      *y = *cur_y - output->underscan_vborder * 2;
+    }
+  else
+    {
+      *x = *cur_x + output->underscan_hborder * 2;
+      *y = *cur_y + output->underscan_vborder * 2;
+    }
+}
+
+static inline void output_get_screen_xy (MetaOutput *output, int *x, int *y)
+{
+  if (meta_monitor_transform_is_rotated (output->crtc->transform))
+    {
+      *x = MAX (*x, output->crtc->rect.x + output->crtc->rect.height);
+      *y = MAX (*y, output->crtc->rect.y + output->crtc->rect.width);
+    }
+  else
+    {
+      *x = MAX (*x, output->crtc->rect.x + output->crtc->rect.width);
+      *y = MAX (*y, output->crtc->rect.y + output->crtc->rect.height);
+    }
+}
+
 static gboolean
 meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
 					   XEvent             *event)
@@ -1434,116 +1465,72 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManager *manager,
   manager->serial++;
   meta_monitor_manager_xrandr_read_current (manager);
 
-  meta_display_grab (meta_get_display ());
+  // ----------------------------------------------------------------------------
+  // call out to meta_monitor_manager_xrandr_apply_configuration to handle any
+  // under/over scan transition:
+  GPtrArray *new_crtcs = g_ptr_array_new_with_free_func ((GDestroyNotify)meta_crtc_info_free);
+  GPtrArray *new_outputs = g_ptr_array_new_with_free_func ((GDestroyNotify)meta_output_info_free);
 
   for (i = 0; i < (unsigned)manager->n_outputs; i++)
     {
+      MetaCRTCInfo *ci = NULL;
+      MetaOutputInfo *oi = NULL;
       MetaOutput *output = &manager->outputs[i];
-      int current_width, current_height;
-      int target_width, target_height;
+      int current_width, current_height, target_width, target_height;
+
+      oi = g_slice_new0 (MetaOutputInfo);
+      oi->output = output;
+      oi->is_primary = output->is_primary;
+      oi->is_presentation = output->is_presentation;
+      oi->is_underscanning = output->is_underscanning;
+      oi->is_default_config = output->is_default_config;
+      g_ptr_array_add (new_outputs, oi);
 
       if (!output->crtc)
         continue;
 
-      current_width = output->crtc->current_mode->width;
-      current_height = output->crtc->current_mode->height;
+      output_get_xy (output, &current_width, &current_height, &target_width, &target_height);
+      output_get_screen_xy (output, &screen_width, &screen_height);
 
-      if (output->is_underscanning)
+      // find a mode that matches what we want but which is different from the current:
+      if (current_width != target_width || current_height != target_height)
         {
-          target_width = current_width - output->underscan_hborder * 2;
-          target_height = current_height - output->underscan_vborder * 2;
-        }
-      else
-        {
-          target_width = current_width + output->underscan_hborder * 2;
-          target_height = current_height + output->underscan_vborder * 2;
-        }
+          MetaMonitorMode *mode = NULL;
 
-      for (j = 0; j < (unsigned)manager->n_modes; j++)
-        {
-          MetaMonitorMode *mode = &manager->modes[j];
+          for (j = 0; !mode && (j < (unsigned)manager->n_modes); j++)
+            if (target_width  == manager->modes[j].width &&
+                target_height == manager->modes[j].height)
+              mode = &manager->modes[j];
 
-          if (target_width == mode->width &&
-              target_height == mode->height &&
-              (current_width != mode->width ||
-               current_height != mode->height))
-            {
-              Status ok;
+          if (!mode)
+            continue;
 
-              XRRSetCrtcConfig (manager_xrandr->xdisplay,
-                                manager_xrandr->resources,
-                                (XID)output->crtc->crtc_id,
-                                manager_xrandr->time,
-                                0, 0,
-                                None,
-                                RR_Rotate_0,
-                                NULL, 0);
+          ci = g_slice_new0 (MetaCRTCInfo);
+          ci->outputs = g_ptr_array_new();
 
-              output->crtc->current_mode = mode;
+          ci->transform = output->crtc->transform;
+          ci->crtc = output->crtc;
+          ci->x = output->is_underscanning ? output->underscan_hborder : 0;
+          ci->y = output->is_underscanning ? output->underscan_vborder : 0;
+          ci->mode = mode;
+          g_ptr_array_add (ci->outputs, output);
 
-              meta_error_trap_push (meta_get_display ());
-              /* TODO: Send the list of output IDs for this CRTC */
-              ok = XRRSetCrtcConfig (manager_xrandr->xdisplay,
-                                     manager_xrandr->resources,
-                                     (XID)output->crtc->crtc_id,
-                                     manager_xrandr->time,
-                                     output->crtc->rect.x, output->crtc->rect.y,
-                                     (XID)mode->mode_id,
-                                     wl_transform_to_xrandr (output->crtc->transform),
-                                     (RROutput *)&output->output_id, 1);
-              meta_error_trap_pop (meta_get_display ());
-
-              if (ok != Success)
-                {
-                  meta_warning ("failure to set CRTC mode for underscanning: %d\n", ok);
-
-                  break;
-                }
-
-              output->crtc->rect.width = mode->width;
-              output->crtc->rect.height = mode->height;
-              output->crtc->current_mode = mode;
-
-              needs_update = TRUE;
-
-              break;
-            }
-        }
-
-      if (meta_monitor_transform_is_rotated (output->crtc->transform))
-        {
-          screen_width = MAX (screen_width, output->crtc->rect.x + output->crtc->rect.height);
-          screen_height = MAX (screen_height, output->crtc->rect.y + output->crtc->rect.width);
-        }
-      else
-        {
-          screen_width = MAX (screen_width, output->crtc->rect.x + output->crtc->rect.width);
-          screen_height = MAX (screen_height, output->crtc->rect.y + output->crtc->rect.height);
+          g_ptr_array_add (new_crtcs, ci);
+          needs_update = TRUE;
         }
     }
 
-  if (screen_width > 0 && screen_height > 0)
-    {
-      int width_mm, height_mm;
+  if (needs_update)
+    meta_monitor_manager_xrandr_apply_configuration(manager,
+                                                    (MetaCRTCInfo **)new_crtcs->pdata, new_crtcs->len,
+                                                    (MetaOutputInfo**)new_outputs->pdata, new_outputs->len);
 
-      width_mm = (screen_width / DPI_FALLBACK) * 25.4 + 0.5;
-      height_mm = (screen_height / DPI_FALLBACK) * 25.4 + 0.5;
+  manager->screen_width = screen_width;
+  manager->screen_height = screen_height;
 
-      meta_error_trap_push (meta_get_display ());
-      XRRSetScreenSize (manager_xrandr->xdisplay,
-                      DefaultRootWindow (manager_xrandr->xdisplay),
-                      screen_width, screen_height,
-                      width_mm, height_mm);
-      meta_error_trap_pop (meta_get_display ());
-
-      // The screen size will be updated on the next RRScreenChangeNotify,
-      // but we need the UI to update ASAP.
-      XSync (manager_xrandr->xdisplay, False);
-      manager->screen_width = screen_width;
-      manager->screen_height = screen_height;
-    }
-
-  meta_display_ungrab (meta_get_display ());
+  g_ptr_array_unref (new_crtcs);
+  g_ptr_array_unref (new_outputs);
+  // ----------------------------------------------------------------------------
 
   new_config = manager_xrandr->resources->timestamp >=
     manager_xrandr->resources->configTimestamp;
