@@ -999,6 +999,19 @@ make_laptop_lid_config (MetaConfiguration  *reference)
   return new;
 }
 
+static gboolean
+apply_configuration_with_lid (MetaMonitorConfig  *self,
+                              MetaConfiguration  *config,
+                              MetaMonitorManager *manager)
+{
+  if (self->lid_is_closed &&
+      config->n_outputs > 1 &&
+      laptop_display_is_on (config))
+    return apply_configuration (self, make_laptop_lid_config (config), manager, FALSE);
+  else
+    return apply_configuration (self, config, manager, TRUE);
+}
+
 gboolean
 meta_monitor_config_apply_stored (MetaMonitorConfig  *self,
 				  MetaMonitorManager *manager)
@@ -1011,15 +1024,7 @@ meta_monitor_config_apply_stored (MetaMonitorConfig  *self,
   stored = meta_monitor_config_get_stored (self, outputs, n_outputs);
 
   if (stored)
-    {
-      if (self->lid_is_closed &&
-          stored->n_outputs > 1 &&
-          laptop_display_is_on (stored))
-        return apply_configuration (self, make_laptop_lid_config (stored),
-                                    manager, FALSE);
-      else
-        return apply_configuration (self, stored, manager, TRUE);
-    }
+    return apply_configuration_with_lid (self, stored, manager);
   else
     return FALSE;
 }
@@ -1269,18 +1274,7 @@ meta_monitor_config_make_default (MetaMonitorConfig  *self,
   default_config = make_default_config (self, outputs, n_outputs, max_width, max_height);
 
   if (default_config != NULL)
-    {
-      if (self->lid_is_closed &&
-          default_config->n_outputs > 1 &&
-          laptop_display_is_on (default_config))
-        {
-          ok = apply_configuration (self, make_laptop_lid_config (default_config),
-                                    manager, FALSE);
-          config_free (default_config);
-        }
-      else
-        ok = apply_configuration (self, default_config, manager, FALSE);
-    }
+    ok = apply_configuration_with_lid (self, default_config, manager);
   else
     ok = FALSE;
 
