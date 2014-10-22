@@ -1269,7 +1269,7 @@ meta_monitor_config_make_default (MetaMonitorConfig  *self,
   MetaOutput *outputs;
   MetaConfiguration *default_config;
   unsigned n_outputs;
-  gboolean ok;
+  gboolean ok = FALSE;
   int max_width, max_height;
 
   outputs = meta_monitor_manager_get_outputs (manager, &n_outputs);
@@ -1282,11 +1282,11 @@ meta_monitor_config_make_default (MetaMonitorConfig  *self,
     }
 
   default_config = make_default_config (self, outputs, n_outputs, max_width, max_height);
-
   if (default_config != NULL)
-    ok = apply_configuration_with_lid (self, default_config, manager);
-  else
-    ok = FALSE;
+    {
+      ok = apply_configuration_with_lid (self, default_config, manager);
+      config_unref (default_config);
+    }
 
   if (!ok)
     {
@@ -1379,6 +1379,7 @@ turn_off_laptop_display (MetaMonitorConfig  *self,
 
   new = make_laptop_lid_config (self->current);
   apply_configuration (self, new, manager);
+  config_unref (new);
 }
 
 static void
