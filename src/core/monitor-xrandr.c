@@ -885,6 +885,38 @@ output_set_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
   meta_error_trap_pop (display);
 }
 
+static gboolean
+output_supports_underscanning_on (MetaMonitorManagerXrandr *manager_xrandr,
+                                  MetaOutput               *output)
+{
+  MetaDisplay *display = meta_get_display ();
+  XRRPropertyInfo *info;
+  gboolean ret = FALSE;
+  int i;
+
+  meta_error_trap_push (display);
+  info = XRRQueryOutputProperty (manager_xrandr->xdisplay,
+                                 (XID) output->output_id,
+                                 display->atom_underscan);
+  meta_error_trap_pop (display);
+
+  if (!info)
+    return FALSE;
+
+  for (i = 0; i < info->num_values; i++)
+    {
+      if ((Atom) info->values[i] == display->atom_on)
+        {
+          ret = TRUE;
+          goto out;
+        }
+    }
+
+ out:
+  XFree (info);
+  return ret;
+}
+
 static void
 output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output,
@@ -918,7 +950,10 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
 
     output->underscan_vborder = border_value;
 
-    value = display->atom_crop;
+    if (output_supports_underscanning_on (manager_xrandr, output))
+      value = display->atom_on;
+    else
+      value = display->atom_crop;
   } else
     value = display->atom_off;
 
