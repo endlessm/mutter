@@ -1399,7 +1399,7 @@ meta_window_actor_detach (MetaWindowActor *self)
    * pixmap, but it certainly doesn't work with current DRI/Mesa
    */
   meta_shaped_texture_set_pixmap (META_SHAPED_TEXTURE (priv->actor),
-                                  None);
+                                  None, priv->argb32);
   cogl_flush();
 
   XFreePixmap (xdisplay, priv->back_pixmap);
@@ -2015,7 +2015,7 @@ check_needs_pixmap (MetaWindowActor *self)
                                                 FALSE);
 
       meta_shaped_texture_set_pixmap (META_SHAPED_TEXTURE (priv->actor),
-                                      priv->back_pixmap);
+                                      priv->back_pixmap, priv->argb32);
 
       texture = meta_shaped_texture_get_texture (META_SHAPED_TEXTURE (priv->actor));
 
