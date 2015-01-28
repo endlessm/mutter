@@ -150,7 +150,7 @@ get_masked_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static CoglPipeline *
+static G_GNUC_UNUSED CoglPipeline *
 get_unblended_pipeline (CoglContext *ctx)
 {
   static CoglPipeline *template = NULL;
