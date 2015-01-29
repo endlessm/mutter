@@ -150,7 +150,7 @@ get_masked_pipeline (CoglContext *ctx)
   return cogl_pipeline_copy (template);
 }
 
-static G_GNUC_UNUSED CoglPipeline *
+static CoglPipeline *
 get_unblended_pipeline (CoglContext *ctx)
 {
   static CoglPipeline *template = NULL;
@@ -171,7 +171,7 @@ get_unblended_pipeline (CoglContext *ctx)
 /* Like get_unblended_pipeline but the alpha values are forced to be opaque.
  * For lack of a better blend string, this is done by adding source alpha to
  * dest alpha. It is assumed that the dest alpha is opaque. */
-static CoglPipeline *
+static G_GNUC_UNUSED CoglPipeline *
 get_unblended_opaque_pipeline (CoglContext *ctx)
 {
   static CoglPipeline *template = NULL;
