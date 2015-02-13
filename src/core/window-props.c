@@ -290,6 +290,31 @@ reload_icon_geometry (MetaWindow    *window,
 }
 
 static void
+meta_window_set_custom_frame_extents (MetaWindow *window,
+                                      GtkBorder  *extents)
+{
+  if (extents)
+    {
+      if (window->has_custom_frame_extents &&
+          memcmp (&window->custom_frame_extents, extents, sizeof (GtkBorder)) == 0)
+        return;
+
+      window->has_custom_frame_extents = TRUE;
+      window->custom_frame_extents = *extents;
+    }
+  else
+    {
+      if (!window->has_custom_frame_extents)
+        return;
+
+      window->has_custom_frame_extents = FALSE;
+      memset (&window->custom_frame_extents, 0, sizeof (window->custom_frame_extents));
+    }
+
+  meta_window_queue (window, META_QUEUE_MOVE_RESIZE);
+}
+
+static void
 reload_gtk_frame_extents (MetaWindow    *window,
                           MetaPropValue *value,
                           gboolean       initial)
@@ -303,22 +328,18 @@ reload_gtk_frame_extents (MetaWindow    *window,
         }
       else
         {
-          GtkBorder *extents = &window->custom_frame_extents;
-
-          window->has_custom_frame_extents = TRUE;
-          extents->left   = (int)value->v.cardinal_list.cardinals[0];
-          extents->right  = (int)value->v.cardinal_list.cardinals[1];
-          extents->top    = (int)value->v.cardinal_list.cardinals[2];
-          extents->bottom = (int)value->v.cardinal_list.cardinals[3];
+          GtkBorder extents;
+          extents.left   = (int)value->v.cardinal_list.cardinals[0];
+          extents.right  = (int)value->v.cardinal_list.cardinals[1];
+          extents.top    = (int)value->v.cardinal_list.cardinals[2];
+          extents.bottom = (int)value->v.cardinal_list.cardinals[3];
+          meta_window_set_custom_frame_extents (window, &extents);
         }
     }
   else
     {
-      window->has_custom_frame_extents = FALSE;
+      meta_window_set_custom_frame_extents (window, NULL);
     }
-
-  if (!initial)
-    meta_window_queue(window, META_QUEUE_MOVE_RESIZE);
 }
 
 static void
