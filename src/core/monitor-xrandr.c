@@ -71,6 +71,7 @@ struct _MetaMonitorManagerXrandr
   MetaMonitorManager parent_instance;
 
   Display *xdisplay;
+  EmtrEventRecorder *event_recorder;
   XRRScreenResources *resources;
   int time;
   int rr_event_base;
@@ -1365,6 +1366,9 @@ meta_monitor_manager_xrandr_record_connect_events (MetaMonitorManager *manager,
                                                    MetaOutput         *old_outputs,
                                                    gsize               n_old_outputs)
 {
+  MetaMonitorManagerXrandr *manager_xrandr =
+    META_MONITOR_MANAGER_XRANDR (manager);
+
   gsize new_output_index;
   for (new_output_index = 0; new_output_index < manager->n_outputs;
        new_output_index++)
@@ -1387,7 +1391,7 @@ meta_monitor_manager_xrandr_record_connect_events (MetaMonitorManager *manager,
           GVariant *auxiliary_payload =
             meta_monitor_manager_get_output_auxiliary_payload (manager,
                                                                new_output);
-          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+          emtr_event_recorder_record_event (manager_xrandr->event_recorder,
                                             MONITOR_CONNECTED,
                                             auxiliary_payload);
         }
@@ -1399,6 +1403,9 @@ meta_monitor_manager_xrandr_record_disconnect_events (MetaMonitorManager *manage
                                                       MetaOutput         *old_outputs,
                                                       gsize               n_old_outputs)
 {
+  MetaMonitorManagerXrandr *manager_xrandr =
+    META_MONITOR_MANAGER_XRANDR (manager);
+
   gsize old_output_index;
   for (old_output_index = 0; old_output_index < n_old_outputs;
        old_output_index++)
@@ -1421,7 +1428,7 @@ meta_monitor_manager_xrandr_record_disconnect_events (MetaMonitorManager *manage
           GVariant *auxiliary_payload =
             meta_monitor_manager_get_output_auxiliary_payload (manager,
                                                                old_output);
-          emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+          emtr_event_recorder_record_event (manager_xrandr->event_recorder,
                                             MONITOR_DISCONNECTED,
                                             auxiliary_payload);
         }
@@ -1618,6 +1625,7 @@ meta_monitor_manager_xrandr_init (MetaMonitorManagerXrandr *manager_xrandr)
   MetaDisplay *display = meta_get_display ();
 
   manager_xrandr->xdisplay = display->xdisplay;
+  manager_xrandr->event_recorder = emtr_event_recorder_new ();
 
   if (!XRRQueryExtension (manager_xrandr->xdisplay,
 			  &manager_xrandr->rr_event_base,
@@ -1642,6 +1650,7 @@ meta_monitor_manager_xrandr_finalize (GObject *object)
 {
   MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (object);
 
+  g_object_unref (manager_xrandr->event_recorder);
   if (manager_xrandr->resources)
     XRRFreeScreenResources (manager_xrandr->resources);
   manager_xrandr->resources = NULL;
