@@ -2768,8 +2768,8 @@ static gboolean
 windows_overlap (const MetaWindow *w1, const MetaWindow *w2)
 {
   MetaRectangle w1rect, w2rect;
-  meta_window_get_outer_rect (w1, &w1rect);
-  meta_window_get_outer_rect (w2, &w2rect);
+  meta_window_get_frame_rect (w1, &w1rect);
+  meta_window_get_frame_rect (w2, &w2rect);
   return meta_rectangle_overlap (&w1rect, &w2rect);
 }
 
@@ -3570,11 +3570,11 @@ meta_window_maximize (MetaWindow        *window,
           MetaRectangle old_rect;
 	  MetaRectangle new_rect;
 
-	  meta_window_get_outer_rect (window, &old_rect);
+	  meta_window_get_frame_rect (window, &old_rect);
 
           meta_window_move_resize_now (window);
 
-	  meta_window_get_outer_rect (window, &new_rect);
+	  meta_window_get_frame_rect (window, &new_rect);
           meta_compositor_maximize_window (window->display->compositor,
                                            window,
                                            &old_rect,
@@ -3633,7 +3633,7 @@ meta_window_get_all_monitors (MetaWindow *window, gsize *length)
   int i;
 
   monitors = g_array_new (FALSE, FALSE, sizeof (int));
-  meta_window_get_outer_rect (window, &window_rect);
+  meta_window_get_frame_rect (window, &window_rect);
 
   for (i = 0; i < window->screen->n_monitor_infos; i++)
     {
@@ -3666,7 +3666,7 @@ meta_window_is_screen_sized (MetaWindow *window)
   int screen_width, screen_height;
 
   meta_screen_get_size (window->screen, &screen_width, &screen_height);
-  meta_window_get_outer_rect (window, &window_rect);
+  meta_window_get_frame_rect (window, &window_rect);
 
   if (window_rect.x == 0 && window_rect.y == 0 &&
       window_rect.width == screen_width && window_rect.height == screen_height)
@@ -3698,7 +3698,7 @@ meta_window_is_monitor_sized (MetaWindow *window)
     {
       MetaRectangle window_rect, monitor_rect;
 
-      meta_window_get_outer_rect (window, &window_rect);
+      meta_window_get_frame_rect (window, &window_rect);
       meta_screen_get_monitor_geometry (window->screen, window->monitor->number, &monitor_rect);
 
       if (meta_rectangle_equal (&window_rect, &monitor_rect))
@@ -3769,11 +3769,11 @@ meta_window_tile (MetaWindow *window)
       MetaRectangle old_rect;
       MetaRectangle new_rect;
 
-      meta_window_get_outer_rect (window, &old_rect);
+      meta_window_get_frame_rect (window, &old_rect);
 
       meta_window_move_resize_now (window);
 
-      meta_window_get_outer_rect (window, &new_rect);
+      meta_window_get_frame_rect (window, &new_rect);
       meta_compositor_maximize_window (window->display->compositor,
                                        window,
                                        &old_rect,
@@ -3802,7 +3802,7 @@ meta_window_can_tile_side_by_side (MetaWindow *window)
 {
   int monitor;
   MetaRectangle tile_area;
-  MetaFrameBorders borders;
+  MetaRectangle client_rect;
 
   if (!meta_window_can_tile_maximized (window))
     return FALSE;
@@ -3816,13 +3816,10 @@ meta_window_can_tile_side_by_side (MetaWindow *window)
 
   tile_area.width /= 2;
 
-  meta_frame_calc_borders (window->frame, &borders);
+  meta_window_frame_rect_to_client_rect (window, &tile_area, &client_rect);
 
-  tile_area.width  -= (borders.visible.left + borders.visible.right);
-  tile_area.height -= (borders.visible.top + borders.visible.bottom);
-
-  return tile_area.width >= window->size_hints.min_width &&
-         tile_area.height >= window->size_hints.min_height;
+  return client_rect.width >= window->size_hints.min_width &&
+         client_rect.height >= window->size_hints.min_height;
 }
 
 static void
@@ -3883,8 +3880,10 @@ meta_window_unmaximize_internal (MetaWindow        *window,
     {
       MetaRectangle target_rect;
       MetaRectangle work_area;
+      MetaRectangle old_rect;
 
       meta_window_get_work_area_for_monitor (window, window->monitor->number, &work_area);
+      meta_window_get_frame_rect (window, &old_rect);
 
       meta_topic (META_DEBUG_WINDOW_OPS,
                   "Unmaximizing %s%s\n",
@@ -3897,6 +3896,12 @@ meta_window_unmaximize_internal (MetaWindow        *window,
         window->maximized_horizontally && !unmaximize_horizontally;
       window->maximized_vertically =
         window->maximized_vertically   && !unmaximize_vertically;
+
+      /* recalc_window_features() will eventually clear the cached frame
+       * extents, but we need the correct frame extents in the code below,
+       * so invalidate the old frame extents manually up front.
+       */
+      meta_window_frame_size_changed (window);
 
       /* Unmaximize to the saved_rect position in the direction(s)
        * being unmaximized.
@@ -3942,9 +3947,7 @@ meta_window_unmaximize_internal (MetaWindow        *window,
 
       if (window->display->compositor)
         {
-          MetaRectangle old_rect, new_rect;
-
-	  meta_window_get_outer_rect (window, &old_rect);
+          MetaRectangle new_rect;
 
           meta_window_move_resize_internal (window,
                                             META_IS_MOVE_ACTION | META_IS_RESIZE_ACTION,
@@ -3954,7 +3957,7 @@ meta_window_unmaximize_internal (MetaWindow        *window,
                                             target_rect.width,
                                             target_rect.height);
 
-	  meta_window_get_outer_rect (window, &new_rect);
+	  meta_window_get_frame_rect (window, &new_rect);
           meta_compositor_unmaximize_window (window->display->compositor,
 					     window,
                                              &old_rect,
@@ -4059,6 +4062,7 @@ meta_window_set_above (MetaWindow *window,
   window->wm_state_above = new_value;
   meta_window_update_layer (window);
   set_net_wm_state (window);
+  meta_window_frame_size_changed (window);
   g_object_notify (G_OBJECT (window), "above");
 }
 
@@ -4198,6 +4202,7 @@ meta_window_shade (MetaWindow  *window,
       window->shaded = TRUE;
 
       meta_window_queue(window, META_QUEUE_MOVE_RESIZE | META_QUEUE_CALC_SHOWING);
+      meta_window_frame_size_changed (window);
 
       /* After queuing the calc showing, since _focus flushes it,
        * and we need to focus the frame
@@ -4223,6 +4228,7 @@ meta_window_unshade (MetaWindow  *window,
     {
       window->shaded = FALSE;
       meta_window_queue(window, META_QUEUE_MOVE_RESIZE | META_QUEUE_CALC_SHOWING);
+      meta_window_frame_size_changed (window);
 
       /* focus the window */
       meta_topic (META_DEBUG_FOCUS,
@@ -4954,11 +4960,15 @@ meta_window_move_resize_internal (MetaWindow          *window,
   did_placement = !window->placed && window->calc_placement;
 
   meta_window_constrain (window,
-                         window->frame ? &borders : NULL,
                          flags,
                          gravity,
                          &old_rect,
                          &new_rect);
+
+  /* meta_window_constrain() might have maximized the window after placement,
+   * changing the borders.
+   */
+  meta_frame_calc_borders (window->frame, &borders);
 
   w = new_rect.width;
   h = new_rect.height;
@@ -5383,23 +5393,10 @@ meta_window_move_frame (MetaWindow  *window,
                   int          root_x_nw,
                   int          root_y_nw)
 {
-  int x = root_x_nw;
-  int y = root_y_nw;
+  MetaRectangle rect = { root_x_nw, root_y_nw, 0, 0 };
 
-  if (window->frame)
-    {
-      MetaFrameBorders borders;
-      meta_frame_calc_borders (window->frame, &borders);
-
-      /* root_x_nw and root_y_nw correspond to where the top of
-       * the visible frame should be. Offset by the distance between
-       * the origin of the window and the origin of the enclosing
-       * window decorations.
-       */
-      x += window->frame->child_x - borders.invisible.left;
-      y += window->frame->child_y - borders.invisible.top;
-    }
-  meta_window_move (window, user_op, x, y);
+  meta_window_frame_rect_to_client_rect (window, &rect, &rect);
+  meta_window_move (window, user_op, rect.x, rect.y);
 }
 
 static void
@@ -5447,18 +5444,10 @@ meta_window_move_resize_frame (MetaWindow  *window,
                                int          w,
                                int          h)
 {
-  MetaFrameBorders borders;
+  MetaRectangle rect = { root_x_nw, root_y_nw, w, h };
+  meta_window_frame_rect_to_client_rect (window, &rect, &rect);
 
-  meta_frame_calc_borders (window->frame, &borders);
-  /* offset by the distance between the origin of the window
-   * and the origin of the enclosing window decorations ( + border)
-   */
-  root_x_nw += borders.visible.left;
-  root_y_nw += borders.visible.top;
-  w -= borders.visible.left + borders.visible.right;
-  h -= borders.visible.top + borders.visible.bottom;
-
-  meta_window_move_resize (window, user_op, root_x_nw, root_y_nw, w, h);
+  meta_window_move_resize (window, user_op, rect.x, rect.y, rect.width, rect.height);
 }
 
 /**
@@ -5771,16 +5760,110 @@ meta_window_get_input_rect (const MetaWindow *window,
 }
 
 /**
- * meta_window_get_outer_rect:
+ * meta_window_client_rect_to_frame_rect:
+ * @window: a #MetaWindow
+ * @client_rect: client rectangle in root coordinates
+ * @frame_rect: (out): location to store the computed corresponding frame bounds.
+ *
+ * Converts a desired bounds of the client window - what is passed to meta_window_move_resize() -
+ * into the corresponding bounds of the window frame (excluding invisible borders
+ * and client side shadows.)
+ */
+void
+meta_window_client_rect_to_frame_rect (MetaWindow    *window,
+                                       MetaRectangle *client_rect,
+                                       MetaRectangle *frame_rect)
+{
+  if (!frame_rect)
+    return;
+
+  *frame_rect = *client_rect;
+
+  /* The support for G_MAXINT here to mean infinity is a convenience for
+   * constraints.c:get_size_limits() and not something that we provide
+   * in other locations or document.
+   */
+  if (window->frame)
+    {
+      MetaFrameBorders borders;
+      meta_frame_calc_borders (window->frame, &borders);
+
+      frame_rect->x -= borders.visible.left;
+      frame_rect->y -= borders.visible.top;
+      if (frame_rect->width != G_MAXINT)
+        frame_rect->width += borders.visible.left + borders.visible.right;
+      if (frame_rect->height != G_MAXINT)
+        frame_rect->height += borders.visible.top  + borders.visible.bottom;
+    }
+  else
+    {
+      if (window->has_custom_frame_extents)
+        {
+          const GtkBorder *extents = &window->custom_frame_extents;
+          frame_rect->x += extents->left;
+          frame_rect->y += extents->top;
+          if (frame_rect->width != G_MAXINT)
+            frame_rect->width -= extents->left + extents->right;
+          if (frame_rect->height != G_MAXINT)
+            frame_rect->height -= extents->top + extents->bottom;
+        }
+    }
+}
+
+/**
+ * meta_window_frame_rect_to_client_rect:
+ * @window: a #MetaWindow
+ * @frame_rect: desired frame bounds for the window
+ * @client_rect: (out): location to store the computed corresponding client rectangle.
+ *
+ * Converts a desired frame bounds for a window into the bounds of the client
+ * window - what is passed to meta_window_move_resize().
+ */
+void
+meta_window_frame_rect_to_client_rect (MetaWindow    *window,
+                                       MetaRectangle *frame_rect,
+                                       MetaRectangle *client_rect)
+{
+  if (!client_rect)
+    return;
+
+  *client_rect = *frame_rect;
+
+  if (window->frame)
+    {
+      MetaFrameBorders borders;
+      meta_frame_calc_borders (window->frame, &borders);
+
+      client_rect->x += borders.visible.left;
+      client_rect->y += borders.visible.top;
+      client_rect->width  -= borders.visible.left + borders.visible.right;
+      client_rect->height -= borders.visible.top  + borders.visible.bottom;
+    }
+  else
+    {
+      if (window->has_custom_frame_extents)
+        {
+          const GtkBorder *extents = &window->custom_frame_extents;
+          client_rect->x -= extents->left;
+          client_rect->y -= extents->top;
+          client_rect->width += extents->left + extents->right;
+          client_rect->height += extents->top + extents->bottom;
+        }
+    }
+}
+
+/**
+ * meta_window_get_frame_rect:
  * @window: a #MetaWindow
  * @rect: (out): pointer to an allocated #MetaRectangle
  *
- * Gets the rectangle that bounds @window that is responsive to mouse events.
- * This includes only what is visible; it doesn't include any extra reactive
- * area we add to the edges of windows.
+ * Gets the rectangle that bounds @window that is what the user thinks of
+ * as the edge of the window. This doesn't include any extra reactive
+ * area that we or the client adds to the window, or any area that the
+ * client adds to draw a client-side shadow.
  */
 void
-meta_window_get_outer_rect (const MetaWindow *window,
+meta_window_get_frame_rect (const MetaWindow *window,
                             MetaRectangle    *rect)
 {
   if (window->frame)
@@ -5807,6 +5890,25 @@ meta_window_get_outer_rect (const MetaWindow *window,
           rect->height -= extents->top + extents->bottom;
         }
     }
+}
+
+/**
+ * meta_window_get_outer_rect:
+ * @window: a #MetaWindow
+ * @rect: (out): pointer to an allocated #MetaRectangle
+ *
+ * Gets the rectangle that bounds @window that is what the user thinks of
+ * as the edge of the window. This doesn't include any extra reactive
+ * area that we or the client adds to the window, or any area that the
+ * client adds to draw a client-side shadow.
+ *
+ * Deprecated: 3.12: Use meta_window_get_frame_rect() instead.
+ */
+void
+meta_window_get_outer_rect (const MetaWindow *window,
+                            MetaRectangle    *rect)
+{
+  meta_window_get_frame_rect (window, rect);
 }
 
 const char*
@@ -6050,6 +6152,7 @@ window_stick_impl (MetaWindow  *window)
    * toggled back off.
    */
   window->on_all_workspaces_requested = TRUE;
+  meta_window_frame_size_changed (window);
   meta_window_update_on_all_workspaces (window);
 
   meta_window_queue(window, META_QUEUE_CALC_SHOWING);
@@ -6064,6 +6167,7 @@ window_unstick_impl (MetaWindow  *window)
   /* Revert to window->workspaces */
 
   window->on_all_workspaces_requested = FALSE;
+  meta_window_frame_size_changed (window);
   meta_window_update_on_all_workspaces (window);
 
   /* We change ourselves to the active workspace, since otherwise you'd get
@@ -7144,6 +7248,7 @@ static void
 meta_window_appears_focused_changed (MetaWindow *window)
 {
   set_net_wm_state (window);
+  meta_window_frame_size_changed (window);
 
   g_object_notify (G_OBJECT (window), "appears-focused");
 
@@ -8316,6 +8421,13 @@ recalc_window_type (MetaWindow *window)
     }
 }
 
+void
+meta_window_frame_size_changed (MetaWindow *window)
+{
+  if (window->frame)
+    meta_frame_clear_cached_borders (window->frame);
+}
+
 static void
 set_allowed_actions_hint (MetaWindow *window)
 {
@@ -8517,18 +8629,13 @@ recalc_window_features (MetaWindow *window)
 
   if (window->has_maximize_func)
     {
-      MetaRectangle work_area;
-      MetaFrameBorders borders;
-      int min_frame_width, min_frame_height;
+      MetaRectangle work_area, client_rect;
 
       meta_window_get_work_area_current_monitor (window, &work_area);
-      meta_frame_calc_borders (window->frame, &borders);
+      meta_window_frame_rect_to_client_rect (window, &work_area, &client_rect);
 
-      min_frame_width = window->size_hints.min_width + borders.visible.left + borders.visible.right;
-      min_frame_height = window->size_hints.min_height + borders.visible.top + borders.visible.bottom;
-
-      if (min_frame_width >= work_area.width ||
-          min_frame_height >= work_area.height)
+      if (window->size_hints.min_width >= client_rect.width ||
+          window->size_hints.min_height >= client_rect.height)
         window->has_maximize_func = FALSE;
     }
 
@@ -8623,6 +8730,8 @@ recalc_window_features (MetaWindow *window)
 
   if (window->has_resize_func != old_has_resize_func)
     g_object_notify (G_OBJECT (window), "resizeable");
+
+  meta_window_frame_size_changed (window);
 
   /* FIXME perhaps should ensure if we don't have a shade func,
    * we aren't shaded, etc.
@@ -8900,7 +9009,7 @@ meta_window_show_menu (MetaWindow *window,
 void
 meta_window_shove_titlebar_onscreen (MetaWindow *window)
 {
-  MetaRectangle  outer_rect;
+  MetaRectangle  frame_rect;
   GList         *onscreen_region;
   int            horiz_amount, vert_amount;
   int            newx, newy;
@@ -8912,15 +9021,15 @@ meta_window_shove_titlebar_onscreen (MetaWindow *window)
     return;
 
   /* Get the basic info we need */
-  meta_window_get_outer_rect (window, &outer_rect);
+  meta_window_get_frame_rect (window, &frame_rect);
   onscreen_region = window->screen->active_workspace->screen_region;
 
   /* Extend the region (just in case the window is too big to fit on the
    * screen), then shove the window on screen, then return the region to
    * normal.
    */
-  horiz_amount = outer_rect.width;
-  vert_amount  = outer_rect.height;
+  horiz_amount = frame_rect.width;
+  vert_amount  = frame_rect.height;
   meta_rectangle_expand_region (onscreen_region,
                                 horiz_amount,
                                 horiz_amount,
@@ -8928,15 +9037,15 @@ meta_window_shove_titlebar_onscreen (MetaWindow *window)
                                 vert_amount);
   meta_rectangle_shove_into_region(onscreen_region,
                                    FIXED_DIRECTION_X,
-                                   &outer_rect);
+                                   &frame_rect);
   meta_rectangle_expand_region (onscreen_region,
                                 -horiz_amount,
                                 -horiz_amount,
                                 0,
                                 -vert_amount);
 
-  newx = outer_rect.x + window->frame->child_x;
-  newy = outer_rect.y + window->frame->child_y;
+  newx = frame_rect.x + window->frame->child_x;
+  newy = frame_rect.y + window->frame->child_y;
   meta_window_move_resize (window,
                            FALSE,
                            newx,
@@ -8961,7 +9070,7 @@ meta_window_titlebar_is_onscreen (MetaWindow *window)
     return FALSE;
 
   /* Get the rectangle corresponding to the titlebar */
-  meta_window_get_outer_rect (window, &titlebar_rect);
+  meta_window_get_frame_rect (window, &titlebar_rect);
   titlebar_rect.height = window->frame->child_y;
 
   /* Run through the spanning rectangles for the screen and see if one of
@@ -10276,7 +10385,7 @@ warp_grab_pointer (MetaWindow          *window,
   /* We may not have done begin_grab_op yet, i.e. may not be in a grab
    */
 
-  meta_window_get_outer_rect (window, &rect);
+  meta_window_get_frame_rect (window, &rect);
 
   switch (grab_op)
     {
@@ -10615,7 +10724,7 @@ meta_window_set_demands_attention (MetaWindow *window)
     }
   else
     {
-      meta_window_get_outer_rect (window, &candidate_rect);
+      meta_window_get_frame_rect (window, &candidate_rect);
 
       /* The stack is sorted with the top windows first. */
 
@@ -10626,7 +10735,7 @@ meta_window_set_demands_attention (MetaWindow *window)
 
           if (meta_window_located_on_workspace (other_window, window->workspace))
             {
-              meta_window_get_outer_rect (other_window, &other_rect);
+              meta_window_get_frame_rect (other_window, &other_rect);
 
               if (meta_rectangle_overlap (&candidate_rect, &other_rect))
                 {
@@ -11330,8 +11439,8 @@ meta_window_compute_tile_match (MetaWindow *window)
           bottommost = match;
         }
 
-      meta_window_get_outer_rect (bottommost, &bottommost_rect);
-      meta_window_get_outer_rect (topmost, &topmost_rect);
+      meta_window_get_frame_rect (bottommost, &bottommost_rect);
+      meta_window_get_frame_rect (topmost, &topmost_rect);
       /*
        * If there's a window stacked in between which is partially visible
        * behind the topmost tile we don't consider the tiles to match.
@@ -11345,7 +11454,7 @@ meta_window_compute_tile_match (MetaWindow *window)
               meta_window_get_workspace (above) != meta_window_get_workspace (window))
             continue;
 
-          meta_window_get_outer_rect (above, &above_rect);
+          meta_window_get_frame_rect (above, &above_rect);
 
           if (meta_rectangle_overlap (&above_rect, &bottommost_rect) &&
               meta_rectangle_overlap (&above_rect, &topmost_rect))

@@ -77,6 +77,7 @@ struct _MetaShapedTexturePrivate
   guint tex_width, tex_height;
 
   guint create_mipmaps : 1;
+  guint argb32 : 1;
 };
 
 static void
@@ -166,6 +167,28 @@ get_unblended_pipeline (CoglContext *ctx)
 
   return cogl_pipeline_copy (template);
 }
+
+/* Like get_unblended_pipeline but the alpha values are forced to be opaque.
+ * For lack of a better blend string, this is done by adding source alpha to
+ * dest alpha. It is assumed that the dest alpha is opaque. */
+static G_GNUC_UNUSED CoglPipeline *
+get_unblended_opaque_pipeline (CoglContext *ctx)
+{
+  static CoglPipeline *template = NULL;
+  if (G_UNLIKELY (template == NULL))
+    {
+      CoglColor color;
+      template = cogl_pipeline_new (ctx);
+      cogl_color_init_from_4ub (&color, 255, 255, 255, 255);
+      cogl_pipeline_set_blend (template,
+                               "RGB = ADD (SRC_COLOR, 0) A = ADD(SRC_COLOR, DST_COLOR)",
+                               NULL);
+      cogl_pipeline_set_color (template, &color);
+    }
+
+  return cogl_pipeline_copy (template);
+}
+
 
 static void
 paint_clipped_rectangle (CoglFramebuffer       *fb,
@@ -327,7 +350,20 @@ meta_shaped_texture_paint (ClutterActor *actor)
 
       if (!cairo_region_is_empty (region))
         {
+#ifdef __arm__
+          /* On Mali we currently run the desktop at depth 32, eos-shell #4093.
+           * However some windows come up as depth 24, but Mali's TFP assumes
+           * that all windows are depth 32, eos-shell #4052.
+           * To avoid rendering junk data from the alpha channel in such
+           * cases, use a special pipeline that forces opaque values into
+           * the alpha channel. */
+          if (!priv->argb32)
+            opaque_pipeline = get_unblended_opaque_pipeline (ctx);
+          else
+            opaque_pipeline = get_unblended_pipeline (ctx);
+#else
           opaque_pipeline = get_unblended_pipeline (ctx);
+#endif
           cogl_pipeline_set_layer_texture (opaque_pipeline, 0, paint_tex);
           cogl_pipeline_set_layer_filters (opaque_pipeline, 0, filter, filter);
 
@@ -689,7 +725,8 @@ set_cogl_texture (MetaShapedTexture    *stex,
  */
 void
 meta_shaped_texture_set_pixmap (MetaShapedTexture *stex,
-                                Pixmap             pixmap)
+                                Pixmap             pixmap,
+                                gboolean           argb32)
 {
   MetaShapedTexturePrivate *priv;
 
@@ -701,6 +738,7 @@ meta_shaped_texture_set_pixmap (MetaShapedTexture *stex,
     return;
 
   priv->pixmap = pixmap;
+  priv->argb32 = argb32;
 
   if (pixmap != None)
     {

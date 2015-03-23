@@ -100,7 +100,17 @@ gboolean meta_window_is_override_redirect (MetaWindow *window);
 gboolean meta_window_is_skip_taskbar (MetaWindow *window);
 MetaRectangle *meta_window_get_rect (MetaWindow *window);
 void meta_window_get_input_rect (const MetaWindow *window, MetaRectangle *rect);
-void meta_window_get_outer_rect (const MetaWindow *window, MetaRectangle *rect);
+
+void meta_window_get_frame_rect (const MetaWindow *window, MetaRectangle *rect);
+void meta_window_get_outer_rect (const MetaWindow *window, MetaRectangle *rect) G_GNUC_DEPRECATED;
+
+void meta_window_client_rect_to_frame_rect (MetaWindow    *window,
+                                            MetaRectangle *client_rect,
+                                            MetaRectangle *frame_rect);
+void meta_window_frame_rect_to_client_rect (MetaWindow    *window,
+                                            MetaRectangle *frame_rect,
+                                            MetaRectangle *client_rect);
+
 MetaScreen *meta_window_get_screen (MetaWindow *window);
 MetaDisplay *meta_window_get_display (MetaWindow *window);
 Window meta_window_get_xwindow (MetaWindow *window);
