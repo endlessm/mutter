@@ -77,8 +77,7 @@ gboolean meta_shaped_texture_update_area (MetaShapedTexture *stex,
                                           cairo_region_t    *unobscured_region);
 
 void meta_shaped_texture_set_pixmap (MetaShapedTexture *stex,
-                                     Pixmap             pixmap,
-                                     gboolean           argb32);
+                                     Pixmap             pixmap);
 
 CoglTexture * meta_shaped_texture_get_texture (MetaShapedTexture *stex);
 
