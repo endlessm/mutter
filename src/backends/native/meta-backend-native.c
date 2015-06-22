@@ -334,7 +334,7 @@ meta_backend_native_init (MetaBackendNative *native)
   priv->barrier_manager = meta_barrier_manager_native_new ();
 
   priv->up_client = up_client_new ();
-  g_signal_connect (priv->up_client, "notify::lid-is-closed",
+  g_signal_connect (priv->up_client, "changed",
                     G_CALLBACK (lid_is_closed_changed_cb), NULL);
 
   priv->cancellable = g_cancellable_new ();
