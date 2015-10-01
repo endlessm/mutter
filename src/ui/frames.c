@@ -118,6 +118,23 @@ meta_frames_constructor (GType                  gtype,
 }
 
 static void
+resolution_updated (MetaFrames *frames)
+{
+  gtk_style_context_invalidate (gtk_widget_get_style_context (GTK_WIDGET (frames)));
+}
+
+static void
+meta_frames_constructed (GObject *object)
+{
+  MetaFrames *frames = META_FRAMES (object);
+  GdkScreen *screen = gtk_widget_get_screen (GTK_WIDGET (frames));
+
+  g_signal_connect_object (screen, "notify::resolution",
+                           G_CALLBACK (resolution_updated), frames,
+                           G_CONNECT_SWAPPED);
+}
+
+static void
 meta_frames_class_init (MetaFramesClass *class)
 {
   GObjectClass   *gobject_class;
@@ -127,6 +144,7 @@ meta_frames_class_init (MetaFramesClass *class)
   widget_class = (GtkWidgetClass*) class;
 
   gobject_class->constructor = meta_frames_constructor;
+  gobject_class->constructed = meta_frames_constructed;
   gobject_class->finalize = meta_frames_finalize;
 
   widget_class->destroy = meta_frames_destroy;
