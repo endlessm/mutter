@@ -706,7 +706,9 @@ meta_shaped_texture_set_pixmap (MetaShapedTexture *stex,
     {
       CoglContext *ctx =
         clutter_backend_get_cogl_context (clutter_get_default_backend ());
-      set_cogl_texture (stex, cogl_texture_pixmap_x11_new (ctx, pixmap, FALSE, NULL));
+      CoglError *error = NULL;
+      set_cogl_texture (stex, cogl_texture_pixmap_x11_new (ctx, pixmap, FALSE, &error));
+      g_clear_error (&error);
     }
   else
     set_cogl_texture (stex, NULL);
