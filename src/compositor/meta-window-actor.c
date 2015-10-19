@@ -939,7 +939,7 @@ meta_window_actor_get_texture (MetaWindowActor *self)
 gboolean
 meta_window_actor_is_destroyed (MetaWindowActor *self)
 {
-  return self->priv->disposed;
+  return self->priv->disposed || self->priv->needs_destroy;
 }
 
 gboolean
@@ -1116,7 +1116,12 @@ meta_window_actor_queue_frame_drawn (MetaWindowActor *self,
                                      gboolean         no_delay_frame)
 {
   MetaWindowActorPrivate *priv = self->priv;
-  FrameData *frame = g_slice_new0 (FrameData);
+  FrameData *frame;
+
+  if (meta_window_actor_is_destroyed (self))
+    return;
+
+  frame = g_slice_new0 (FrameData);
 
   priv->needs_frame_drawn = TRUE;
 
@@ -1471,7 +1476,6 @@ void
 meta_window_actor_destroy (MetaWindowActor *self)
 {
   MetaWindow	      *window;
-  MetaCompScreen      *info;
   MetaWindowActorPrivate *priv;
   MetaWindowType window_type;
 
@@ -1486,13 +1490,6 @@ meta_window_actor_destroy (MetaWindowActor *self)
       g_source_remove (priv->send_frame_messages_timer);
       priv->send_frame_messages_timer = 0;
     }
-
-  /*
-   * We remove the window from internal lookup hashes and thus any other
-   * unmap events etc fail
-   */
-  info = meta_screen_get_compositor_data (priv->screen);
-  info->windows = g_list_remove (info->windows, (gconstpointer) self);
 
   if (window_type == META_WINDOW_DROPDOWN_MENU ||
       window_type == META_WINDOW_POPUP_MENU ||
@@ -2525,6 +2522,9 @@ meta_window_actor_pre_paint (MetaWindowActor *self)
   MetaWindowActorPrivate *priv = self->priv;
   GList *l;
 
+  if (meta_window_actor_is_destroyed (self))
+    return;
+
   meta_window_actor_handle_updates (self);
 
   for (l = priv->frames; l != NULL; l = l->next)
@@ -2574,6 +2574,9 @@ meta_window_actor_post_paint (MetaWindowActor *self)
   MetaWindowActorPrivate *priv = self->priv;
 
   priv->repaint_scheduled = FALSE;
+
+  if (meta_window_actor_is_destroyed (self))
+    return;
 
  /* This window had damage, but wasn't actually redrawn because
   * it is obscured. So we should wait until timer expiration
@@ -2655,6 +2658,9 @@ meta_window_actor_frame_complete (MetaWindowActor *self,
 {
   MetaWindowActorPrivate *priv = self->priv;
   GList *l;
+
+  if (meta_window_actor_is_destroyed (self))
+    return;
 
   for (l = priv->frames; l;)
     {
