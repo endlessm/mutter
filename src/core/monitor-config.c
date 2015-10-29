@@ -1719,6 +1719,7 @@ real_assign_crtcs (CrtcAssignment     *assignment,
   MetaOutputConfig *output_config;
   unsigned int i;
   gboolean success;
+  MetaMonitorManagerXrandr *manager_xrandr = META_MONITOR_MANAGER_XRANDR (assignment->manager);
 
   if (output_num == assignment->config->n_outputs)
     return TRUE;
@@ -1770,18 +1771,21 @@ real_assign_crtcs (CrtcAssignment     *assignment,
               config_width = output_config->rect.width;
               config_height = output_config->rect.height;
 
-              if (output_config->is_underscanning && !output->is_underscanning)
-                {
-                  width -= round(width * OVERSCAN_COMPENSATION_BORDER) * 2;
-                  height -= round(height * OVERSCAN_COMPENSATION_BORDER) * 2;
-                }
-              else if (!output_config->is_underscanning &&
-                       !output_config->is_default_config &&
-                       output->is_underscanning)
-                {
-                  config_width -= round(config_width * OVERSCAN_COMPENSATION_BORDER) * 2;
-                  config_height -= round(config_height * OVERSCAN_COMPENSATION_BORDER) * 2;
-                }
+	      if (!meta_output_supports_underscanning_on (manager_xrandr, output))
+	        {
+		  if (output_config->is_underscanning && !output->is_underscanning)
+	            {
+	               width -= round(width * OVERSCAN_COMPENSATION_BORDER) * 2;
+	               height -= round(height * OVERSCAN_COMPENSATION_BORDER) * 2;
+	            }
+	          else if (!output_config->is_underscanning &&
+	                   !output_config->is_default_config &&
+	                   output->is_underscanning)
+	            {
+	              config_width -= round(config_width * OVERSCAN_COMPENSATION_BORDER) * 2;
+	              config_height -= round(config_height * OVERSCAN_COMPENSATION_BORDER) * 2;
+	            }
+		}
 
               if (width == config_width &&
                   height == config_height &&

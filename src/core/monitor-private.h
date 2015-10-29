@@ -405,6 +405,9 @@ gboolean           meta_monitor_manager_has_hotplug_mode_update (MetaMonitorMana
 void               meta_monitor_manager_free_mode_array (MetaMonitorMode *old_modes,
                                                          int              n_old_modes);
 
+gboolean           meta_output_supports_underscanning_on (MetaMonitorManagerXrandr *manager_xrandr,
+							  MetaOutput               *output);
+
 /* Returns true if transform causes width and height to be inverted
    This is true for the odd transforms in the enum */
 static inline gboolean
