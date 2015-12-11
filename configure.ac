@@ -335,7 +335,7 @@ AC_CHECK_DECL([GL_EXT_x11_sync_object],
 # minimum/yes/maximum are the same, however.
 AC_ARG_ENABLE(compile_warnings,
   AS_HELP_STRING([--enable-compile-warnings=@<:@no/minimum/yes/maximum/error@:>@],[Turn on compiler warnings]),,
-  enable_compile_warnings=error)
+  enable_compile_warnings=yes)
 
 changequote(,)dnl
 if test "$enable_compile_warnings" != no ; then
