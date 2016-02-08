@@ -1428,7 +1428,9 @@ meta_window_actor_should_unredirect (MetaWindowActor *self)
   if (metaWindow->shape_region != NULL)
     return FALSE;
 
-  if (priv->argb32 && !meta_window_requested_bypass_compositor (metaWindow))
+  if (priv->argb32 &&
+      !cairo_region_equal (priv->shape_region, priv->opaque_region) &&
+      !meta_window_requested_bypass_compositor (metaWindow))
     return FALSE;
 
   if (!meta_window_is_monitor_sized (metaWindow))
