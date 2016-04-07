@@ -1,124 +1,303 @@
-mutter (3.10.1-2endless14) unstable; urgency=low
+mutter (3.18.3-2) unstable; urgency=medium
 
-  * debian/patches/endless-startup-with-no-monitors.patch:
-    Add a missing case reproduced with autologin on ODroid.
+  * Drop mutter-dbg now that we have automatic dbgsym packages.
+  * Ensure proper upgrade from mutter-dbg to new dbgsym packages by using
+    dh_strip --dbgsym-migration. Bump Build-Depends on debhelper accordingly.
+  * Fix dh_makeshlibs args for libmutter0g.
+  * Bump Standards-Version to 3.9.7.
+  * Drop obsolete migration code from pre-wheezy.
+  * Fix disappearing mouse cursor under GNOME Shell with a multi-monitor
+    setup. Patch cherry-picked from upstream Git.
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Mon, 05 May 2014 16:35:35 -0700
+ -- Michael Biebl <biebl@debian.org>  Tue, 15 Mar 2016 07:53:24 +0100
 
-mutter (3.10.1-2endless13) unstable; urgency=low
+mutter (3.18.3-1) unstable; urgency=medium
 
-  * debian/patches/endless-startup-with-no-monitors.patch:
-    Do not crash when starting up with no monitors connected.
+  * New upstream release.
+    - fix crash when removing monitor/undocking (Closes: #813687)
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Wed, 23 Apr 2014 17:09:16 -0700
+ -- Andreas Henriksson <andreas@fatal.se>  Thu, 03 Mar 2016 18:48:49 +0100
 
-mutter (3.10.1-2endless12) eos; urgency=low
+mutter (3.18.2-1) unstable; urgency=medium
 
-  + endless-no-outputs.patch (eos-shell #2113)
-    Upstream patch to fix crash when no display is available
+  * New upstream release.
 
- -- Daniel Drake <drake@endlessm.com>  Tue, 11 Mar 2014 11:16:14 -0600
+ -- Michael Biebl <biebl@debian.org>  Fri, 13 Nov 2015 00:09:29 +0100
 
-mutter (3.10.1-2endless11) eos; urgency=low
+mutter (3.18.1-1) unstable; urgency=medium
 
-  - endless-dont-blend-mask.patch
-    Removed this, no longer necessary with the direct rendering stack.
-  + endless-hdmi-vga-config.patch
-    Handle HDMI-VGA quirks. eos-shell #2066
+  * New upstream release.
+  * Refresh debian/patches/01_Wcast-align.patch.
+  * Wrap dependencies.
+  * Bump the dependency on gsettings-desktop-schemas to (>= 3.15.92).
+  * Drop the explicit versions from libmutter-dev dependencies. The
+    libmutter.pc file doesn't enforce any specific versions and they were
+    out-of-date anyway.
 
- -- Daniel Drake <drake@endlessm.com>  Wed, 05 Mar 2014 12:45:52 -0600
+ -- Michael Biebl <biebl@debian.org>  Wed, 21 Oct 2015 16:13:17 +0200
 
-mutter (3.10.1-2endless10) eos; urgency=medium
+mutter (3.18.0-1) unstable; urgency=medium
 
-  * debian/patches/endless-top-bar-shadow.patch:
-    Paint a shadow on top of the window's content, beneath the
-    top bar. This shadow is described in the CSS class
-    "mutter-topbar-shadow": "border-width" is the vertical size,
-    and "border-color" the initial color.
+  [ Andreas Henriksson ]
+  * Fix typo in previous changelog entry.
+  * New upstream release.
+  * Drop debian/patches/git_launcher-fix-vt-switch.patch,
+    debian/patches/git_launcher-format-string.patch:
+    - now part of upstream release.
 
- -- Felipe Erias Morandeira <felipe@igalia.com>  Wed, 05 Mar 2014 13:37:16 +0100
+ -- Laurent Bigonville <bigon@debian.org>  Sun, 11 Oct 2015 15:21:29 +0200
 
-mutter (3.10.1-2endless9) eos; urgency=low
+mutter (3.17.92-1) experimental; urgency=medium
 
-  * debian/patches/endless-fullscreen-window-focus.patch:
-    Fixes bug where fullscreen windows are opened minimized.
-    From proposed upstream patch:
-    https://bugzilla.gnome.org/show_bug.cgi?id=700288
+  [ Dmitry Shachnev ]
+  * Remove now useless dependency on gnome-themes-standard.
+  * Instead, bump libgtk-3-dev build-dependency to 3.14 to make sure mutter will
+    depend on a version of libgtk-3-common that contains the Adwaita theme.
 
- -- Roddy Shuler <roddy@endlessm.com>  Wed, 29 Jan 2014 11:53:17 -0800
+  [ Andreas Henriksson ]
+  * New upstream release candidate
+  * Add two patches cherry-picked from upstream git:
+    - debian/patches/git_launcher-format-string.patch
+      "launcher: Don't pass variable as format string"
+    - debian/patches/git_launcher-fix-vt-switch.patch
+      "Revert "launcher: simplify getting session dbus proxy""
 
-mutter (3.10.1-2endless8) unstable; urgency=low
+ -- Andreas Henriksson <andreas@fatal.se>  Thu, 17 Sep 2015 13:42:48 +0200
 
-  * debian/patches/endless-monitor-min-backlight-step.patch:
-    Add an upstream patch to expose min-backlight-step.
+mutter (3.17.90-1) experimental; urgency=medium
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Tue, 14 Jan 2014 15:04:16 -0800
+  * New upstream beta release.
+  * Update build-dependecies according to configure.ac changes:
+    - bump libclutter-1.0-dev to >= 1.23.4
+  * debian/libmutter-dev.install:
+    - stop shipping usr/share/gtk-doc, removed upstream. See commit 7dc0b0e6.
+  * Rename libmutter0f to libmutter0g
+    - including conflicting against libmutter0f
 
-mutter (3.10.1-2endless7) unstable; urgency=low
+ -- Andreas Henriksson <andreas@fatal.se>  Sat, 29 Aug 2015 11:03:17 +0200
 
-  * debian/patches/endless-update-translations-for-new-strings.patch:
-    Update translations for new strings.
+mutter (3.16.3-1) unstable; urgency=medium
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Thu, 09 Jan 2014 16:59:50 -0800
+  * New upstream release.
+  * Refresh patches.
 
-mutter (3.10.1-2endless6) unstable; urgency=low
+ -- Michael Biebl <biebl@debian.org>  Thu, 02 Jul 2015 18:57:22 +0200
 
-  * debian/patches/endless-monitor-improve-heuristic-for-display-name.patch:
-    Add a patch from upstream to fix monitor display name heuristic.
+mutter (3.16.2-3) unstable; urgency=medium
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Thu, 09 Jan 2014 10:08:39 -0800
+  * Cherry-pick upstream commit which fixes the issue that window resize
+    handles were not shown.
+  * Drop obsolete Breaks/Replaces from pre-wheezy.
 
-mutter (3.10.1-2endless5) eos; urgency=low
+ -- Michael Biebl <biebl@debian.org>  Tue, 30 Jun 2015 19:42:14 +0200
 
-  + endless-background-paint-volume.patch
-  + endless-paint-volume-obscured-bounds.patch
-  + endless-window-group-paint-volume.patch
-    * Fix paint volume implementations, to improve the client-side
-      culling performed by Clutter, eos-shell #1586
+mutter (3.16.2-2) unstable; urgency=medium
 
-  + endless-track-xshape-input-region.patch
-    * Use the XShape extension to track the input region while
-      picking to improve the chances of going through software
-      picking instead of hardware picking, eos-shell #1586
+  * Upload to unstable.
 
- -- Emmanuele Bassi <emmanuele@endlessm.com>  Wed, 8 Jan 2014 17:29:11 +0000
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Sun, 14 Jun 2015 13:44:02 +0200
 
-mutter (3.10.1-2endless4) eos; urgency=low
+mutter (3.16.2-1) experimental; urgency=medium
 
-  + endless-Remove-meta_window_new_with_attrs.patch
-  + endless-frame-remove-unnecessary-server-grab.patch
-  + endless-screen-use-stack-tracker-for-initial-window-query.patch
-  + endless-meta_window_new-clean-up-error-handling.patch
-  + endless-Reduce-server-grabs-during-window-creation.patch
-  + endless-window-don-t-grab-server-during-calc_showing.patch
-    * Avoid server grabs, eos-shell #1693
+  [ Sjoerd Simons ]
+  * New upstream release 3.16.1.
+  * debian/rules: Explicitely build wayland and the native backend on linux
+  * debian/control.in: Bump b-d
+  * debian/rules: Stop shipping doc/theme-format.txt, Metacity format support
+    has been dropped
+  * bump library name to libmutter0f
 
- -- Daniel Drake <drake@endlessm.com>  Tue, 07 Jan 2014 14:37:12 -0600
+  [ Emilio Pozuelo Monfort ]
+  * New upstream release 3.16.2.
+  * Upload to experimental.
 
-mutter (3.10.1-2endless3) unstable; urgency=low
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Wed, 27 May 2015 19:55:29 +0200
 
-  * debian/patches/endless-add-unminimize-hooks.patch:
-    Add a patch to enable unminimize animations from the shell.
+mutter (3.14.4-2) unstable; urgency=medium
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Thu, 26 Dec 2013 11:35:46 -0800
+  * Switch Build-Depends from the transitional libsystemd-login-dev to
+    libsystemd-dev. (Closes: #779761)
 
-mutter (3.10.1-2endless2) eos; urgency=low
+ -- Michael Biebl <biebl@debian.org>  Tue, 28 Apr 2015 20:10:38 +0200
 
-  + endless-drop-grab-after-window-creation.patch
-    * Avoid emitting window-added signal while display grab is active
-    * Fixes hang with Mali
-    * eos-shell/#1597
+mutter (3.14.4-1) unstable; urgency=medium
 
- -- Daniel Drake <drake@endlessm.com>  Tue, 17 Dec 2013 09:36:50 -0600
+  * New upstream translation and bugfix release.
+    + Includes new function required for the workaround to #768896 which 
+      is very annoying for users of the proprietary nvidia driver.
+  * 10_window-actor_unredirect.patch, 11_black_background.patch: 
+    dropped, merged upstream.
+  * Bump shlibs due to new function.
 
-mutter (3.10.1-2endless1) unstable; urgency=low
+ -- Josselin Mouette <joss@debian.org>  Thu, 26 Mar 2015 21:06:28 +0100
 
-  * Rebase out changes on top of 3.10.1.
-    Patches left:
-    - endless-dont-blend-mask.patch
-    - endless-prevent-double-lock-deadlock.patch
+mutter (3.14.2-1) unstable; urgency=medium
 
- -- Cosimo Cecchi <cosimo@endlessm.com>  Tue, 10 Dec 2013 15:23:49 -0800
+  * New upstream bugfix release.
+  * 10_window-actor_unredirect.patch: patch from upstream git. Fix crash 
+    when closing a window.
+  * 11_black_background.patch: patch from upstream git. Don’t set a 
+    black background when switching from the display manager.
+
+ -- Josselin Mouette <joss@debian.org>  Sun, 30 Nov 2014 15:05:14 +0100
+
+mutter (3.14.1-2) unstable; urgency=medium
+
+  * gir1.2-mutter-3.0: tighten dependency on libmutter0e by making
+    it versioned to = ${binary:Version} (Closes: #766359)
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 28 Oct 2014 19:57:02 +0100
+
+mutter (3.14.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Refresh patches.
+  * Drop obsolete Conflicts/Replaces: gir1.2-mutter-2.91.
+  * Update Build-Depends as per configure.ac.
+  * Bump Standards-Version to 3.9.6. No further changes.
+
+ -- Michael Biebl <biebl@debian.org>  Thu, 16 Oct 2014 00:40:24 +0200
+
+mutter (3.14.0-1) unstable; urgency=medium
+
+  [ Dmitry Shachnev ]
+  * Make gir1.2-mutter-3.0 break gnome-shell versions older than 3.13.92.
+    Upstream commit a4a688ed83983fb5 removed MetaBackgroundEffects class,
+    which old gnome-shell (up to 3.13.91) was using via JavaScript code.
+
+  [ Andreas Henriksson ]
+  * Make the libinput-dev build-dependency linux-only.
+    Thanks to Julien Cristau for pointing it out.
+  * New upstream release.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Mon, 22 Sep 2014 21:02:55 +0200
+
+mutter (3.13.92-1) unstable; urgency=medium
+
+  * New upstream release candidate.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 19 Sep 2014 20:43:41 +0200
+
+mutter (3.13.91-1) experimental; urgency=medium
+
+  [ Andreas Henriksson ]
+  * New upstream development release.
+  * Update build-dependencies according to configure.ac changes:
+    - bump intltool to (>= 0.41)
+    - bump libclutter-1.0-dev to (>= 1.19.5)
+    - add libinput-dev
+    - bump libsystemd-login-dev to (>= 212)
+    - add libxcb-randr0-dev, libxkbcommon-x11-dev, libxkbfile-dev and
+      xkb-data
+  * Drop patches backported from upstream:
+    - 0001-constraints-Complete-fix-for-size-hints-constrainmen.patch
+    - 0001-constraints-Size-increments-need-to-be-applied-to-th.patch
+    - 0001-keybindings-Make-sure-not-to-call-meta_change_keygra.patch
+  * Bump gobject-introspection build-dependency to (>= 1.41.3)
+    - this one supports new "nullable" annotation.
+  * libmutter-dev: bump dependency on libclutter-1.0-dev to (>= 1.19.5)
+  * libmutter-dev: stop installing usr/lib/lib*.a, no need for static
+    and they aren't built anymore.
+  * Stop excluding mutter-launch from fixperms
+    - not needed anymore, mutter-launch is now gone (see logind).
+  * Bump libwayland-dev to >= 1.5.90 as required for wayland support.
+
+  [ Rico Tzschichholz ]
+  * Update library name to libmutter0e since the API/ABI is not compatible
+    with 3.12.x releases
+
+  [ Sjoerd Simons ]
+  * New upstream release 3.13.91.
+  * Update libxkbcommon-x11-dev versioned depend
+
+  [ Andreas Henriksson ]
+  * mutter.install: ship usr/lib/mutter/mutter-restart-helper
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 05 Sep 2014 14:15:05 -0700
+
+mutter (3.13.1-1) experimental; urgency=medium
+
+  [ Laurent Bigonville ]
+  * debian/rules: Pass --as-needed to dh_autoreconf
+
+  [ Andreas Henriksson ]
+  * New upstream development release.
+  * Drop debian/patches/prevent-double-lock-deadlock.patch
+    - obsoleted by upstream commit 5c99eae8a9ca04f5e
+      "display: clean up event handling"
+  * Update build-dependencies according to configure.ac changes:
+    - add libsystemd-login-dev (>= 207), libpam0g-dev
+    - drop libxrender-dev
+  * debian/mutter.install: drop usr/share/gnome
+    - see upstream commit 542a0886cf14cec3995ada2
+      "Remove files no one cares about anymore"
+  * Add patches stolen from fedora originally backported from upstream git:
+    - 0001-constraints-Complete-fix-for-size-hints-constrainmen.patch
+    - 0001-constraints-Size-increments-need-to-be-applied-to-th.patch
+    - 0001-keybindings-Make-sure-not-to-call-meta_change_keygra.patch
+  * Bump gsettings-desktop-schemas (build-)dependencies to 3.13.1
+    - need switch-to-workspace-last schema key
+  * Exclude mutter-launch from having permissions "fixed"
+    - mutter-launch needs to be suid
+
+ -- Andreas Henriksson <andreas@fatal.se>  Sat, 02 Aug 2014 17:55:13 +0200
+
+mutter (3.12.2-2) unstable; urgency=medium
+
+  * Upload to unstable.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Mon, 14 Jul 2014 23:20:08 +0200
+
+mutter (3.12.2-1) experimental; urgency=medium
+
+  [ Sjoerd Simons ]
+  * debian/rules: Don't constrain the libmutter0 dependencies via shlibs
+    as we change the library names on ABI breaks now
+
+  [ Andreas Henriksson ]
+  * New upstream release.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Fri, 16 May 2014 17:36:21 +0200
+
+mutter (3.12.1+therealdeal-1) experimental; urgency=medium
+
+  * Tweak version to be bigger then the one in unstable
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 26 Apr 2014 19:38:07 +0200
+
+mutter (3.12.1-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Sjoerd Simons <sjoerd@debian.org>  Sat, 26 Apr 2014 17:47:46 +0200
+
+mutter (3.12.0-2) experimental; urgency=low
+
+  [ Rico Tzschichholz ]
+  * Update library name to libmutter0d since the API/ABI is not compatible
+    with 3.10.x releases
+
+  [ Emilio Pozuelo Monfort ]
+  * Let libmutter0d conflict with libmutter0c.
+
+ -- Emilio Pozuelo Monfort <pochu@debian.org>  Thu, 03 Apr 2014 10:30:00 +0200
+
+mutter (3.12.0-1) experimental; urgency=low
+
+  [ Sjoerd Simons ]
+  * debian/patches/prevent-double-lock-deadlock.patch:
+    + Added. Don't call X functions that lock the display in code paths that
+      have already locked the display if X threads have been initialized
+      (bgo#704101)
+
+  [ Andreas Henriksson ]
+  * New upstream release.
+  * Update build-dependencies according to configure.ac changes:
+    - bump upower 0.99.0
+    - bump cogl 1.17.1
+  * Bump Standards-Version to 3.9.5
+
+ -- Andreas Henriksson <andreas@fatal.se>  Sat, 29 Mar 2014 22:09:55 +0100
 
 mutter (3.10.1-2) experimental; urgency=low
 

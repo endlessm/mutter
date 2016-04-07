@@ -4,15 +4,24 @@ include /usr/share/cdbs/1/rules/autoreconf.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/gnome.mk
 include /usr/share/cdbs/1/rules/utils.mk
+include /usr/share/gnome-pkg-tools/1/rules/uploaders.mk
 include /usr/share/gnome-pkg-tools/1/rules/gnome-version.mk
 -include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
+
+DEB_DH_AUTORECONF_ARGS = --as-needed
 
 DEB_CONFIGURE_EXTRA_FLAGS += \
 	--enable-startup-notification=yes \
 	--enable-compile-warnings=yes
-DEB_DH_MAKESHLIBS_ARGS_libmutter0c += -V'libmutter0c (>= $(DEB_GNOME_VERSION)), libmutter0c (<< $(DEB_GNOME_NEXTVERSION))' -- -c0
-DEB_INSTALL_DOCS_mutter += doc/theme-format.txt
+
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+DEB_CONFIGURE_EXTRA_FLAGS +=  --enable-wayland  --enable-native-backend
+endif
+
 DEB_DH_GIREPOSITORY_ARGS_ALL := /usr/lib/mutter
+DEB_DH_MAKESHLIBS_ARGS_libmutter0g = -V'libmutter0g (>= 3.18.0)'
+
+DEB_DH_STRIP_ARGS = --dbgsym-migration='mutter-dbg (<< 3.18.3-2~)'
 
 LDFLAGS += -Wl,-O1 -Wl,--as-needed
 # This does not work with mutter; disabled, for now.
