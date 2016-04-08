@@ -979,6 +979,7 @@ create_style_context (GType            widget_type,
                       ...)
 {
   GtkStyleContext *style;
+  GtkStateFlags state;
   GtkWidgetPath *path;
   const char *name;
   va_list ap;
@@ -993,6 +994,19 @@ create_style_context (GType            widget_type,
     path = gtk_widget_path_new ();
 
   gtk_widget_path_append_type (path, widget_type);
+
+  state = gtk_style_context_get_state (style);
+  if (meta_get_locale_direction() == META_LOCALE_DIRECTION_RTL)
+    {
+      state |= GTK_STATE_FLAG_DIR_RTL;
+      state &= ~GTK_STATE_FLAG_DIR_LTR;
+    }
+  else
+    {
+      state |= GTK_STATE_FLAG_DIR_LTR;
+      state &= ~GTK_STATE_FLAG_DIR_RTL;
+    }
+  gtk_style_context_set_state (style, state);
 
   va_start (ap, first_class);
   for (name = first_class; name; name = va_arg (ap, const char *))
