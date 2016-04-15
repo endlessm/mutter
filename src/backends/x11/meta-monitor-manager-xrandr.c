@@ -323,11 +323,11 @@ output_get_supports_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xran
 
   for (i = 0; i < property_info->num_values; i++)
     {
-      /* The output supports underscanning if "on" is a valid value
+      /* The output supports underscanning if "on" or "crop" are valid values
        * for the underscan property.
        */
       char *value = XGetAtomName (manager_xrandr->xdisplay, values[i]);
-      if (strcmp (value, "on") == 0)
+      if (strcmp (value, "on") == 0 || strcmp (value, "crop") == 0)
         {
           supports_underscanning = TRUE;
           if (underscan_value)
