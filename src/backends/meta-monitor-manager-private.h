@@ -101,6 +101,12 @@ struct _MetaTileInfo {
   guint32 tile_h;
 };
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 struct _MetaOutput
 {
   /* The CRTC driving this output, NULL if the output is not enabled */

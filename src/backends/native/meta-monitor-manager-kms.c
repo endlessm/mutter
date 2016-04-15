@@ -1269,14 +1269,14 @@ set_underscan (MetaMonitorManagerKms *manager_kms,
 
       if (crtc_kms->underscan_hborder_prop_id)
         {
-          uint64_t value = crtc->current_mode->width * 0.05;
+          uint64_t value = crtc->current_mode->width * OVERSCAN_COMPENSATION_BORDER;
           drmModeObjectSetProperty (manager_kms->fd, crtc->crtc_id,
                                     DRM_MODE_OBJECT_CRTC,
                                     crtc_kms->underscan_hborder_prop_id, value);
         }
       if (crtc_kms->underscan_vborder_prop_id)
         {
-          uint64_t value = crtc->current_mode->height * 0.05;
+          uint64_t value = crtc->current_mode->height * OVERSCAN_COMPENSATION_BORDER;
           drmModeObjectSetProperty (manager_kms->fd, crtc->crtc_id,
                                     DRM_MODE_OBJECT_CRTC,
                                     crtc_kms->underscan_vborder_prop_id, value);
