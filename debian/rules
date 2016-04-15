@@ -15,7 +15,12 @@ DEB_CONFIGURE_EXTRA_FLAGS += \
 	--enable-compile-warnings=yes
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
-DEB_CONFIGURE_EXTRA_FLAGS +=  --enable-wayland  --enable-native-backend
+DEB_CONFIGURE_EXTRA_FLAGS += --enable-native-backend
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
+	DEB_CONFIGURE_EXTRA_FLAGS += --disable-wayland
+else
+	DEB_CONFIGURE_EXTRA_FLAGS += --enable-wayland
+endif
 endif
 
 DEB_DH_GIREPOSITORY_ARGS_ALL := /usr/lib/mutter
