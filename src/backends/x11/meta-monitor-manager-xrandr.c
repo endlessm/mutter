@@ -2091,13 +2091,112 @@ meta_monitor_manager_xrandr_class_init (MetaMonitorManagerXrandrClass *klass)
     g_quark_from_static_string ("-meta-monitor-xrandr-data");
 }
 
+static gboolean
+meta_monitor_manager_xrandr_update_underscan_crop (MetaMonitorManagerXrandr *manager_xrandr)
+{
+  MetaMonitorManager *manager = META_MONITOR_MANAGER (manager_xrandr);
+  gboolean needs_update = FALSE;
+  unsigned int i, j;
+  GPtrArray *new_crtcs = g_ptr_array_new_with_free_func ((GDestroyNotify) meta_crtc_info_free);
+  GPtrArray *new_outputs = g_ptr_array_new_with_free_func ((GDestroyNotify) meta_output_info_free);
+  GError *error = NULL;
+
+  for (i = 0; i < manager->n_outputs; i++)
+    {
+      MetaOutput *output = &manager->outputs[i];
+      MetaOutputXrandr *output_xrandr = output->driver_private;
+      MetaOutputInfo *output_info;
+      MetaCrtcInfo *crtc_info;
+      int current_width, current_height, target_width, target_height;
+
+      /* This output is disabled */
+      if (!output->crtc)
+        continue;
+
+      output_info = g_slice_new0 (MetaOutputInfo);
+      output_info->output = output;
+      output_info->is_primary = output->is_primary;
+      output_info->is_presentation = output->is_presentation;
+      output_info->is_underscanning = output->is_underscanning;
+      g_ptr_array_add (new_outputs, output_info);
+
+      crtc_info = g_slice_new0 (MetaCrtcInfo);
+      crtc_info->outputs = g_ptr_array_new ();
+      crtc_info->transform = output->crtc->transform;
+      crtc_info->crtc = output->crtc;
+      crtc_info->x = output->crtc->rect.x;
+      crtc_info->y = output->crtc->rect.y;
+      crtc_info->mode = output->crtc->current_mode;
+      g_ptr_array_add (crtc_info->outputs, output);
+      g_ptr_array_add (new_crtcs, crtc_info);
+
+      /* Not a cropped output */
+      if (g_strcmp0 (output_xrandr->underscan_value, "crop") != 0)
+        continue;
+
+      current_width = output->crtc->current_mode->width;
+      current_height = output->crtc->current_mode->height;
+
+      /* We intentionally don't use the value of output->underscan_hborder and
+       * output->underscan_vborder here, since they may or may not have caught
+       * up with setting/unsetting underscan.
+       */
+      if (output->is_underscanning)
+        {
+          target_width = current_width * (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+          target_height = current_height * (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+        }
+      else
+        {
+          target_width = current_width / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+          target_height = current_height / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+        }
+
+      /* Find a mode that matches what we want but which is different from the current */
+      if (current_width != target_width || current_height != target_height)
+        {
+          for (j = 0; j < manager->n_modes; j++)
+            {
+              if (target_width == manager->modes[j].width && target_height == manager->modes[j].height)
+                {
+                  /* TODO: do we need to also update x/y coordinates
+                   * for multihead? */
+                  crtc_info->mode = &manager->modes[j];
+                  needs_update = TRUE;
+                  break;
+                }
+            }
+        }
+    }
+
+  /* Handle under/overscan transitions */
+  if (needs_update)
+    {
+      apply_crtc_assignments (manager,
+                              FALSE,
+                              (MetaCrtcInfo **) new_crtcs->pdata,
+                              new_crtcs->len,
+                              (MetaOutputInfo **) new_outputs->pdata,
+                              new_outputs->len);
+    }
+
+  g_ptr_array_unref (new_crtcs);
+  g_ptr_array_unref (new_outputs);
+
+  return needs_update;
+}
+
 gboolean
 meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManagerXrandr *manager_xrandr,
 					   XEvent                   *event)
 {
   MetaMonitorManager *manager = META_MONITOR_MANAGER (manager_xrandr);
+  MetaMonitorConfigManager *config_manager = NULL;
+  MetaMonitorsConfig *config = NULL;
+  GError *error = NULL;
   gboolean is_hotplug;
   gboolean is_our_configuration;
+  gboolean needs_update_for_underscan;
 
   if ((event->type - manager_xrandr->rr_event_base) != RRScreenChangeNotify)
     return FALSE;
@@ -2105,34 +2204,36 @@ meta_monitor_manager_xrandr_handle_xevent (MetaMonitorManagerXrandr *manager_xra
   XRRUpdateConfiguration (event);
 
   meta_monitor_manager_read_current_state (manager);
-
+  needs_update_for_underscan = meta_monitor_manager_xrandr_update_underscan_crop (manager_xrandr);
 
   is_hotplug = (manager_xrandr->resources->timestamp <
                 manager_xrandr->resources->configTimestamp);
   is_our_configuration = (manager_xrandr->resources->timestamp ==
                           manager_xrandr->last_xrandr_set_timestamp);
-  if (is_hotplug)
+  if (is_hotplug && !needs_update_for_underscan)
     {
       meta_monitor_manager_on_hotplug (manager);
+      return TRUE;
+    }
+
+  config_manager = meta_monitor_manager_get_config_manager (manager);
+
+  if (needs_update_for_underscan)
+    {
+      config = meta_monitor_config_manager_create_fallback (config_manager);
+      meta_monitor_config_manager_set_current (config_manager, config);
+      meta_monitor_config_manager_save_current (config_manager);
+    }
+  else if (is_our_configuration)
+    {
+      config = meta_monitor_config_manager_get_current (config_manager);
     }
   else
     {
-      MetaMonitorsConfig *config;
-
-      if (is_our_configuration)
-        {
-          MetaMonitorConfigManager *config_manager =
-            meta_monitor_manager_get_config_manager (manager);
-
-          config = meta_monitor_config_manager_get_current (config_manager);
-        }
-      else
-        {
-          config = NULL;
-        }
-
-      meta_monitor_manager_xrandr_rebuild_derived (manager, config);
+      config = NULL;
     }
+
+  meta_monitor_manager_xrandr_rebuild_derived (manager, config);
 
   return TRUE;
 }
