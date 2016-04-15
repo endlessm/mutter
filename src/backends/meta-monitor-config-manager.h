@@ -176,6 +176,11 @@ gboolean meta_logical_monitor_configs_have_monitor (GList           *logical_mon
                                                     MetaMonitorSpec *monitor_spec);
 
 META_EXPORT_TEST
+void meta_crtc_info_free (MetaCrtcInfo *info);
+
+META_EXPORT_TEST
+void meta_output_info_free (MetaOutputInfo *info);
+
 gboolean meta_verify_monitor_mode_spec (MetaMonitorModeSpec *monitor_mode_spec,
                                         GError             **error);
 

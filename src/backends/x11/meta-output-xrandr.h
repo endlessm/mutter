@@ -40,4 +40,6 @@ MetaOutput * meta_create_xrandr_output (MetaGpuXrandr *gpu_xrandr,
                                         RROutput       output_id,
                                         RROutput       primary_output);
 
+const char * meta_output_xrandr_get_underscan_value (MetaOutput *output);
+
 #endif /* META_OUTPUT_XRANDR */

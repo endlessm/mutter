@@ -924,3 +924,11 @@ meta_create_xrandr_output (MetaGpuXrandr *gpu_xrandr,
       return output;
     }
 }
+
+const char *
+meta_output_xrandr_get_underscan_value (MetaOutput *output)
+{
+  MetaOutputXrandr *output_xrandr = output->driver_private;
+
+  return output_xrandr->underscan_value;
+}
