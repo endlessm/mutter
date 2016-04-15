@@ -37,6 +37,7 @@
 #include "boxes-private.h"
 #include "meta-monitor-config.h"
 
+#include <math.h>
 #include <string.h>
 #include <clutter/clutter.h>
 #include <libupower-glib/upower.h>
@@ -1128,6 +1129,7 @@ init_config_from_preferred_mode (MetaOutputConfig *config,
   config->transform = META_MONITOR_TRANSFORM_NORMAL;
   config->is_primary = FALSE;
   config->is_presentation = FALSE;
+  config->is_underscanning = FALSE;
 }
 
 /* This function handles configuring the outputs when the driver provides a
@@ -1940,6 +1942,7 @@ real_assign_crtcs (CrtcAssignment     *assignment,
 	    {
               MetaMonitorMode *mode = output->modes[j];
               int width, height;
+              int config_width, config_height;
 
               if (meta_monitor_transform_is_rotated (output_config->transform))
                 {
@@ -1952,8 +1955,26 @@ real_assign_crtcs (CrtcAssignment     *assignment,
                   height = mode->height;
                 }
 
-              if (width == output_config->rect.width &&
-                  height == output_config->rect.height &&
+              config_width = output_config->rect.width;
+              config_height = output_config->rect.height;
+
+              if (g_strcmp0 (output->underscan_value, "crop") == 0)
+                {
+                  if (output_config->is_underscanning && !output->is_underscanning)
+                    {
+                       width -= round (width * OVERSCAN_COMPENSATION_BORDER) * 2;
+                       height -= round (height * OVERSCAN_COMPENSATION_BORDER) * 2;
+                    }
+                  else if (!output_config->is_underscanning &&
+                           output->is_underscanning)
+                    {
+                      config_width -= round (config_width * OVERSCAN_COMPENSATION_BORDER) * 2;
+                      config_height -= round (config_height * OVERSCAN_COMPENSATION_BORDER) * 2;
+                    }
+                }
+
+              if (width == config_width &&
+                  height == config_height &&
                   (pass == 1 || mode->refresh_rate == output_config->refresh_rate))
 		{
                   meta_verbose ("CRTC %ld: trying mode %dx%d@%fHz with output at %dx%d@%fHz (transform %d) (pass %d)\n",
