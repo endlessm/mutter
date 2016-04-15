@@ -383,11 +383,11 @@ output_get_supports_underscanning_xrandr (MetaOutput  *output,
 
   for (i = 0; i < property_info->num_values; i++)
     {
-      /* The output supports underscanning if "on" is a valid value
+      /* The output supports underscanning if "on" or "crop" are valid values
        * for the underscan property.
        */
       char *name = XGetAtomName (xdisplay, values[i]);
-      if (strcmp (name, "on") == 0)
+      if (strcmp (name, "on") == 0 || strcmp (name, "crop") == 0)
         {
           supports_underscanning = TRUE;
           if (underscan_value)
