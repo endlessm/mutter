@@ -222,6 +222,48 @@ output_get_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
 }
 
 static gboolean
+output_get_underscanning_borders_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                         MetaOutput               *output,
+                                         int                      *underscan_hborder,
+                                         int                      *underscan_vborder)
+{
+  Atom atom, actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
+  g_autofree unsigned char *hborder_buffer = NULL;
+  g_autofree unsigned char *vborder_buffer = NULL;
+
+  atom = XInternAtom (manager_xrandr->xdisplay, "underscan hborder", False);
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->winsys_id,
+                        atom,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &hborder_buffer);
+
+  if (actual_type != XA_INTEGER || actual_format != 32 || nitems < 1)
+    return FALSE;
+
+  atom = XInternAtom (manager_xrandr->xdisplay, "underscan vborder", False);
+  XRRGetOutputProperty (manager_xrandr->xdisplay,
+                        (XID)output->winsys_id,
+                        atom,
+                        0, G_MAXLONG, False, False, XA_INTEGER,
+                        &actual_type, &actual_format,
+                        &nitems, &bytes_after, &vborder_buffer);
+
+  if (actual_type != XA_INTEGER || actual_format != 32 || nitems < 1)
+    return FALSE;
+
+  if (underscan_hborder)
+    *underscan_hborder = ((int*)hborder_buffer)[0];
+  if (underscan_vborder)
+    *underscan_vborder = ((int*)vborder_buffer)[0];
+
+  return TRUE;
+}
+
+static gboolean
 output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output)
 {
@@ -886,6 +928,8 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
           if (!meta_output->supports_underscanning)
             g_clear_pointer (&meta_output->underscan_value, g_free);
           meta_output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, meta_output);
+          output_get_underscanning_borders_xrandr (manager_xrandr, meta_output,
+                                                   &meta_output->underscan_hborder, &meta_output->underscan_vborder);
 	  output_get_backlight_limits_xrandr (manager_xrandr, meta_output);
 
 	  if (!(meta_output->backlight_min == 0 && meta_output->backlight_max == 0))
@@ -1032,31 +1076,37 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                     XCB_PROP_MODE_REPLACE,
                                     1, &valueatom);
 
-  /* Configure the border at the same time. Currently, we use a
-   * 5% of the width/height of the mode. In the future, we should
-   * make the border configurable. */
   if (underscanning)
     {
-      uint32_t border_value;
-
-      prop = XInternAtom (manager_xrandr->xdisplay, "underscan hborder", False);
-      border_value = output->crtc->current_mode->width * 0.05;
-
-      xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
-                                        (XID)output->winsys_id,
-                                        prop, XCB_ATOM_INTEGER, 32,
-                                        XCB_PROP_MODE_REPLACE,
-                                        1, &border_value);
-
-      prop = XInternAtom (manager_xrandr->xdisplay, "underscan vborder", False);
-      border_value = output->crtc->current_mode->height * 0.05;
-
-      xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
-                                        (XID)output->winsys_id,
-                                        prop, XCB_ATOM_INTEGER, 32,
-                                        XCB_PROP_MODE_REPLACE,
-                                        1, &border_value);
+      /* If this function is called again when underscanning is already on,
+       * we don't want to touch the borders.
+       */
+      if (output->underscan_hborder == 0)
+        output->underscan_hborder = output->crtc->current_mode->width * OVERSCAN_COMPENSATION_BORDER;
+      if (output->underscan_vborder == 0)
+        output->underscan_vborder = output->crtc->current_mode->height * OVERSCAN_COMPENSATION_BORDER;
     }
+  else
+    {
+      output->underscan_hborder = 0;
+      output->underscan_vborder = 0;
+    }
+
+  prop = XInternAtom (manager_xrandr->xdisplay, "underscan hborder", False);
+
+  xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
+                                    (XID)output->winsys_id,
+                                    prop, XCB_ATOM_INTEGER, 32,
+                                    XCB_PROP_MODE_REPLACE,
+                                    1, &output->underscan_hborder);
+
+  prop = XInternAtom (manager_xrandr->xdisplay, "underscan vborder", False);
+
+  xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
+                                    (XID)output->winsys_id,
+                                    prop, XCB_ATOM_INTEGER, 32,
+                                    XCB_PROP_MODE_REPLACE,
+                                    1, &output->underscan_vborder);
 }
 
 static void
