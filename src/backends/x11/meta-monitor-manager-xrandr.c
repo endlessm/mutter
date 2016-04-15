@@ -74,6 +74,11 @@ struct _MetaMonitorManagerXrandrClass
 
 G_DEFINE_TYPE (MetaMonitorManagerXrandr, meta_monitor_manager_xrandr, META_TYPE_MONITOR_MANAGER);
 
+typedef struct _MetaOutputXrandr
+{
+  char *underscan_value;
+} MetaOutputXrandr;
+
 #ifdef HAVE_XRANDR15
 typedef struct _MetaMonitorXrandrData
 {
@@ -82,6 +87,17 @@ typedef struct _MetaMonitorXrandrData
 
 GQuark quark_meta_monitor_xrandr_data;
 #endif /* HAVE_RANDR15 */
+
+static void
+meta_output_destroy_notify (MetaOutput *output)
+{
+  MetaOutputXrandr *output_xrandr;
+
+  output_xrandr = output->driver_private;
+  g_free (output_xrandr->underscan_value);
+
+  g_slice_free (MetaOutputXrandr, output_xrandr);
+}
 
 static MetaMonitorTransform
 meta_monitor_transform_from_xrandr (Rotation rotation)
@@ -240,6 +256,7 @@ static gboolean
 output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output)
 {
+  MetaOutputXrandr *output_xrandr = output->driver_private;
   Atom atom, actual_type;
   int actual_format;
   unsigned long nitems, bytes_after;
@@ -258,12 +275,13 @@ output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
     return FALSE;
 
   str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
-  return (strcmp (str, "on") == 0);
+  return g_strcmp0 (str, output_xrandr->underscan_value) == 0;
 }
 
 static gboolean
 output_get_supports_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
-                                          MetaOutput               *output)
+                                          MetaOutput               *output,
+                                          char                    **underscan_value)
 {
   Atom atom, actual_type;
   int actual_format, i;
@@ -296,9 +314,16 @@ output_get_supports_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xran
        */
       char *name = XGetAtomName (manager_xrandr->xdisplay, values[i]);
       if (strcmp (name, "on") == 0)
-        supports_underscanning = TRUE;
+        {
+          supports_underscanning = TRUE;
+          if (underscan_value)
+            *underscan_value = g_strdup (name);
+        }
 
       XFree (name);
+
+      if (supports_underscanning)
+        break;
     }
 
   XFree (property_info);
@@ -855,6 +880,10 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
       if (output->connection != RR_Disconnected)
 	{
           GBytes *edid;
+          MetaOutputXrandr *output_xrandr = g_slice_new0 (MetaOutputXrandr);
+
+          meta_output->driver_private = output_xrandr;
+          meta_output->driver_notify = (GDestroyNotify)meta_output_destroy_notify;
 
 	  meta_output->winsys_id = resources->outputs[i];
 	  meta_output->name = g_strdup (output->name);
@@ -888,8 +917,10 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 
 	  meta_output->is_primary = ((XID)meta_output->winsys_id == primary_output);
 	  meta_output->is_presentation = output_get_presentation_xrandr (manager_xrandr, meta_output);
+          meta_output->supports_underscanning =
+            output_get_supports_underscanning_xrandr (manager_xrandr, meta_output,
+                                                      &output_xrandr->underscan_value);
 	  meta_output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, meta_output);
-          meta_output->supports_underscanning = output_get_supports_underscanning_xrandr (manager_xrandr, meta_output);
 	  output_get_backlight_limits_xrandr (manager_xrandr, meta_output);
 
 	  if (!(meta_output->backlight_min == 0 && meta_output->backlight_max == 0))
@@ -1019,13 +1050,17 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output,
                                  gboolean                  underscanning)
 {
+  MetaOutputXrandr *output_xrandr = output->driver_private;
   Atom prop, valueatom;
   const char *value;
 
-  prop = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
-
-  value = underscanning ? "on" : "off";
+  if (underscanning)
+    value = output_xrandr->underscan_value;
+  else
+    value = "off";
   valueatom = XInternAtom (manager_xrandr->xdisplay, value, False);
+
+  prop = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
 
   xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
                                     (XID)output->winsys_id,
@@ -1251,7 +1286,7 @@ apply_crtc_assignments (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
-      if (output_get_supports_underscanning_xrandr (manager_xrandr, output_info->output))
+      if (output_get_supports_underscanning_xrandr (manager_xrandr, output_info->output, NULL))
         output_set_underscanning_xrandr (manager_xrandr,
                                          output_info->output,
                                          output_info->is_underscanning);
