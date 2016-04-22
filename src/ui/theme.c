@@ -79,10 +79,14 @@ meta_frame_layout_get_borders (const MetaFrameLayout *layout,
 
   if (!layout->has_title)
     text_height = 0;
+  else
+    text_height = layout->title_margin.top + text_height + layout->title_margin.bottom;
 
-  buttons_height = layout->icon_size +
-    layout->button_border.top + layout->button_border.bottom;
-  content_height = MAX (buttons_height, text_height) +
+  buttons_height = MAX ((int)layout->icon_size, layout->button_min_size.height) +
+    layout->button_margin.top + layout->button_border.top +
+    layout->button_margin.bottom + layout->button_border.bottom;
+  content_height = MAX (buttons_height, text_height);
+  content_height = MAX (content_height, layout->titlebar_min_size.height) +
                    layout->titlebar_border.top + layout->titlebar_border.bottom;
 
   borders->visible.top    = layout->frame_border.top + content_height;
@@ -90,23 +94,28 @@ meta_frame_layout_get_borders (const MetaFrameLayout *layout,
   borders->visible.right  = layout->frame_border.right;
   borders->visible.bottom = layout->frame_border.bottom;
 
+  borders->invisible = layout->invisible_border;
+
   draggable_borders = meta_prefs_get_draggable_border_width ();
 
   if (flags & META_FRAME_ALLOWS_HORIZONTAL_RESIZE)
     {
-      borders->invisible.left   = MAX (0, draggable_borders - borders->visible.left);
-      borders->invisible.right  = MAX (0, draggable_borders - borders->visible.right);
+      borders->invisible.left   = MAX (borders->invisible.left,
+                                       draggable_borders - borders->visible.left);
+      borders->invisible.right  = MAX (borders->invisible.right,
+                                       draggable_borders - borders->visible.right);
     }
 
   if (flags & META_FRAME_ALLOWS_VERTICAL_RESIZE)
     {
-      borders->invisible.bottom = MAX (0, draggable_borders - borders->visible.bottom);
+      borders->invisible.bottom = MAX (borders->invisible.bottom,
+                                       draggable_borders - borders->visible.bottom);
 
       /* borders.visible.top is the height of the *title bar*. We can't do the same
        * algorithm here, titlebars are expectedly much bigger. Just subtract a couple
        * pixels to get a proper feel. */
       if (type != META_FRAME_TYPE_ATTACHED)
-        borders->invisible.top    = MAX (0, draggable_borders - 2);
+        borders->invisible.top    = MAX (borders->invisible.top, draggable_borders - 2);
     }
 
   borders->total.left   = borders->invisible.left   + borders->visible.left;
@@ -177,17 +186,6 @@ rect_for_function (MetaFrameGeometry *fgeom,
         return &fgeom->close_rect;
       else
         return NULL;
-    case META_BUTTON_FUNCTION_STICK:
-    case META_BUTTON_FUNCTION_SHADE:
-    case META_BUTTON_FUNCTION_ABOVE:
-    case META_BUTTON_FUNCTION_UNSTICK:
-    case META_BUTTON_FUNCTION_UNSHADE:
-    case META_BUTTON_FUNCTION_UNABOVE:
-      /* Fringe buttons that used to be supported by theme versions >v1;
-       * if we want to support them again, we need to return the
-       * correspondings rects here
-       */
-      return NULL;
 
     case META_BUTTON_FUNCTION_LAST:
       return NULL;
@@ -246,6 +244,16 @@ get_padding_and_border (GtkStyleContext *style,
 }
 
 static void
+get_min_size (GtkStyleContext *style,
+              GtkRequisition  *requisition)
+{
+  gtk_style_context_get (style, gtk_style_context_get_state (style),
+                         "min-width", &requisition->width,
+                         "min-height", &requisition->height,
+                         NULL);
+}
+
+static void
 scale_border (GtkBorder *border,
               double     factor)
 {
@@ -262,6 +270,8 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
 {
   GtkStyleContext *style;
   GtkBorder border;
+  GtkRequisition requisition;
+  GdkRectangle clip_rect;
   int border_radius, max_radius;
 
   meta_style_info_set_flags (style_info, flags);
@@ -269,6 +279,12 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
   style = style_info->styles[META_STYLE_ELEMENT_FRAME];
   get_padding_and_border (style, &layout->frame_border);
   scale_border (&layout->frame_border, layout->title_scale);
+
+  gtk_render_background_get_clip (style, 0, 0, 0, 0, &clip_rect);
+  layout->invisible_border.left = -clip_rect.x;
+  layout->invisible_border.right = clip_rect.width + clip_rect.x;
+  layout->invisible_border.top = -clip_rect.y;
+  layout->invisible_border.bottom = clip_rect.height + clip_rect.y;
 
   if (layout->hide_buttons)
     layout->icon_size = 0;
@@ -292,14 +308,25 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
   max_radius = MIN (layout->frame_border.bottom, layout->frame_border.right);
   layout->bottom_right_corner_rounded_radius = MAX (border_radius, max_radius);
 
+  get_min_size (style, &layout->titlebar_min_size);
   get_padding_and_border (style, &layout->titlebar_border);
   scale_border (&layout->titlebar_border, layout->title_scale);
 
+  style = style_info->styles[META_STYLE_ELEMENT_TITLE];
+  gtk_style_context_get_margin (style, gtk_style_context_get_state (style),
+                                &layout->title_margin);
+  scale_border (&layout->title_margin, layout->title_scale);
+
   style = style_info->styles[META_STYLE_ELEMENT_BUTTON];
+  get_min_size (style, &layout->button_min_size);
   get_padding_and_border (style, &layout->button_border);
   scale_border (&layout->button_border, layout->title_scale);
+  gtk_style_context_get_margin (style, gtk_style_context_get_state (style),
+                                &layout->button_margin);
+  scale_border (&layout->button_margin, layout->title_scale);
 
   style = style_info->styles[META_STYLE_ELEMENT_IMAGE];
+  get_min_size (style, &requisition);
   get_padding_and_border (style, &border);
   scale_border (&border, layout->title_scale);
 
@@ -307,6 +334,18 @@ meta_frame_layout_sync_with_style (MetaFrameLayout *layout,
   layout->button_border.right += border.right;
   layout->button_border.top += border.top;
   layout->button_border.bottom += border.bottom;
+
+  gtk_style_context_get_margin (style, gtk_style_context_get_state (style),
+                                &border);
+  layout->button_border.left += border.left;
+  layout->button_border.right += border.right;
+  layout->button_border.top += border.top;
+  layout->button_border.bottom += border.bottom;
+
+  layout->button_min_size.width = MAX(layout->button_min_size.width,
+                                      requisition.width);
+  layout->button_min_size.height = MAX(layout->button_min_size.height,
+                                       requisition.height);
 }
 
 static void
@@ -370,9 +409,9 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
                   (fgeom->content_border.right + borders.invisible.right);
   content_height = borders.visible.top - fgeom->content_border.top - fgeom->content_border.bottom;
 
-  button_width = layout->icon_size +
+  button_width = MAX ((int)layout->icon_size, layout->button_min_size.width) +
                  layout->button_border.left + layout->button_border.right;
-  button_height = layout->icon_size +
+  button_height = MAX ((int)layout->icon_size, layout->button_min_size.height) +
                   layout->button_border.top + layout->button_border.bottom;
   button_width *= scale;
   button_height *= scale;
@@ -433,11 +472,15 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
 
       space_used_by_buttons = 0;
 
+      space_used_by_buttons += layout->button_margin.left * scale * n_left;
       space_used_by_buttons += button_width * n_left;
+      space_used_by_buttons += layout->button_margin.right * scale * n_left;
       space_used_by_buttons += (button_width * 0.75) * n_left_spacers;
       space_used_by_buttons += layout->titlebar_spacing * scale * MAX (n_left - 1, 0);
 
+      space_used_by_buttons += layout->button_margin.left * scale * n_right;
       space_used_by_buttons += button_width * n_right;
+      space_used_by_buttons += layout->button_margin.right * scale * n_right;
       space_used_by_buttons += (button_width * 0.75) * n_right_spacers;
       space_used_by_buttons += layout->titlebar_spacing * scale * MAX (n_right - 1, 0);
 
@@ -457,22 +500,10 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
         }
 
       /* Otherwise we need to shave out a button. Shave
-       * above, stick, shade, min, max, close, then menu (menu is most useful);
+       * min, max, close, then menu (menu is most useful);
        * prefer the default button locations.
        */
-      if (strip_button (left_func_rects, &n_left, &fgeom->above_rect))
-        continue;
-      else if (strip_button (right_func_rects, &n_right, &fgeom->above_rect))
-        continue;
-      else if (strip_button (left_func_rects, &n_left, &fgeom->stick_rect))
-        continue;
-      else if (strip_button (right_func_rects, &n_right, &fgeom->stick_rect))
-        continue;
-      else if (strip_button (left_func_rects, &n_left, &fgeom->shade_rect))
-        continue;
-      else if (strip_button (right_func_rects, &n_right, &fgeom->shade_rect))
-        continue;
-      else if (strip_button (left_func_rects, &n_left, &fgeom->min_rect))
+      if (strip_button (left_func_rects, &n_left, &fgeom->min_rect))
         continue;
       else if (strip_button (right_func_rects, &n_right, &fgeom->min_rect))
         continue;
@@ -519,6 +550,8 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
       if (x < 0) /* if we go negative, leave the buttons we don't get to as 0-width */
         break;
 
+      x -= layout->button_margin.right * scale;
+
       rect = right_func_rects[i];
       rect->visible.x = x - button_width;
       if (right_buttons_has_spacer[i])
@@ -544,7 +577,7 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
       else
         g_memmove (&(rect->clickable), &(rect->visible), sizeof(rect->clickable));
 
-      x = rect->visible.x;
+      x = rect->visible.x - layout->button_margin.left * scale;
 
       if (i > 0)
         x -= layout->titlebar_spacing;
@@ -562,6 +595,8 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
   for (i = 0; i < n_left; i++)
     {
       MetaButtonSpace *rect;
+
+      x += layout->button_margin.left * scale;
 
       rect = left_func_rects[i];
 
@@ -589,7 +624,7 @@ meta_frame_layout_calc_geometry (MetaFrameLayout        *layout,
       else
         g_memmove (&(rect->clickable), &(rect->visible), sizeof(rect->clickable));
 
-      x = rect->visible.x + rect->visible.width;
+      x = rect->visible.x + rect->visible.width + layout->button_margin.right * scale;
       if (i < n_left - 1)
         x += layout->titlebar_spacing * scale;
       if (left_buttons_has_spacer[i])
@@ -641,30 +676,6 @@ get_button_rect (MetaButtonType           type,
     {
     case META_BUTTON_TYPE_CLOSE:
       *rect = fgeom->close_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_SHADE:
-      *rect = fgeom->shade_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_UNSHADE:
-      *rect = fgeom->unshade_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_ABOVE:
-      *rect = fgeom->above_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_UNABOVE:
-      *rect = fgeom->unabove_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_STICK:
-      *rect = fgeom->stick_rect.visible;
-      break;
-
-    case META_BUTTON_TYPE_UNSTICK:
-      *rect = fgeom->unstick_rect.visible;
       break;
 
     case META_BUTTON_TYPE_MAXIMIZE:
@@ -889,6 +900,7 @@ meta_frame_layout_draw_with_style (MetaFrameLayout         *layout,
       cairo_restore (cr);
       if (button_class)
         gtk_style_context_remove_class (style, button_class);
+      gtk_style_context_set_state (style, state);
     }
 }
 
@@ -974,6 +986,7 @@ static GtkStyleContext *
 create_style_context (GType            widget_type,
                       GtkStyleContext *parent_style,
                       GtkCssProvider  *provider,
+                      const char      *object_name,
                       const char      *first_class,
                       ...)
 {
@@ -1006,6 +1019,9 @@ create_style_context (GType            widget_type,
       state &= ~GTK_STATE_FLAG_DIR_RTL;
     }
   gtk_style_context_set_state (style, state);
+
+  if (object_name)
+    gtk_widget_path_iter_set_object_name (path, -1, object_name);
 
   va_start (ap, first_class);
   for (name = first_class; name; name = va_arg (ap, const char *))
@@ -1042,40 +1058,48 @@ meta_theme_create_style_info (GdkScreen   *screen,
   style_info = g_new0 (MetaStyleInfo, 1);
   style_info->refcount = 1;
 
-  style_info->styles[META_STYLE_ELEMENT_FRAME] =
+  style_info->styles[META_STYLE_ELEMENT_WINDOW] =
     create_style_context (META_TYPE_FRAMES,
                           NULL,
                           provider,
+                          "window",
                           GTK_STYLE_CLASS_BACKGROUND,
-                          "window-frame",
                           "ssd",
+                          NULL);
+  style_info->styles[META_STYLE_ELEMENT_FRAME] =
+    create_style_context (META_TYPE_FRAMES,
+                          style_info->styles[META_STYLE_ELEMENT_WINDOW],
+                          provider,
+                          "decoration",
                           NULL);
   style_info->styles[META_STYLE_ELEMENT_TITLEBAR] =
     create_style_context (GTK_TYPE_HEADER_BAR,
                           style_info->styles[META_STYLE_ELEMENT_FRAME],
                           provider,
+                          "headerbar",
                           GTK_STYLE_CLASS_TITLEBAR,
                           GTK_STYLE_CLASS_HORIZONTAL,
                           "default-decoration",
-                          "header-bar",
                           NULL);
   style_info->styles[META_STYLE_ELEMENT_TITLE] =
     create_style_context (GTK_TYPE_LABEL,
                           style_info->styles[META_STYLE_ELEMENT_TITLEBAR],
                           provider,
+                          "label",
                           GTK_STYLE_CLASS_TITLE,
                           NULL);
   style_info->styles[META_STYLE_ELEMENT_BUTTON] =
     create_style_context (GTK_TYPE_BUTTON,
                           style_info->styles[META_STYLE_ELEMENT_TITLEBAR],
                           provider,
-                          GTK_STYLE_CLASS_BUTTON,
+                          "button",
                           "titlebutton",
                           NULL);
   style_info->styles[META_STYLE_ELEMENT_IMAGE] =
     create_style_context (GTK_TYPE_IMAGE,
                           style_info->styles[META_STYLE_ELEMENT_BUTTON],
                           provider,
+                          "image",
                           NULL);
   return style_info;
 }
@@ -1182,9 +1206,10 @@ meta_style_info_create_font_desc (MetaStyleInfo *style_info)
 {
   PangoFontDescription *font_desc;
   const PangoFontDescription *override = meta_prefs_get_titlebar_font ();
+  GtkStyleContext *context = style_info->styles[META_STYLE_ELEMENT_TITLE];
 
-  gtk_style_context_get (style_info->styles[META_STYLE_ELEMENT_TITLE],
-                         GTK_STATE_FLAG_NORMAL,
+  gtk_style_context_get (context,
+                         gtk_style_context_get_state (context),
                          "font", &font_desc, NULL);
 
   if (override)

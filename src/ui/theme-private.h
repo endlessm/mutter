@@ -53,12 +53,24 @@ typedef struct _MetaFrameGeometry MetaFrameGeometry;
  **/
 struct _MetaFrameLayout
 {
+  /** Invisible border required by the theme */
+  GtkBorder invisible_border;
   /** Border/padding of the entire frame */
   GtkBorder frame_border;
   /** Border/padding of the titlebar region */
   GtkBorder titlebar_border;
   /** Border/padding of titlebar buttons */
   GtkBorder button_border;
+
+  /** Margin of title */
+  GtkBorder title_margin;
+  /** Margin of titlebar buttons */
+  GtkBorder button_margin;
+
+  /** Min size of titlebar region */
+  GtkRequisition titlebar_min_size;
+  /** Min size of titlebar buttons */
+  GtkRequisition button_min_size;
 
   /** Size of images in buttons */
   guint icon_size;
@@ -115,7 +127,7 @@ struct _MetaFrameGeometry
 
   /* used for a memset hack */
 #define ADDRESS_OF_BUTTON_RECTS(fgeom) (((char*)(fgeom)) + G_STRUCT_OFFSET (MetaFrameGeometry, close_rect))
-#define LENGTH_OF_BUTTON_RECTS (G_STRUCT_OFFSET (MetaFrameGeometry, unstick_rect) + sizeof (MetaButtonSpace) - G_STRUCT_OFFSET (MetaFrameGeometry, close_rect))
+#define LENGTH_OF_BUTTON_RECTS (G_STRUCT_OFFSET (MetaFrameGeometry, appmenu_rect) + sizeof (MetaButtonSpace) - G_STRUCT_OFFSET (MetaFrameGeometry, close_rect))
 
   /* The button rects (if changed adjust memset hack) */
   MetaButtonSpace close_rect;
@@ -123,12 +135,6 @@ struct _MetaFrameGeometry
   MetaButtonSpace min_rect;
   MetaButtonSpace menu_rect;
   MetaButtonSpace appmenu_rect;
-  MetaButtonSpace shade_rect;
-  MetaButtonSpace above_rect;
-  MetaButtonSpace stick_rect;
-  MetaButtonSpace unshade_rect;
-  MetaButtonSpace unabove_rect;
-  MetaButtonSpace unstick_rect;
   /* End of button rects (if changed adjust memset hack) */
 
   /* Saved button layout */
@@ -158,17 +164,12 @@ typedef enum
   META_BUTTON_TYPE_MINIMIZE,
   META_BUTTON_TYPE_MENU,
   META_BUTTON_TYPE_APPMENU,
-  META_BUTTON_TYPE_SHADE,
-  META_BUTTON_TYPE_ABOVE,
-  META_BUTTON_TYPE_STICK,
-  META_BUTTON_TYPE_UNSHADE,
-  META_BUTTON_TYPE_UNABOVE,
-  META_BUTTON_TYPE_UNSTICK,
   META_BUTTON_TYPE_LAST
 } MetaButtonType;
 
 typedef enum
 {
+  META_STYLE_ELEMENT_WINDOW,
   META_STYLE_ELEMENT_FRAME,
   META_STYLE_ELEMENT_TITLEBAR,
   META_STYLE_ELEMENT_TITLE,
