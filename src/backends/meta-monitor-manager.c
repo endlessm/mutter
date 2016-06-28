@@ -1768,6 +1768,40 @@ meta_output_is_laptop (MetaOutput *output)
     }
 }
 
+static gboolean
+is_hdtv_resolution (int width,
+                    int height)
+{
+  return ((width == 1920 && height == 1080) ||
+          (width == 1440 && height == 1080) ||
+          (width == 1280 && height == 720));
+}
+
+gboolean
+meta_output_supports_underscan (MetaOutput *output)
+{
+  guint overscan_width, overscan_height;
+  guint width, height;
+
+  if (!g_str_has_prefix (get_connector_type_name (output->connector_type), "HDMI"))
+    return FALSE;
+
+  if (!output->crtc || !output->crtc->current_mode)
+    return FALSE;
+
+  /*
+   * Since we can't rely on output->is_overscanned being updated, simply check
+   * both the current and the adjusted values to see if any of them match the
+   * whitelisted values
+   */
+  width = output->crtc->current_mode->width;
+  height = output->crtc->current_mode->height;
+  overscan_width = width / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+  overscan_height = height / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+
+  return is_hdtv_resolution (width, height) || is_hdtv_resolution (overscan_width, overscan_height);
+}
+
 void
 meta_monitor_manager_on_hotplug (MetaMonitorManager *manager)
 {
