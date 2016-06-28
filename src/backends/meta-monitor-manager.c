@@ -1765,6 +1765,27 @@ meta_output_is_laptop (MetaOutput *output)
     }
 }
 
+static gboolean
+is_hdtv_resolution (guint width,
+                    guint height)
+{
+  return (width == 1920 && height == 1080) ||
+    (width == 1440 && height == 1080) ||
+    (width == 1280 && height == 720);
+}
+
+gboolean
+meta_output_is_underscan_compatible (MetaOutput *output)
+{
+  if (!g_str_has_prefix (get_connector_type_name (output->connector_type), "HDMI"))
+    return FALSE;
+
+  if (!output->crtc)
+    return FALSE;
+
+  return is_hdtv_resolution (output->crtc->current_mode->width, output->crtc->current_mode->height);
+}
+
 void
 meta_monitor_manager_on_hotplug (MetaMonitorManager *manager)
 {
