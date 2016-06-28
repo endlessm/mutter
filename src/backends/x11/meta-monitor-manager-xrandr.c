@@ -99,6 +99,30 @@ typedef struct _MetaMonitorXrandrData
 GQuark quark_meta_monitor_xrandr_data;
 #endif /* HAVE_RANDR15 */
 
+static gboolean
+meta_output_is_hdtv (MetaOutput *output)
+{
+  guint overscan_width, overscan_height;
+  guint width, height;
+
+  if (!output->crtc || !output->crtc->current_mode)
+    return FALSE;
+
+  /* We must have an HDTV is underscan is already enabled */
+  if (output->is_underscanning)
+    return TRUE;
+
+  if (!g_str_has_prefix (meta_output_get_connector_type_name (output), "HDMI"))
+    return FALSE;
+
+  width = output->crtc->current_mode->width;
+  height = output->crtc->current_mode->height;
+
+  return ((width == 1920 && height == 1080) ||
+          (width == 1440 && height == 1080) ||
+          (width == 1280 && height == 720));
+}
+
 static void
 meta_output_destroy_notify (MetaOutput *output)
 {
@@ -961,6 +985,12 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 	  output_get_underscanning_borders_xrandr (manager_xrandr, output,
                                                    &output_xrandr->underscan_hborder,
                                                    &output_xrandr->underscan_vborder);
+
+          /* Override the 'supports underscanning' property for non HDTV sets.
+           * Note that we need to do this after checking if underscanning is on, so
+           * that we now the exact values for width and height to be checked. */
+          if (output->supports_underscanning && !meta_output_is_hdtv (output))
+            output->supports_underscanning = FALSE;
 
 	  if (!(output->backlight_min == 0 && output->backlight_max == 0))
 	    output->backlight = output_get_backlight_xrandr (manager_xrandr, output);

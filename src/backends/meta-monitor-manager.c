@@ -963,10 +963,10 @@ make_display_name (MetaMonitorManager *manager,
     }
 }
 
-static const char *
-get_connector_type_name (MetaConnectorType connector_type)
+const char *
+meta_output_get_connector_type_name (MetaOutput *output)
 {
-  switch (connector_type)
+  switch (output->connector_type)
     {
     case META_CONNECTOR_TYPE_Unknown: return "Unknown";
     case META_CONNECTOR_TYPE_VGA: return "VGA";
@@ -1072,7 +1072,7 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
       g_variant_builder_add (&properties, "{sv}", "presentation",
                              g_variant_new_boolean (output->is_presentation));
       g_variant_builder_add (&properties, "{sv}", "connector-type",
-                             g_variant_new_string (get_connector_type_name (output->connector_type)));
+                             g_variant_new_string (meta_output_get_connector_type_name (output)));
       g_variant_builder_add (&properties, "{sv}", "underscanning",
                              g_variant_new_boolean (output->is_underscanning));
       g_variant_builder_add (&properties, "{sv}", "supports-underscanning",
