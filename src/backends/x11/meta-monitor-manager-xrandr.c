@@ -301,6 +301,9 @@ output_get_supports_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xran
   Atom *values;
   gboolean supports_underscanning = FALSE;
 
+  if (!meta_output_is_underscan_compatible (output))
+    return FALSE;
+
   atom = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
   XRRGetOutputProperty (manager_xrandr->xdisplay,
                         (XID)output->winsys_id,
@@ -1306,10 +1309,9 @@ meta_monitor_manager_xrandr_apply_configuration (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
-      if (output_get_supports_underscanning_xrandr (manager_xrandr, output_info->output, NULL))
-        output_set_underscanning_xrandr (manager_xrandr,
-                                         output_info->output,
-                                         output_info->is_underscanning);
+      output_set_underscanning_xrandr (manager_xrandr,
+                                       output_info->output,
+                                       output_info->is_underscanning);
 
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
