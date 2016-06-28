@@ -1132,6 +1132,7 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
   g_variant_iter_init (&output_iter, outputs);
   while (g_variant_iter_loop (&output_iter, "(u@a{sv})", &output_index, &properties))
     {
+      MetaOutput *output;
       MetaOutputInfo *output_info;
       gboolean primary, presentation, underscanning;
 
@@ -1143,17 +1144,29 @@ meta_monitor_manager_handle_apply_configuration  (MetaDBusDisplayConfig *skeleto
           return TRUE;
         }
 
+      output = &manager->outputs[output_index];
+      underscanning = FALSE;
+
+      if (g_variant_lookup (properties, "underscanning", "b", &underscanning))
+        {
+          if (underscanning && !output->supports_underscanning)
+            {
+              g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR,
+                                                     G_DBUS_ERROR_INVALID_ARGS,
+                                                     "Underscanning requested but unsupported");
+              return TRUE;
+            }
+        }
+
       output_info = g_slice_new0 (MetaOutputInfo);
-      output_info->output = &manager->outputs[output_index];
+      output_info->output = output;
+      output_info->is_underscanning = underscanning;
 
       if (g_variant_lookup (properties, "primary", "b", &primary))
         output_info->is_primary = primary;
 
       if (g_variant_lookup (properties, "presentation", "b", &presentation))
         output_info->is_presentation = presentation;
-
-      if (g_variant_lookup (properties, "underscanning", "b", &underscanning))
-        output_info->is_underscanning = underscanning;
 
       g_ptr_array_add (output_infos, output_info);
     }
