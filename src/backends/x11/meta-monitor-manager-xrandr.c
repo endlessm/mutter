@@ -1506,10 +1506,9 @@ apply_crtc_assignments (MetaMonitorManager *manager,
                                       output_info->output,
                                       output_info->is_presentation);
 
-      if (output_get_supports_underscanning_xrandr (manager_xrandr, output_info->output, NULL))
-        output_set_underscanning_xrandr (manager_xrandr,
-                                         output_info->output,
-                                         output_info->is_underscanning);
+      output_set_underscanning_xrandr (manager_xrandr,
+                                       output_info->output,
+                                       output_info->is_underscanning);
 
       output->is_primary = output_info->is_primary;
       output->is_presentation = output_info->is_presentation;
