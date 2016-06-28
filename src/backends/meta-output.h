@@ -144,4 +144,7 @@ MetaMonitorTransform meta_output_logical_to_crtc_transform (MetaOutput          
 MetaMonitorTransform meta_output_crtc_to_logical_transform (MetaOutput           *output,
                                                             MetaMonitorTransform  transform);
 
+META_EXPORT_TEST
+const char *       meta_output_get_connector_type_name (MetaOutput *output);
+
 #endif /* META_OUTPUT_H */
