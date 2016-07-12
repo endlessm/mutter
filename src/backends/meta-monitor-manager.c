@@ -2070,7 +2070,7 @@ meta_output_supports_underscan (MetaOutput *output)
   if (!g_str_has_prefix (get_connector_type_name (output->connector_type), "HDMI"))
     return FALSE;
 
-  if (!output->crtc)
+  if (!output->crtc || !output->crtc->current_mode)
     return FALSE;
 
   return is_hdtv_resolution (output->crtc->current_mode->width, output->crtc->current_mode->height);
