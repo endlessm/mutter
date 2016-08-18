@@ -379,6 +379,15 @@ meta_shadow_get_bounds  (MetaShadow            *shadow,
   bounds->height = window_height + shadow->outer_border_top + shadow->outer_border_bottom;
 }
 
+void
+meta_shadow_set_cull_back_face (MetaShadow *shadow,
+                                gboolean   cull)
+{
+  cogl_pipeline_set_cull_face_mode (shadow->pipeline,
+                                    cull ? COGL_PIPELINE_CULL_FACE_MODE_BACK :
+                                           COGL_PIPELINE_CULL_FACE_MODE_NONE);
+}
+
 static void
 meta_shadow_class_info_free (MetaShadowClassInfo *class_info)
 {

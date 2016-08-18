@@ -110,6 +110,9 @@ void        meta_shadow_get_bounds  (MetaShadow            *shadow,
                                      int                    window_height,
                                      cairo_rectangle_int_t *bounds);
 
+void        meta_shadow_set_cull_back_face (MetaShadow *shadow,
+                                            gboolean   cull);
+
 MetaShadowFactory *meta_shadow_factory_new (void);
 
 MetaShadow *meta_shadow_factory_get_shadow (MetaShadowFactory *factory,
