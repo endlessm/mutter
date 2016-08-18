@@ -95,6 +95,8 @@ struct _MetaShapedTexturePrivate
   guint tex_width, tex_height;
   guint fallback_width, fallback_height;
 
+  CoglPipelineCullFaceMode cull_mode;
+
   guint create_mipmaps : 1;
 };
 
@@ -132,6 +134,7 @@ meta_shaped_texture_init (MetaShapedTexture *self)
 
   priv->texture = NULL;
   priv->mask_texture = NULL;
+  priv->cull_mode = COGL_PIPELINE_CULL_FACE_MODE_NONE;
   priv->create_mipmaps = TRUE;
   priv->is_y_inverted = TRUE;
 }
@@ -497,6 +500,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
           opaque_pipeline = get_unblended_pipeline (stex, ctx);
           cogl_pipeline_set_layer_texture (opaque_pipeline, 0, paint_tex);
           cogl_pipeline_set_layer_filters (opaque_pipeline, 0, filter, filter);
+          cogl_pipeline_set_cull_face_mode (opaque_pipeline, priv->cull_mode);
 
           n_rects = cairo_region_num_rectangles (region);
           for (i = 0; i < n_rects; i++)
@@ -537,6 +541,7 @@ meta_shaped_texture_paint (ClutterActor *actor)
 
       cogl_pipeline_set_layer_texture (blended_pipeline, 0, paint_tex);
       cogl_pipeline_set_layer_filters (blended_pipeline, 0, filter, filter);
+      cogl_pipeline_set_cull_face_mode (blended_pipeline, priv->cull_mode);
 
       CoglColor color;
       cogl_color_init_from_4ub (&color, opacity, opacity, opacity, opacity);
@@ -995,6 +1000,16 @@ meta_shaped_texture_set_fallback_size (MetaShapedTexture *self,
 
   priv->fallback_width = fallback_width;
   priv->fallback_height = fallback_height;
+}
+
+void
+meta_shaped_texture_set_cull_back_face (MetaShapedTexture *self,
+                                        gboolean          cull)
+{
+  g_return_if_fail (META_IS_SHAPED_TEXTURE (self));
+
+  self->priv->cull_mode = cull ? COGL_PIPELINE_CULL_FACE_MODE_BACK :
+                                 COGL_PIPELINE_CULL_FACE_MODE_NONE;
 }
 
 static void

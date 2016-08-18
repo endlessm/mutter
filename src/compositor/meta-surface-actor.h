@@ -76,6 +76,9 @@ void meta_surface_actor_set_unredirected (MetaSurfaceActor *actor,
                                           gboolean          unredirected);
 gboolean meta_surface_actor_is_unredirected (MetaSurfaceActor *actor);
 
+void meta_surface_actor_set_cull_back_face (MetaSurfaceActor *actor,
+                                            gboolean         cull);
+
 G_END_DECLS
 
 #endif /* META_SURFACE_ACTOR_PRIVATE_H */
