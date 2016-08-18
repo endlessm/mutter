@@ -61,6 +61,8 @@ Window             meta_window_actor_get_x_window         (MetaWindowActor *self
 MetaWindow *       meta_window_actor_get_meta_window      (MetaWindowActor *self);
 ClutterActor *     meta_window_actor_get_texture          (MetaWindowActor *self);
 gboolean       meta_window_actor_is_destroyed (MetaWindowActor *self);
+void               meta_window_actor_set_cull_back_face   (MetaWindowActor *self,
+                                                           gboolean        cull);
 
 typedef enum {
   META_SHADOW_MODE_AUTO,
