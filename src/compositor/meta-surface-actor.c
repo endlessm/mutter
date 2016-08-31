@@ -364,6 +364,15 @@ meta_surface_actor_is_unredirected (MetaSurfaceActor *self)
   return META_SURFACE_ACTOR_GET_CLASS (self)->is_unredirected (self);
 }
 
+void
+meta_surface_actor_set_cull_back_face (MetaSurfaceActor *self,
+                                       gboolean         cull)
+{
+  g_return_if_fail (META_IS_SURFACE_ACTOR (self));
+
+  meta_shaped_texture_set_cull_back_face (self->priv->texture, cull);
+}
+
 MetaWindow *
 meta_surface_actor_get_window (MetaSurfaceActor *self)
 {
