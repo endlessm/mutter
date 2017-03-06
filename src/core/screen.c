@@ -296,6 +296,7 @@ set_supported_hint (MetaScreen *screen)
 
     screen->display->atom__GTK_FRAME_EXTENTS,
     screen->display->atom__GTK_SHOW_WINDOW_MENU,
+    screen->display->atom__GTK_WINDOW_UNREDIRECT,
   };
 
   XChangeProperty (screen->display->xdisplay, screen->xroot,
