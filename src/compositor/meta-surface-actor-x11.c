@@ -36,6 +36,7 @@
 #include "meta/meta-x11-errors.h"
 #include "x11/meta-x11-display-private.h"
 #include "x11/window-x11.h"
+#include <X11/Xatom.h>
 
 struct _MetaSurfaceActorX11
 {
@@ -306,6 +307,7 @@ sync_unredirected (MetaSurfaceActorX11 *self)
   MetaDisplay *display = self->display;
   Display *xdisplay = meta_x11_display_get_xdisplay (display->x11_display);
   Window xwindow = meta_window_x11_get_toplevel_xwindow (self->window);
+  guint32 unredirected = self->unredirected ? TRUE : FALSE;
 
   meta_x11_error_trap_push (display->x11_display);
 
@@ -318,6 +320,15 @@ sync_unredirected (MetaSurfaceActorX11 *self)
     {
       XCompositeRedirectWindow (xdisplay, xwindow, CompositeRedirectManual);
     }
+
+  /* Set non standard _GTK_WINDOW_UNREDIRECTED window property.
+   * This allows clients to know if a window is unredirected or not under
+   * a composite wm.
+   */
+  XChangeProperty (xdisplay, xwindow,
+                   display->x11_display->atom__GTK_WINDOW_UNREDIRECTED,
+                   XA_CARDINAL, 32, PropModeReplace,
+                   (guchar*) &unredirected, 1);
 
   meta_x11_error_trap_pop (display->x11_display);
 }
