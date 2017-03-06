@@ -35,6 +35,7 @@
 #include "meta-shaped-texture-private.h"
 #include "meta-cullable.h"
 #include "x11/window-x11.h"
+#include <X11/Xatom.h>
 
 struct _MetaSurfaceActorX11Private
 {
@@ -313,6 +314,7 @@ sync_unredirected (MetaSurfaceActorX11 *self)
   MetaDisplay *display = priv->display;
   Display *xdisplay = meta_display_get_xdisplay (display);
   Window xwindow = meta_window_x11_get_toplevel_xwindow (priv->window);
+  guint32 unredirected = priv->unredirected ? TRUE : FALSE;
 
   meta_error_trap_push (display);
 
@@ -325,6 +327,15 @@ sync_unredirected (MetaSurfaceActorX11 *self)
     {
       XCompositeRedirectWindow (xdisplay, xwindow, CompositeRedirectManual);
     }
+
+  /* Set non standard _GTK_WINDOW_UNREDIRECTED window property.
+   * This allows clients to know if a window is unredirected or not under 
+   * a composite wm.
+   */
+  XChangeProperty (xdisplay, xwindow,
+                   display->atom__GTK_WINDOW_UNREDIRECTED,
+                   XA_CARDINAL, 32, PropModeReplace,
+                   (guchar*) &unredirected, 1);
 
   meta_error_trap_pop (display);
 }
