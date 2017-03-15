@@ -260,6 +260,10 @@ gboolean meta_window_is_client_decorated (MetaWindow *window);
 gboolean meta_window_titlebar_is_onscreen    (MetaWindow *window);
 void     meta_window_shove_titlebar_onscreen (MetaWindow *window);
 
+void meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                         unsigned int *width,
+                                         unsigned int *height);
+
 void meta_window_expand_allocated_geometry (MetaWindow *window,
                                             int        width,
                                             int        height);
