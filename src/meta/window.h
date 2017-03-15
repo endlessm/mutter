@@ -258,6 +258,26 @@ gboolean meta_window_allows_move (MetaWindow *window);
 gboolean meta_window_allows_resize (MetaWindow *window);
 gboolean meta_window_is_client_decorated (MetaWindow *window);
 
+/**
+ * meta_window_expand_allocated_geometry:
+ * @window: A #MetaWindow
+ * @width: The new width lower bound. A width lower bound smaller than
+ *         the already allocated width is ignored.
+ * @height: The new height lower bound. A height lower bound smaller than
+ *          the already allocated height is ignored.
+ *
+ * This function should be called during the allocation of geometry
+ * during the #MetaWindow::geometry-allocate signal. It is an error
+ * to call this function at any other time. This function will expand the
+ * "geometry allocation" for the window during signal processing. Use
+ * meta_window_get_minimum_size_allocation for the minimum size allocation
+ * at the time your signal handler is being run.
+ *
+ */
+void meta_window_expand_allocated_geometry (MetaWindow *window,
+                                            int        width,
+                                            int        height);
+
 gboolean meta_window_titlebar_is_onscreen    (MetaWindow *window);
 void     meta_window_shove_titlebar_onscreen (MetaWindow *window);
 
