@@ -227,6 +227,7 @@ enum
   SIZE_CHANGED,
   POSITION_CHANGED,
   SHOWN,
+  GEOMETRY_ALLOCATE,
 
   LAST_SIGNAL
 };
@@ -704,6 +705,24 @@ meta_window_class_init (MetaWindowClass *klass)
                   0,
                   NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
+
+  /**
+   * MetaWindow::geometry-allocate:
+   * @window: A #MetaWindow
+   *
+   * This is emitted when a window is about to be resized,
+   * allowing connectors to override the size of that window if
+   * required. Use meta_window_expand_allocated_geometry to do that.
+   */
+  window_signals[GEOMETRY_ALLOCATE] =
+    g_signal_new ("geometry-allocate",
+                  G_TYPE_FROM_CLASS (object_class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  0,
+                  NULL);
 }
 
 static void
@@ -5952,6 +5971,37 @@ meta_window_titlebar_is_onscreen (MetaWindow *window)
   return is_onscreen;
 }
 
+/**
+ * meta_window_expand_allocated_geometry:
+ * @window: A #MetaWindow
+ * @width: The new width lower bound. A width lower bound smaller than
+ *         the already allocated width is ignored.
+ * @height: The new height lower bound. A height lower bound smaller than
+ *          the already allocated height is ignored.
+ *
+ * This function should be called during the allocation of geometry
+ * during the #MetaWindow::geometry-allocate signal. It is an error
+ * to call this function at any other time. This function will expand the
+ * "geometry allocation" for the window during signal processing. Use
+ * meta_window_get_minimum_size_allocation for the minimum size allocation
+ * at the time your signal handler is being run.
+ *
+ */
+void
+meta_window_expand_allocated_geometry (MetaWindow *window,
+                                       int        width,
+                                       int        height)
+{
+    MetaRectangle next = {
+        .x = window->currently_allocating_rect.x,
+        .y = window->currently_allocating_rect.y,
+        .width = MAX (window->currently_allocating_rect.width, width),
+        .height = MAX (window->currently_allocating_rect.height, height)
+    };
+
+    window->currently_allocating_rect = next;
+}
+
 static double
 timeval_to_ms (const GTimeVal *timeval)
 {
@@ -8603,4 +8653,13 @@ MetaWindowClientType
 meta_window_get_client_type (MetaWindow *window)
 {
   return window->client_type;
+}
+
+void
+meta_window_start_geometry_allocation (MetaWindow *window)
+{
+  g_signal_emit (window,
+                 window_signals[GEOMETRY_ALLOCATE],
+                 0,
+                 NULL);
 }
