@@ -5546,6 +5546,24 @@ meta_window_titlebar_is_onscreen (MetaWindow *window)
 }
 
 /**
+ * meta_window_get_minimum_size_hints:
+ * @window: A #MetaWindow
+ * @width: (out): A location to write the minimum width of the window.
+ * @height: (out): A location to write the minimum height of the window.
+ *
+ * Get the minimum size for this #MetaWindow based on its size hints.
+ *
+ */
+void
+meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                    unsigned int *width,
+                                    unsigned int *height)
+{
+  *width = window->size_hints.min_width;
+  *height = window->size_hints.min_height;
+}
+
+/**
  * meta_window_expand_allocated_geometry:
  * @window: A #MetaWindow
  * @width: The new width lower bound. A width lower bound smaller than
