@@ -453,6 +453,10 @@ struct _MetaWindow
    */
   MetaRectangle unconstrained_rect;
 
+  /* The rect which is currently being allocated by the
+   * #MetaWindow::geometry-allocate signal. */
+  MetaRectangle currently_allocating_rect;
+
   /* The rectangle of the "server-side" geometry of the buffer,
    * in root coordinates.
    *
@@ -747,5 +751,7 @@ void meta_window_emit_size_changed (MetaWindow *window);
 MetaPlacementRule *meta_window_get_placement_rule (MetaWindow *window);
 
 void meta_window_force_placement (MetaWindow *window);
+
+void meta_window_start_geometry_allocation (MetaWindow *window);
 
 #endif
