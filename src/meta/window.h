@@ -259,6 +259,19 @@ gboolean meta_window_allows_resize (MetaWindow *window);
 gboolean meta_window_is_client_decorated (MetaWindow *window);
 
 /**
+ * meta_window_get_minimum_size_hints:
+ * @window: A #MetaWindow
+ * @width: (out): A location to write the minimum width of the window.
+ * @height: (out): A location to write the minimum height of the window.
+ *
+ * Get the minimum size for this #MetaWindow based on its size hints.
+ *
+ */
+void meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                         unsigned int *width,
+                                         unsigned int *height);
+
+/**
  * meta_window_expand_allocated_geometry:
  * @window: A #MetaWindow
  * @width: The new width lower bound. A width lower bound smaller than

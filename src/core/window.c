@@ -8011,6 +8011,15 @@ meta_window_allows_resize (MetaWindow *window)
 }
 
 void
+meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                    unsigned int *width,
+                                    unsigned int *height)
+{
+  *width = window->size_hints.min_width;
+  *height = window->size_hints.min_height;
+}
+
+void
 meta_window_set_urgent (MetaWindow *window,
                         gboolean    urgent)
 {
