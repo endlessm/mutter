@@ -451,6 +451,11 @@ META_EXPORT
 MetaWindowClientType meta_window_get_client_type (MetaWindow *window);
 
 META_EXPORT
+void meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                         unsigned int *width,
+                                         unsigned int *height);
+
+META_EXPORT
 void meta_window_expand_allocated_geometry (MetaWindow *window,
                                             int         width,
                                             int         height);
