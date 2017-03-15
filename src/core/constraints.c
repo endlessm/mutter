@@ -98,6 +98,7 @@ typedef enum
   PRIORITY_MINIMUM = 0, /* Dummy value used for loop start = min(all priorities) */
   PRIORITY_ASPECT_RATIO = 0,
   PRIORITY_ENTIRELY_VISIBLE_ON_SINGLE_MONITOR = 0,
+  PRIORITY_GEOMETRY_ALLOCATE_SIGNAL = 0,
   PRIORITY_ENTIRELY_VISIBLE_ON_WORKAREA = 1,
   PRIORITY_SIZE_HINTS_INCREMENTS = 1,
   PRIORITY_MAXIMIZATION = 2,
@@ -173,6 +174,10 @@ static gboolean constrain_size_increments    (MetaWindow         *window,
                                               ConstraintInfo     *info,
                                               ConstraintPriority  priority,
                                               gboolean            check_only);
+static gboolean constrain_external_signal    (MetaWindow         *window,
+                                              ConstraintInfo     *info,
+                                              ConstraintPriority  priority,
+                                              gboolean            check_only);
 static gboolean constrain_size_limits        (MetaWindow         *window,
                                               ConstraintInfo     *info,
                                               ConstraintPriority  priority,
@@ -225,6 +230,7 @@ static const Constraint all_constraints[] = {
   {constrain_maximization,       "constrain_maximization"},
   {constrain_tiling,             "constrain_tiling"},
   {constrain_fullscreen,         "constrain_fullscreen"},
+  {constrain_external_signal,    "constrain_external_signal"},
   {constrain_size_increments,    "constrain_size_increments"},
   {constrain_size_limits,        "constrain_size_limits"},
   {constrain_aspect_ratio,       "constrain_aspect_ratio"},
@@ -1090,6 +1096,58 @@ constrain_fullscreen (MetaWindow         *window,
 
   /*** Enforce constraint ***/
   info->current = monitor;
+  return TRUE;
+}
+
+static gboolean
+constrain_external_signal (MetaWindow         *window,
+                           ConstraintInfo     *info,
+                           ConstraintPriority priority,
+                           gboolean           check_only)
+{
+  MetaRectangle *start_rect = NULL;
+  gint new_width, new_height;
+  gboolean can_fit = FALSE;
+
+  if (priority > PRIORITY_GEOMETRY_ALLOCATE_SIGNAL)
+    return TRUE;
+
+  /* Determine whether constraint applies; exit if it doesn't.
+   *
+   * Note: The old code didn't apply this constraint for fullscreen or
+   * maximized windows--but that seems odd to me.  *shrug*
+   */
+  if (info->action_type == ACTION_MOVE)
+    return TRUE;
+
+  window->currently_allocating_rect = info->current;
+  meta_window_start_geometry_allocation (window);
+
+  can_fit = meta_rectangle_could_fit_rect (&info->current,
+                                           &window->currently_allocating_rect);
+
+  if (check_only || can_fit)
+    return can_fit;
+
+  /*** Enforce constraint ***/
+  new_width  = MAX (info->current.width,
+                    window->currently_allocating_rect.width);
+  new_height = MAX (info->current.height,
+                    window->currently_allocating_rect.height);
+
+  /* Figure out what original rect to pass to meta_rectangle_resize_with_gravity
+   * See bug 448183
+   */
+  if (info->action_type == ACTION_MOVE_AND_RESIZE)
+    start_rect = &info->current;
+  else
+    start_rect = &info->orig;
+
+  meta_rectangle_resize_with_gravity (start_rect,
+                                      &info->current,
+                                      info->resize_gravity,
+                                      new_width,
+                                      new_height);
   return TRUE;
 }
 
