@@ -187,6 +187,7 @@ enum
   UNMANAGED,
   SIZE_CHANGED,
   POSITION_CHANGED,
+  GEOMETRY_ALLOCATE,
 
   LAST_SIGNAL
 };
@@ -649,6 +650,24 @@ meta_window_class_init (MetaWindowClass *klass)
                   0,
                   NULL, NULL, NULL,
                   G_TYPE_NONE, 0);
+
+  /**
+   * MetaWindow::geometry-allocate:
+   * @window: A #MetaWindow
+   *
+   * This is emitted when a window is about to be resized,
+   * allowing connectors to override the size of that window if
+   * required. Use meta_window_expand_allocated_geometry to do that.
+   */
+  window_signals[GEOMETRY_ALLOCATE] =
+    g_signal_new ("geometry-allocate",
+                  G_TYPE_FROM_CLASS (object_class),
+                  G_SIGNAL_RUN_FIRST,
+                  0,
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE,
+                  0,
+                  NULL);
 }
 
 static void
@@ -3650,6 +3669,22 @@ meta_window_update_monitor (MetaWindow *window,
        * as the working area has changed. */
       meta_window_recalc_features (window);
     }
+}
+
+
+void
+meta_window_expand_allocated_geometry (MetaWindow *window,
+                                       int        width,
+                                       int        height)
+{
+    MetaRectangle next = {
+        .x = window->currently_allocating_rect.x,
+        .y = window->currently_allocating_rect.y,
+        .width = MAX (window->currently_allocating_rect.width, width),
+        .height = MAX (window->currently_allocating_rect.height, height)
+    };
+
+    window->currently_allocating_rect = next;
 }
 
 void
@@ -7976,6 +8011,15 @@ meta_window_allows_resize (MetaWindow *window)
 }
 
 void
+meta_window_get_minimum_size_hints (MetaWindow   *window,
+                                    unsigned int *width,
+                                    unsigned int *height)
+{
+  *width = window->size_hints.min_width;
+  *height = window->size_hints.min_height;
+}
+
+void
 meta_window_set_urgent (MetaWindow *window,
                         gboolean    urgent)
 {
@@ -8007,4 +8051,13 @@ void
 meta_window_emit_size_changed (MetaWindow *window)
 {
   g_signal_emit (window, window_signals[SIZE_CHANGED], 0);
+}
+
+void
+meta_window_start_geometry_allocation (MetaWindow *window)
+{
+  g_signal_emit (window,
+                 window_signals[GEOMETRY_ALLOCATE],
+                 0,
+                 NULL);
 }
