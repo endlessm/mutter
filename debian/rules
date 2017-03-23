@@ -11,9 +11,12 @@ override_dh_autoreconf:
 	dh_autoreconf --as-needed
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
-CONFFLAGS = \
-	--enable-wayland \
-	--enable-native-backend
+CONFFLAGS = --enable-native-backend
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
+CONFFLAGS += --disable-wayland
+else
+CONFFLAGS += --enable-wayland
+endif
 else
 CONFFLAGS += \
 	--disable-wayland-egl-platform \
