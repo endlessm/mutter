@@ -212,6 +212,8 @@ struct _MetaOutput
   gboolean is_underscanning;
   gboolean supports_underscanning;
 
+  gchar *underscan_value;
+
   gpointer driver_private;
   GDestroyNotify driver_notify;
 
