@@ -103,7 +103,9 @@ Replaces: libmutter0,
           libmutter0e,
           libmutter0f,
           libmutter0g,
-          libmutter0h
+          libmutter0h,
+          mutter-common (<< 3.22.3)
+Breaks: mutter-common (<< 3.22.3)
 Description: window manager library from the Mutter window manager
  Mutter is a small window manager, using GTK+ and Clutter to do
  everything.
