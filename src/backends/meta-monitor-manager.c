@@ -468,6 +468,7 @@ meta_monitor_manager_clear_output (MetaOutput *output)
   g_free (output->modes);
   g_free (output->possible_crtcs);
   g_free (output->possible_clones);
+  g_free (output->underscan_value);
 
   if (output->driver_notify)
     output->driver_notify (output);

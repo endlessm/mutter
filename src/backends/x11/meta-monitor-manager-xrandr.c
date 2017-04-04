@@ -76,7 +76,6 @@ G_DEFINE_TYPE (MetaMonitorManagerXrandr, meta_monitor_manager_xrandr, META_TYPE_
 
 typedef struct _MetaOutputXrandr
 {
-  char *underscan_value;
   int underscan_hborder;
   int underscan_vborder;
 } MetaOutputXrandr;
@@ -93,11 +92,7 @@ GQuark quark_meta_monitor_xrandr_data;
 static void
 meta_output_destroy_notify (MetaOutput *output)
 {
-  MetaOutputXrandr *output_xrandr;
-
-  output_xrandr = output->driver_private;
-  g_free (output_xrandr->underscan_value);
-
+  MetaOutputXrandr *output_xrandr = output->driver_private;
   g_slice_free (MetaOutputXrandr, output_xrandr);
 }
 
@@ -306,7 +301,6 @@ static gboolean
 output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                  MetaOutput               *output)
 {
-  MetaOutputXrandr *output_xrandr = output->driver_private;
   g_autofree char *str = NULL;
   Atom underscan_atom;
 
@@ -315,7 +309,7 @@ output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
     return FALSE;
 
   str = XGetAtomName (manager_xrandr->xdisplay, underscan_atom);
-  return g_strcmp0 (str, output_xrandr->underscan_value) == 0;
+  return g_strcmp0 (str, output->underscan_value) == 0;
 }
 
 static gboolean
@@ -943,7 +937,7 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 	  meta_output->is_presentation = output_get_presentation_xrandr (manager_xrandr, meta_output);
           meta_output->supports_underscanning =
             output_get_supports_underscanning_xrandr (manager_xrandr, meta_output,
-                                                      &output_xrandr->underscan_value);
+                                                      &meta_output->underscan_value);
 	  meta_output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, meta_output);
           output_get_underscanning_borders_xrandr (manager_xrandr, meta_output,
                                                    &output_xrandr->underscan_hborder, &output_xrandr->underscan_vborder);
@@ -1081,7 +1075,7 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
   const char *value;
 
   if (underscanning)
-    value = output_xrandr->underscan_value;
+    value = output->underscan_value;
   else
     value = "off";
   valueatom = XInternAtom (manager_xrandr->xdisplay, value, False);
