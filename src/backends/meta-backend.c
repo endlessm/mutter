@@ -71,6 +71,8 @@ struct _MetaBackendPrivate
   ClutterBackend *clutter_backend;
   ClutterActor *stage;
 
+  gboolean is_pointer_position_initialized;
+
   guint device_update_idle_id;
 
   GHashTable *device_monitors;
@@ -146,11 +148,17 @@ meta_backend_monitors_changed (MetaBackend *backend)
 
   if (clutter_input_device_get_coords (device, NULL, &point))
     {
+      MetaBackendPrivate *priv = meta_backend_get_instance_private (backend);
+
       /* If we're outside all monitors, warp the pointer back inside */
-      if (!meta_monitor_manager_get_logical_monitor_at (monitor_manager,
-                                                        point.x, point.y) &&
+      if ((!meta_monitor_manager_get_logical_monitor_at (monitor_manager,
+                                                         point.x, point.y) ||
+           !priv->is_pointer_position_initialized) &&
           !meta_monitor_manager_is_headless (monitor_manager))
-        center_pointer (backend);
+        {
+          center_pointer (backend);
+          priv->is_pointer_position_initialized = TRUE;
+        }
     }
 }
 
@@ -359,7 +367,11 @@ meta_backend_real_post_init (MetaBackend *backend)
 
   priv->input_settings = meta_input_settings_create ();
 
-  center_pointer (backend);
+  if (!meta_monitor_manager_is_headless (priv->monitor_manager))
+    {
+      center_pointer (backend);
+      priv->is_pointer_position_initialized = TRUE;
+    }
 }
 
 static MetaCursorRenderer *
