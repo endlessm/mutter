@@ -66,6 +66,9 @@ typedef struct _MetaCrtcInfo MetaCrtcInfo;
 typedef struct _MetaOutputInfo MetaOutputInfo;
 typedef struct _MetaTileInfo MetaTileInfo;
 
+#define META_MONITOR_MANAGER_MIN_SCREEN_WIDTH 640
+#define META_MONITOR_MANAGER_MIN_SCREEN_HEIGHT 480
+
 typedef enum
 {
   META_MONITOR_TRANSFORM_NORMAL,
