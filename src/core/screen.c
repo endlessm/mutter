@@ -1555,7 +1555,7 @@ meta_screen_get_primary_monitor (MetaScreen *screen)
   if (logical_monitor)
     return logical_monitor->number;
   else
-    return 0;
+    return -1;
 }
 
 /**
