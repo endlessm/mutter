@@ -8,6 +8,7 @@ Priority: optional
 Maintainer: Debian GNOME Maintainers <pkg-gnome-maintainers@lists.alioth.debian.org>
 Uploaders: Andreas Henriksson <andreas@fatal.se>, Michael Biebl <biebl@debian.org>, Sjoerd Simons <sjoerd@debian.org>
 Build-Depends: debhelper (>= 10),
+               gnome-common,
                gnome-pkg-tools (>= 0.10),
                eos-metrics-0-dev,
                gtk-doc-tools (>= 1.15),
