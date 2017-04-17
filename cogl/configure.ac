@@ -73,7 +73,7 @@ dnl ================================================================
 #
 # Possible status values are: git, snapshot or release
 #
-m4_define([cogl_release_status], [git])
+m4_define([cogl_release_status], [release])
 
 AC_INIT(cogl, [cogl_1_version])
 AC_CONFIG_SRCDIR(cogl/cogl.h)
