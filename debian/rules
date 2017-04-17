@@ -20,6 +20,7 @@ ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
 CONFFLAGS += \
 	--disable-wayland \
 	--disable-gl \
+	--enable-cogl-gles2=yes \
 	--enable-gles2=yes \
 	--with-default-driver=gles2
 else
