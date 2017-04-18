@@ -33,6 +33,11 @@
 #include "evdev/clutter-seat-evdev.h"
 #include "evdev/clutter-virtual-input-device-evdev.h"
 
+/* KEY_KBDINPUTASSIST_CANCEL is not defined in older kernels */
+#ifndef KEY_KBDINPUTASSIST_CANCEL
+#define KEY_KBDINPUTASSIST_CANCEL 0x265
+#endif
+
 enum
 {
   PROP_0,
