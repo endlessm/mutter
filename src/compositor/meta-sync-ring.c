@@ -28,6 +28,15 @@
  * Authors: James Jones <jajones@nvidia.com>
  */
 
+#include <config.h>
+
+#include "meta-sync-ring.h"
+
+/* Short term fix: We don't want the GLES2 headers to be pulled in by
+ * the internal cogl as it happens at the moment, so we disale these
+ * includes for GLES2 where this sync ring is useless anyway.
+ */
+#ifndef WITH_COGL_GLES2
 #include <string.h>
 
 #include <GL/gl.h>
@@ -38,8 +47,6 @@
 #include <clutter/clutter.h>
 
 #include <meta/util.h>
-
-#include "meta-sync-ring.h"
 
 /* Theory of operation:
  *
@@ -410,10 +417,15 @@ meta_sync_free (MetaSync *self)
 
   g_free (self);
 }
+#endif
 
 gboolean
 meta_sync_ring_init (Display *xdisplay)
 {
+#ifdef WITH_COGL_GLES2
+  /* The sync ring is not supported in GLES2 */
+  return FALSE;
+#else
   gint major, minor;
   guint i;
   MetaSyncRing *ring = meta_sync_ring_get ();
@@ -456,11 +468,14 @@ meta_sync_ring_init (Display *xdisplay)
   ring->warmup_syncs = 0;
 
   return TRUE;
+#endif
 }
 
 void
 meta_sync_ring_destroy (void)
 {
+/* The sync ring is not supported in GLES2 */
+#ifndef WITH_COGL_GLES2
   guint i;
   MetaSyncRing *ring = meta_sync_ring_get ();
 
@@ -481,8 +496,10 @@ meta_sync_ring_destroy (void)
   ring->xsync_event_base = 0;
   ring->xsync_error_base = 0;
   ring->xdisplay = NULL;
+#endif
 }
 
+#ifndef WITH_COGL_GLES2
 static gboolean
 meta_sync_ring_reboot (Display *xdisplay)
 {
@@ -503,10 +520,15 @@ meta_sync_ring_reboot (Display *xdisplay)
 
   return meta_sync_ring_init (xdisplay);
 }
+#endif
 
 gboolean
 meta_sync_ring_after_frame (void)
 {
+#ifdef WITH_COGL_GLES2
+  /* The sync ring is not supported in GLES2 */
+  return FALSE;
+#else
   MetaSyncRing *ring = meta_sync_ring_get ();
 
   if (!ring)
@@ -545,11 +567,16 @@ meta_sync_ring_after_frame (void)
   ring->current_sync = ring->syncs_array[ring->current_sync_idx];
 
   return TRUE;
+#endif
 }
 
 gboolean
 meta_sync_ring_insert_wait (void)
 {
+#ifdef WITH_COGL_GLES2
+  /* The sync ring is not supported in GLES2 */
+  return FALSE;
+#else
   MetaSyncRing *ring = meta_sync_ring_get ();
 
   if (!ring)
@@ -567,11 +594,14 @@ meta_sync_ring_insert_wait (void)
   meta_sync_insert (ring->current_sync);
 
   return TRUE;
+#endif
 }
 
 void
 meta_sync_ring_handle_event (XEvent *xevent)
 {
+/* The sync ring is not supported in GLES2 */
+#ifndef WITH_COGL_GLES2
   XSyncAlarmNotifyEvent *event;
   MetaSync *sync;
   MetaSyncRing *ring = meta_sync_ring_get ();
@@ -589,4 +619,5 @@ meta_sync_ring_handle_event (XEvent *xevent)
   sync = g_hash_table_lookup (ring->alarm_to_sync, (gpointer) event->alarm);
   if (sync)
     meta_sync_handle_event (sync, event);
+#endif
 }
