@@ -29,6 +29,11 @@
 #include "clutter/clutter-mutter.h"
 #include "meta/util.h"
 
+/* KEY_KBDINPUTASSIST_CANCEL is not defined in older kernels */
+#ifndef KEY_KBDINPUTASSIST_CANCEL
+#define KEY_KBDINPUTASSIST_CANCEL 0x265
+#endif
+
 enum
 {
   PROP_0,
