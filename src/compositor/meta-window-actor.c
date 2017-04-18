@@ -2185,6 +2185,22 @@ meta_window_actor_update_opacity (MetaWindowActor *self)
     clutter_actor_set_opacity (CLUTTER_ACTOR (priv->surface), window->opacity);
 }
 
+void
+meta_window_actor_set_cull_back_face (MetaWindowActor *self,
+                                      gboolean        cull)
+{
+  g_return_if_fail (META_IS_WINDOW_ACTOR (self));
+
+  if (self->priv->surface)
+    meta_surface_actor_set_cull_back_face (self->priv->surface, cull);
+
+  if (self->priv->focused_shadow)
+    meta_shadow_set_cull_back_face (self->priv->focused_shadow, cull);
+
+  if (self->priv->unfocused_shadow)
+    meta_shadow_set_cull_back_face (self->priv->unfocused_shadow, cull);
+}
+
 static void
 meta_window_actor_set_updates_frozen (MetaWindowActor *self,
                                       gboolean         updates_frozen)
