@@ -380,6 +380,17 @@ AC_CHECK_DECL([GL_EXT_x11_sync_object],
 
 AC_PATH_PROG([CVT],[cvt],[])
 
+AC_ARG_ENABLE(
+  [cogl-gles2],
+  [AC_HELP_STRING([--enable-cogl-gles2],
+                  [Enable libcogl-gles2 frontend api for OpenGL-ES 2.0 (default: no)])],
+  [with_cogl_gles2=$enableval],
+  [with_cogl_gles2=no]
+)
+AS_IF([test "x$with_cogl_gles2" = "xyes"], [
+  AC_DEFINE([WITH_COGL_GLES2],[1],[Define if we're building with Cogl GLES2 support])
+])
+
 #### Warnings (last since -Werror can disturb other tests)
 
 # Stay command-line compatible with the gnome-common configure option. Here
@@ -479,6 +490,7 @@ mutter-$VERSION
 	Session management:       ${found_sm}
 	Wayland:                  ${have_wayland}
 	Native (KMS) backend:     ${have_native_backend}
+	With Cogl-GLES2 support   ${with_cogl_gles2}
 "
 
 
