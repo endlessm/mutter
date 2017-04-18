@@ -20,7 +20,6 @@ ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
 CONFFLAGS += \
 	--disable-native-backend \
 	--disable-wayland \
-	--disable-wayland-egl-server \
 	--disable-gl \
 	--enable-cogl-gles2=yes \
 	--enable-gles2=yes \
