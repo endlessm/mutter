@@ -27,6 +27,7 @@
 #include <glib-object.h>
 
 #include "clutter/x11/clutter-x11.h"
+#include "cogl/cogl-mutter-config.h"
 #include "cogl/cogl.h"
 #include "cogl/cogl-xlib.h"
 #include "cogl/winsys/cogl-winsys-glx-private.h"
@@ -47,12 +48,29 @@ struct _MetaRendererX11
 G_DEFINE_TYPE (MetaRendererX11, meta_renderer_x11, META_TYPE_RENDERER)
 
 static const CoglWinsysVtable *
-get_x11_cogl_winsys_vtable (void)
+get_x11_cogl_winsys_vtable (CoglRenderer *renderer)
 {
+#ifdef HAVE_WAYLAND
   if (meta_is_wayland_compositor ())
     return _cogl_winsys_egl_xlib_get_vtable ();
-  else
-    return _cogl_winsys_glx_get_vtable ();
+#endif
+
+  switch (renderer->driver)
+    {
+    case COGL_DRIVER_GLES1:
+    case COGL_DRIVER_GLES2:
+      return _cogl_winsys_egl_xlib_get_vtable ();
+    case COGL_DRIVER_GL:
+    case COGL_DRIVER_GL3:
+#if HAVE_COGL_GL
+      return _cogl_winsys_glx_get_vtable ();
+#endif
+    case COGL_DRIVER_ANY:
+    case COGL_DRIVER_NOP:
+    case COGL_DRIVER_WEBGL:
+      break;
+    }
+  g_assert_not_reached ();
 }
 
 static CoglRenderer *
