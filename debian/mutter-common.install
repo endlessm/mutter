@@ -3,3 +3,4 @@ usr/share/glib-2.0
 usr/share/locale
 usr/share/man
 usr/share/gnome-control-center
+usr/lib/mutter/mutter-restart-helper

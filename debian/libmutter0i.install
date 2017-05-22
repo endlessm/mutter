@@ -1,3 +1,2 @@
 usr/lib/*/libmutter.so.*
 usr/lib/*/mutter/*.so
-usr/lib/mutter/mutter-restart-helper
