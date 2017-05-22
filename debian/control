@@ -127,8 +127,8 @@ Section: misc
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}
-Replaces: libmutter0i (<< 3.22.3+dev46)
-Breaks: libmutter0i (<< 3.22.3+dev46)
+Replaces: libmutter0i (<< 3.22.3+dev45.6ace321-12)
+Breaks: libmutter0i (<< 3.22.3+dev45.6ace321-12)
 Description: shared files for the Mutter window manager
  Mutter is a small window manager, using GTK+ and Clutter to do
  everything.
