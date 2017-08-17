@@ -1,3 +1,9 @@
+mutter (3.24.4-0endless1) eos; urgency=medium
+
+  * New upstream release.
+
+ -- Mario Sanchez Prada <mario@endlessm.com>  Thu, 17 Aug 2017 16:49:29 +0200
+
 mutter (3.22.3-2) unstable; urgency=medium
 
   * debian/patches/clutter-clone-Unset-source-when-source-actor-is-dest.patch
