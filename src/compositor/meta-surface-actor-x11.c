@@ -289,6 +289,9 @@ meta_surface_actor_x11_should_unredirect (MetaSurfaceActor *actor)
   if (window->shape_region != NULL)
     return FALSE;
 
+  if (!window->monitor)
+    return FALSE;
+
   if (!meta_window_is_monitor_sized (window))
     return FALSE;
 
