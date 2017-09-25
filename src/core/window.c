@@ -2883,6 +2883,8 @@ meta_window_is_monitor_sized (MetaWindow *window)
 gboolean
 meta_window_is_on_primary_monitor (MetaWindow *window)
 {
+  g_return_val_if_fail (window->monitor, FALSE);
+
   return window->monitor->is_primary;
 }
 
@@ -4476,13 +4478,22 @@ set_workspace_state (MetaWindow    *window,
 static gboolean
 should_be_on_all_workspaces (MetaWindow *window)
 {
-  return
-    window->always_sticky ||
-    window->on_all_workspaces_requested ||
-    window->override_redirect ||
-    (meta_prefs_get_workspaces_only_on_primary () &&
-     !window->unmanaging &&
-     !meta_window_is_on_primary_monitor (window));
+  if (window->always_sticky)
+    return TRUE;
+
+  if (window->on_all_workspaces_requested)
+    return TRUE;
+
+  if (window->override_redirect)
+    return TRUE;
+
+  if (meta_prefs_get_workspaces_only_on_primary () &&
+      !window->unmanaging &&
+      window->monitor &&
+      !meta_window_is_on_primary_monitor (window))
+    return TRUE;
+
+  return FALSE;
 }
 
 void
