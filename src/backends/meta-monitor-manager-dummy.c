@@ -471,6 +471,15 @@ meta_monitor_manager_dummy_apply_monitors_config (MetaMonitorManager *manager,
   GPtrArray *crtc_infos;
   GPtrArray *output_infos;
 
+  if (!config)
+    {
+      manager->screen_width = META_MONITOR_MANAGER_MIN_SCREEN_WIDTH;
+      manager->screen_height = META_MONITOR_MANAGER_MIN_SCREEN_HEIGHT;
+
+      meta_monitor_manager_rebuild (manager, NULL);
+      return TRUE;
+    }
+
   if (!meta_monitor_config_manager_assign (manager, config,
                                            &crtc_infos, &output_infos,
                                            error))
