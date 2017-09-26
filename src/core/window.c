@@ -2860,9 +2860,6 @@ meta_window_is_monitor_sized (MetaWindow *window)
   if (meta_window_is_screen_sized (window))
     return TRUE;
 
-  if (!window->monitor)
-    return FALSE;
-
   if (window->override_redirect)
     {
       MetaRectangle window_rect, monitor_rect;
@@ -2886,10 +2883,7 @@ meta_window_is_monitor_sized (MetaWindow *window)
 gboolean
 meta_window_is_on_primary_monitor (MetaWindow *window)
 {
-  if (window->monitor)
-    return window->monitor->is_primary;
-  else
-    return FALSE;
+  return window->monitor->is_primary;
 }
 
 /**
@@ -3534,10 +3528,7 @@ maybe_move_attached_dialog (MetaWindow *window,
 int
 meta_window_get_monitor (MetaWindow *window)
 {
-  if (window->monitor)
-    return window->monitor->number;
-  else
-    return -1;
+  return window->monitor->number;
 }
 
 MetaLogicalMonitor *
@@ -6256,18 +6247,9 @@ void
 meta_window_get_work_area_current_monitor (MetaWindow    *window,
                                            MetaRectangle *area)
 {
-  if (window->monitor)
-    {
-      meta_window_get_work_area_for_monitor (window,
-                                             window->monitor->number,
-                                             area);
-    }
-  else
-    {
-      MetaRectangle empty = { 0, 0, 0, 0 };
-      if (area)
-        *area = empty;
-    }
+  meta_window_get_work_area_for_monitor (window,
+                                         window->monitor->number,
+                                         area);
 }
 
 /**
