@@ -1462,6 +1462,9 @@ meta_screen_get_monitor_index_for_rect (MetaScreen    *screen,
 
   logical_monitor =
     meta_monitor_manager_get_logical_monitor_from_rect (monitor_manager, rect);
+  if (!logical_monitor)
+    return -1;
+
   return logical_monitor->number;
 }
 
