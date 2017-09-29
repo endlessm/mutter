@@ -2311,7 +2311,10 @@ meta_window_show (MetaWindow *window)
 
   if (!window->placed)
     {
-      if (meta_prefs_get_auto_maximize() && window->showing_for_first_time && window->has_maximize_func)
+      if (window->monitor &&
+          meta_prefs_get_auto_maximize() &&
+          window->showing_for_first_time &&
+          window->has_maximize_func)
         {
           MetaRectangle work_area;
           meta_window_get_work_area_for_monitor (window, window->monitor->number, &work_area);
@@ -2860,9 +2863,6 @@ meta_window_is_monitor_sized (MetaWindow *window)
   if (meta_window_is_screen_sized (window))
     return TRUE;
 
-  if (!window->monitor)
-    return FALSE;
-
   if (window->override_redirect)
     {
       MetaRectangle window_rect, monitor_rect;
@@ -2886,10 +2886,9 @@ meta_window_is_monitor_sized (MetaWindow *window)
 gboolean
 meta_window_is_on_primary_monitor (MetaWindow *window)
 {
-  if (window->monitor)
-    return window->monitor->is_primary;
-  else
-    return FALSE;
+  g_return_val_if_fail (window->monitor, FALSE);
+
+  return window->monitor->is_primary;
 }
 
 /**
@@ -3534,10 +3533,7 @@ maybe_move_attached_dialog (MetaWindow *window,
 int
 meta_window_get_monitor (MetaWindow *window)
 {
-  if (window->monitor)
-    return window->monitor->number;
-  else
-    return -1;
+  return window->monitor->number;
 }
 
 MetaLogicalMonitor *
@@ -4485,13 +4481,22 @@ set_workspace_state (MetaWindow    *window,
 static gboolean
 should_be_on_all_workspaces (MetaWindow *window)
 {
-  return
-    window->always_sticky ||
-    window->on_all_workspaces_requested ||
-    window->override_redirect ||
-    (meta_prefs_get_workspaces_only_on_primary () &&
-     !window->unmanaging &&
-     !meta_window_is_on_primary_monitor (window));
+  if (window->always_sticky)
+    return TRUE;
+
+  if (window->on_all_workspaces_requested)
+    return TRUE;
+
+  if (window->override_redirect)
+    return TRUE;
+
+  if (meta_prefs_get_workspaces_only_on_primary () &&
+      !window->unmanaging &&
+      window->monitor &&
+      !meta_window_is_on_primary_monitor (window))
+    return TRUE;
+
+  return FALSE;
 }
 
 void
@@ -6256,18 +6261,9 @@ void
 meta_window_get_work_area_current_monitor (MetaWindow    *window,
                                            MetaRectangle *area)
 {
-  if (window->monitor)
-    {
-      meta_window_get_work_area_for_monitor (window,
-                                             window->monitor->number,
-                                             area);
-    }
-  else
-    {
-      MetaRectangle empty = { 0, 0, 0, 0 };
-      if (area)
-        *area = empty;
-    }
+  meta_window_get_work_area_for_monitor (window,
+                                         window->monitor->number,
+                                         area);
 }
 
 /**

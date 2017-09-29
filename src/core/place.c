@@ -864,8 +864,6 @@ meta_window_place (MetaWindow        *window,
 
   /* Warning, on X11 this might be a round trip! */
   logical_monitor = meta_backend_get_current_logical_monitor (backend);
-  if (!logical_monitor)
-    goto done;
 
   /* Maximize windows if they are too big for their work area (bit of
    * a hack here). Assume undecorated windows probably don't intend to
