@@ -1162,19 +1162,8 @@ cogl_texture_get_data (CoglTexture *texture,
    * texture and reading the pixels from the framebuffer. */
   if (!tg_data.success)
     {
-      if (!_cogl_texture_draw_and_read (texture, target_bmp,
-                                        closest_gl_format,
-                                        closest_gl_type,
-                                        &ignore_error))
-        {
-          /* We have no more fallbacks so we just give up and
-           * hope for the best */
-          g_warning ("Failed to read texture since draw-and-read "
-                     "fallback failed: %s", ignore_error->message);
-          cogl_error_free (ignore_error);
-          cogl_object_unref (target_bmp);
-          return 0;
-        }
+      cogl_object_unref (target_bmp);
+      return 0;
     }
 
   /* Was intermediate used? */
