@@ -36,7 +36,7 @@
  * OpenOffice or whatever seems to stop launching - people
  * might decide they need to launch it again.
  */
-#define STARTUP_TIMEOUT 15000000
+#define STARTUP_TIMEOUT 60000000
 
 typedef struct _MetaStartupNotificationSequence MetaStartupNotificationSequence;
 typedef struct _MetaStartupNotificationSequenceClass MetaStartupNotificationSequenceClass;
