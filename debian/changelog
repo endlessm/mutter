@@ -1,8 +1,197 @@
-mutter (3.24.4-0endless1) eos; urgency=medium
+mutter (3.26.2-1) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release
+  * Drop all cherry-picked patches, applied in new release
+
+  [ Simon McVittie ]
+  * d/changelog: Retroactively add a reference from 3.26.1-2 to #878353
+  * d/p/*.patch: Add metadata to mark remaining patches as Debian-specific
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 05 Nov 2017 13:03:02 -0500
+
+mutter (3.26.1-6) unstable; urgency=high
+
+  * debian/control.in: Bump libegl1-mesa-dev to (>= 17) (Closes: #878702)
+  * Cherry-pick more fixes from gnome-3-26 branch to fix crashes
+    and fix unredirecting full-screen windows:
+    - 0012-x11-window-Don-t-manage-InputOnly-windows.patch
+    - 0013-compositor-Ignore-offscreen-windows.patch
+      (LP: #1725821)
+    - 0015-monitor-normal-Prefer-modes-with-same-flags.patch
+    - 0016-monitor-unit-tests-Check-non-first-preferred-modes.patch
+      (LP: #1725153)
+    - 0017-compositor-Avoid-a-crash-if-top-window-finalized.patch
+    - 0018-Revert-ClutterActor-Optimize-away-idempotent-scale.patch
+    - 0019-Revert-tests-Fix-actor-anchors-test.patch
+      (Closes: #788140)
+  * Set urgency to high to not further delay the gjs/mutter transition
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 21 Oct 2017 19:47:22 -0400
+
+mutter (3.26.1-5) unstable; urgency=medium
+
+  * Add 0012-Use-a-single-supported-scales.patch:
+    - Allow HiDPI scaling even when non-HiDPI displays are connected
+      (LP: #1724024)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 16 Oct 2017 20:17:15 -0400
+
+mutter (3.26.1-4) unstable; urgency=medium
+
+  * Release to unstable
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 13 Oct 2017 16:24:12 -0400
+
+mutter (3.26.1-3) experimental; urgency=medium
+
+  * Cherry-pick more fixes from gnome-3-26 branch (LP: #1722811):
+    - 0001-wayland-dma-buf-Don-t-send-modifiers-to-old-clients.patch
+    - 0007-settings-Get-UI-scaling-factor-from-primary-logical-.patch
+    - 0008-backends-add-monitors-updated-internal-signal-to-onl.patch
+    - 0009-monitor-manager-use-g_return_val_if_fail-if-trying-t.patch
+    - 0010-backend-move-the-cursor-render-update-on-screen-chan.patch
+    - 0011-workspace-ensure-that-workarea-data-is-valid-when-fe.patch
+
+ -- Jeremy Bicha <jbicha@debian.org>  Fri, 13 Oct 2017 09:44:26 -0400
+
+mutter (3.26.1-2) experimental; urgency=medium
+
+  * Add git_fix_xorg_maximize_crash.patch:
+    - Cherry-pick fix for crash when closing windows on Budgie or
+      GNOME Shell (LP: #1722510, Closes: #878353)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Tue, 10 Oct 2017 10:22:41 -0400
+
+mutter (3.26.1-1) experimental; urgency=medium
+
+  * New upstream release
+  * Bump Standards-Version to 4.1.1
+
+ -- Jeremy Bicha <jbicha@debian.org>  Wed, 04 Oct 2017 17:42:30 -0400
+
+mutter (3.26.0+20170925~ea214fb-1) experimental; urgency=medium
+
+  * New upstream git snapshot (LP: #1717272)
+
+ -- Jeremy Bicha <jbicha@debian.org>  Mon, 25 Sep 2017 18:26:10 -0400
+
+mutter (3.26.0-2) experimental; urgency=medium
+
+  * debian/patches/src-core-screen.c-Set-_NET_NUMBER_OF_DESKTOPS-in-met.patch:
+    Cherry-pick from upstream. Fix positioning of desktop icons at startup.
+    (LP: #1696621)
+
+ -- Iain Lane <laney@debian.org>  Fri, 22 Sep 2017 19:13:26 +0100
+
+mutter (3.26.0-1) experimental; urgency=medium
+
+  * Team upload
+  * debian/watch: Only watch stable branch again
+  * New upstream release, functionally identical to the previous
+    snapshot
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 13 Sep 2017 09:22:55 +0100
+
+mutter (3.25.92+20170911~5b5737f-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream git snapshot (really fixes LP: #1714330, we hope)
+  * debian/watch: Scan for all versions, not just the stable-branch
+  * debian/control.in: Add versioned Breaks for gnome-control-center,
+    and bump Suggests to match, to account for functionality that moved
+    between packages (Closes: #874514)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 12 Sep 2017 10:39:01 +0100
+
+mutter (3.25.91+20170902~ce515c5-1) experimental; urgency=medium
+
+  * New upstream git snapshot (LP: #1714330)
+  * Drop git_fix-wayland-color-inversion.patch: Applied
+  * debian/control.in:
+    - Bump minimum libgudev-dev to >= 232
+    - Drop Build-Depends on libgl1-mesa-dri
+  * debian/rules:
+    - Ignore test failures on Debian. See bug 874077.
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sat, 02 Sep 2017 15:46:15 -0400
+
+mutter (3.25.91-2) experimental; urgency=medium
+
+  * Build-Depend on libgl1-mesa-dri for build tests since
+    Debian's mesa packages currently only recommends it
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 31 Aug 2017 12:47:34 -0400
+
+mutter (3.25.91-1) experimental; urgency=medium
+
+  * New upstream release
+  * Add skip-failing-tests-325.patch:
+    - Skip one more test that started failing with 3.25
+  * Add git_fix-wayland-color-inversion.patch:
+    - Cherry-pick patch to fix wrong colors in clutter apps on Wayland
+      (LP: #1712986)
+  * Bump Standards-Version to 4.1.0
+
+ -- Jeremy Bicha <jbicha@debian.org>  Thu, 31 Aug 2017 07:11:39 -0400
+
+mutter (3.25.90-1) experimental; urgency=medium
+
+  [ Jeremy Bicha ]
+  * New upstream release (LP: #1662805)
+  * libmutter0 has been renamed upstream to libmutter-0-0
+  * Rename gir1.2-mutter-3.0 to gir1.2-mutter-0
+  * Rename libmutter-dev to libmutter-0-dev
+  * debian/control.in:
+    - Drop obsolete Conflicts/Replaces now that the library
+      uses different file names
+    - Loosen dependency on -common package
+    - Don't recommend gnome-session | x-session-manager (LP: #1703685)
+    - Build-depend on xauth and xfvb for build tests
+    - Add Conflicts: libmutter-0-dev to libmutter-1-dev since
+      both ship the same development header file names
+  * debian/rules:
+    - Build with --enable-egl-device (LP: #1666664)
+      This enables experimental support for using NVIDIA proprietary
+      drivers with GNOME on Wayland
+    - Run build tests but don't make them fatal yet
+  * Add skip-failing-tests.patch:
+    - Don't run a few tests that have been reported as failing
+
+  [ Simon McVittie ]
+  * Add patch metadata
+  * Correctly label debian/patches/git_revert_call_threaded_swap.patch
+    as a revert, not as the change that is being reverted
+
+  [ Andreas Henriksson ]
+  * New upstream beta release, 3.25.90.
+  * Bump versions of build-dependencies according to configure.ac changes.
+  * Rename packages according to libmutter bumping soname, 0->1.
+
+  [ Jeremy Bicha ]
+  * Drop git_revert_call_threaded_swap.patch, no longer needed
+
+ -- Andreas Henriksson <andreas@fatal.se>  Tue, 15 Aug 2017 15:45:47 +0200
+
+mutter (3.22.4-2) unstable; urgency=medium
+
+  [ Jeremy Bicha ]
+  * Add missing depends on gnome-settings-daemon (LP: #1561706)
+
+  [ Laurent Bigonville ]
+  * debian/patches/bgo782472_fix_copypaste_x11_wayland.patch: Fix copy/paste
+    between some X11 applications (firefox/chromium) and wayland (Closes:
+    #865788)
+  * debian/control.in: Bump Standards-Version to 4.0.0 (no further changes)
+
+ -- Laurent Bigonville <bigon@debian.org>  Fri, 30 Jun 2017 19:08:41 +0200
+
+mutter (3.22.4-1) unstable; urgency=medium
 
   * New upstream release.
+  * Drop patches which have been merged upstream.
 
- -- Mario Sanchez Prada <mario@endlessm.com>  Thu, 17 Aug 2017 16:49:29 +0200
+ -- Michael Biebl <biebl@debian.org>  Tue, 11 Apr 2017 15:56:47 +0200
 
 mutter (3.22.3-2) unstable; urgency=medium
 
