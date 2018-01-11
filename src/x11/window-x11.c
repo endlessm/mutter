@@ -2120,7 +2120,6 @@ meta_window_move_resize_request (MetaWindow *window,
               meta_window_make_fullscreen_internal (window);
             }
         }
-
       adjust_for_gravity (window, TRUE, gravity, &rect);
       meta_window_client_rect_to_frame_rect (window, &rect, &rect);
       meta_window_move_resize_internal (window, flags, gravity, rect);
