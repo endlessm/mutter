@@ -183,6 +183,8 @@ float * meta_monitor_calculate_supported_scales (MetaMonitor                *mon
 
 const char * meta_monitor_mode_get_id (MetaMonitorMode *monitor_mode);
 
+const char * meta_monitor_mode_get_name (MetaMonitorMode *monitor_mode);
+
 MetaMonitorModeSpec * meta_monitor_mode_get_spec (MetaMonitorMode *monitor_mode);
 
 void meta_monitor_mode_get_resolution (MetaMonitorMode *monitor_mode,

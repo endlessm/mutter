@@ -112,7 +112,6 @@
 	Multiple outputs in the same CRTCs must all have the same mode.
 	A mode is exposed as:
 	* u ID: the ID in the API
-	* s name: the name, suitable for showing to the user
 	* x winsys_id: the low-level ID of this mode
 	* u width, height: the resolution
 	* d frequency: refresh rate
@@ -135,7 +134,7 @@
       <arg name="serial" direction="out" type="u" />
       <arg name="crtcs" direction="out" type="a(uxiiiiiuaua{sv})" />
       <arg name="outputs" direction="out" type="a(uxiausauaua{sv})" />
-      <arg name="modes" direction="out" type="a(usxuudu)" />
+      <arg name="modes" direction="out" type="a(uxuudu)" />
       <arg name="max_screen_width" direction="out" type="i" />
       <arg name="max_screen_height" direction="out" type="i" />
     </method>
@@ -305,8 +304,9 @@
 	* s vendor: vendor name
 	* s product: product name
 	* s serial: product serial
-	* a(siiddada{sv}) modes: available modes
+	* a(ssiiddada{sv}) modes: available modes
 	    * s id: mode ID
+	    * s name: the name, suitable for showing to the user
 	    * i width: width in physical pixels
 	    * i height: height in physical pixels
 	    * d refresh rate: refresh rate
@@ -398,7 +398,7 @@
     -->
     <method name="GetCurrentState">
       <arg name="serial" direction="out" type="u" />
-      <arg name="monitors" direction="out" type="a((ssss)a(siiddada{sv})a{sv})" />
+      <arg name="monitors" direction="out" type="a((ssss)a(ssiiddada{sv})a{sv})" />
       <arg name="logical_monitors" direction="out" type="a(iiduba(ssss)a{sv})" />
       <arg name="properties" direction="out" type="a{sv}" />
     </method>
