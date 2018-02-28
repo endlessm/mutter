@@ -235,6 +235,9 @@ META_EXPORT_TEST
 const char * meta_monitor_mode_get_id (MetaMonitorMode *monitor_mode);
 
 META_EXPORT_TEST
+const char * meta_monitor_mode_get_name (MetaMonitorMode *monitor_mode);
+
+META_EXPORT_TEST
 MetaMonitorModeSpec * meta_monitor_mode_get_spec (MetaMonitorMode *monitor_mode);
 
 META_EXPORT_TEST

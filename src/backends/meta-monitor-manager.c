@@ -1340,7 +1340,7 @@ request_persistent_confirmation (MetaMonitorManager *manager)
 #define META_DISPLAY_CONFIG_MODE_FLAGS_PREFERRED (1 << 0)
 #define META_DISPLAY_CONFIG_MODE_FLAGS_CURRENT (1 << 1)
 
-#define MODE_FORMAT "(siiddada{sv})"
+#define MODE_FORMAT "(ssiiddada{sv})"
 #define MODES_FORMAT "a" MODE_FORMAT
 #define MONITOR_SPEC_FORMAT "(ssss)"
 #define MONITOR_FORMAT "(" MONITOR_SPEC_FORMAT MODES_FORMAT "a{sv})"
@@ -1391,6 +1391,7 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
           MetaMonitorMode *monitor_mode = k->data;
           GVariantBuilder supported_scales_builder;
           const char *mode_id;
+          const char *mode_name;
           int mode_width, mode_height;
           float refresh_rate;
           float preferred_scale;
@@ -1403,6 +1404,7 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
             continue;
 
           mode_id = meta_monitor_mode_get_id (monitor_mode);
+          mode_name = meta_monitor_mode_get_name (monitor_mode);
           meta_monitor_mode_get_resolution (monitor_mode,
                                             &mode_width, &mode_height);
 
@@ -1445,6 +1447,7 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
 
           g_variant_builder_add (&modes_builder, MODE_FORMAT,
                                  mode_id,
+                                 mode_name,
                                  mode_width,
                                  mode_height,
                                  refresh_rate,

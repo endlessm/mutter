@@ -304,8 +304,9 @@
 	* s vendor: vendor name
 	* s product: product name
 	* s serial: product serial
-	* a(siiddada{sv}) modes: available modes
+	* a(ssiiddada{sv}) modes: available modes
 	    * s id: mode ID
+	    * s name: the name, suitable for showing to the user
 	    * i width: width in physical pixels
 	    * i height: height in physical pixels
 	    * d refresh rate: refresh rate
@@ -401,7 +402,7 @@
     -->
     <method name="GetCurrentState">
       <arg name="serial" direction="out" type="u" />
-      <arg name="monitors" direction="out" type="a((ssss)a(siiddada{sv})a{sv})" />
+      <arg name="monitors" direction="out" type="a((ssss)a(ssiiddada{sv})a{sv})" />
       <arg name="logical_monitors" direction="out" type="a(iiduba(ssss)a{sv})" />
       <arg name="properties" direction="out" type="a{sv}" />
     </method>

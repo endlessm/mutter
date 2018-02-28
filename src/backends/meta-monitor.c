@@ -41,6 +41,7 @@
 typedef struct _MetaMonitorMode
 {
   char *id;
+  char *name;
   MetaMonitorModeSpec spec;
   MetaMonitorCrtcMode *crtc_modes;
 } MetaMonitorMode;
@@ -517,6 +518,7 @@ meta_monitor_normal_generate_modes (MetaMonitorNormal *monitor_normal)
                                              crtc_mode->height,
                                              crtc_mode);
       mode->id = generate_mode_id (&mode->spec);
+      mode->name = g_strdup (crtc_mode->name);
       mode->crtc_modes = g_new (MetaMonitorCrtcMode, 1);
       mode->crtc_modes[0] = (MetaMonitorCrtcMode) {
         .output = output,
@@ -856,7 +858,7 @@ create_tiled_monitor_mode (MetaMonitorTiled *monitor_tiled,
   mode->parent.spec =
     meta_monitor_create_spec (monitor, width, height, reference_crtc_mode);
   mode->parent.id = generate_mode_id (&mode->parent.spec);
-
+  mode->parent.name = g_strdup (mode->parent.name);
   mode->parent.crtc_modes = g_new0 (MetaMonitorCrtcMode,
                                     g_list_length (monitor_priv->outputs));
   for (l = monitor_priv->outputs, i = 0; l; l = l->next, i++)
@@ -969,6 +971,7 @@ create_untiled_monitor_mode (MetaMonitorTiled *monitor_tiled,
                                                 crtc_mode->height,
                                                 crtc_mode);
   mode->parent.id = generate_mode_id (&mode->parent.spec);
+  mode->parent.name = g_strdup (mode->parent.name);
   mode->parent.crtc_modes = g_new0 (MetaMonitorCrtcMode,
                                     g_list_length (monitor_priv->outputs));
 
@@ -1326,6 +1329,7 @@ static void
 meta_monitor_mode_free (MetaMonitorMode *monitor_mode)
 {
   g_free (monitor_mode->id);
+  g_free (monitor_mode->name);
   g_free (monitor_mode->crtc_modes);
   g_free (monitor_mode);
 }
@@ -1701,6 +1705,12 @@ const char *
 meta_monitor_mode_get_id (MetaMonitorMode *monitor_mode)
 {
   return monitor_mode->id;
+}
+
+const char *
+meta_monitor_mode_get_name (MetaMonitorMode *monitor_mode)
+{
+  return monitor_mode->name;
 }
 
 void
