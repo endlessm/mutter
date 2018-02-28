@@ -112,7 +112,6 @@
 	Multiple outputs in the same CRTCs must all have the same mode.
 	A mode is exposed as:
 	* u ID: the ID in the API
-	* s name: the name, suitable for showing to the user
 	* x winsys_id: the low-level ID of this mode
 	* u width, height: the resolution
 	* d frequency: refresh rate
@@ -135,7 +134,7 @@
       <arg name="serial" direction="out" type="u" />
       <arg name="crtcs" direction="out" type="a(uxiiiiiuaua{sv})" />
       <arg name="outputs" direction="out" type="a(uxiausauaua{sv})" />
-      <arg name="modes" direction="out" type="a(usxuudu)" />
+      <arg name="modes" direction="out" type="a(uxuudu)" />
       <arg name="max_screen_width" direction="out" type="i" />
       <arg name="max_screen_height" direction="out" type="i" />
     </method>
