@@ -1395,6 +1395,7 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
           MetaMonitorMode *monitor_mode = k->data;
           GVariantBuilder supported_scales_builder;
           const char *mode_id;
+          const char *mode_name;
           int mode_width, mode_height;
           float refresh_rate;
           float preferred_scale;
@@ -1407,6 +1408,7 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
             continue;
 
           mode_id = meta_monitor_mode_get_id (monitor_mode);
+          mode_name = meta_monitor_mode_get_name (monitor_mode);
           meta_monitor_mode_get_resolution (monitor_mode,
                                             &mode_width, &mode_height);
 
@@ -1446,6 +1448,10 @@ meta_monitor_manager_handle_get_current_state (MetaDBusDisplayConfig *skeleton,
             g_variant_builder_add (&mode_properties_builder, "{sv}",
                                    "is-interlaced",
                                    g_variant_new_boolean (TRUE));
+
+          g_variant_builder_add (&mode_properties_builder, "{sv}",
+                                 "mode-name",
+                                 g_variant_new_string (mode_name));
 
           g_variant_builder_add (&modes_builder, MODE_FORMAT,
                                  mode_id,
