@@ -26,11 +26,11 @@
 #include "backends/meta-gpu.h"
 #include "core/util-private.h"
 
-/* For now, underscan to 90% of the claimed display size whenever that
+/* For now, underscan to 95% of the claimed display size whenever that
  * option is enabled. In the future there may be a UI to configure this
  * value.
  */
-#define OVERSCAN_COMPENSATION_BORDER 0.05
+#define OVERSCAN_COMPENSATION_BORDER 0.025
 
 struct _MetaTileInfo
 {
