@@ -282,17 +282,17 @@ output_get_underscanning_borders_xrandr (MetaMonitorManagerXrandr *manager_xrand
 }
 
 static gboolean
-output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
-                                 MetaOutput               *output)
+output_get_atom_property (MetaMonitorManagerXrandr *manager_xrandr,
+                          MetaOutput *output, const char *propname,
+                          Atom *value)
 {
-  MetaOutputXrandr *output_xrandr = output->driver_private;
+  gboolean exists = FALSE;
   Atom atom, actual_type;
   int actual_format;
   unsigned long nitems, bytes_after;
-  g_autofree unsigned char *buffer = NULL;
-  g_autofree char *str = NULL;
+  unsigned char *buffer;
 
-  atom = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
+  atom = XInternAtom (manager_xrandr->xdisplay, propname, False);
   XRRGetOutputProperty (manager_xrandr->xdisplay,
                         (XID)output->winsys_id,
                         atom,
@@ -300,10 +300,27 @@ output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                         &actual_type, &actual_format,
                         &nitems, &bytes_after, &buffer);
 
-  if (actual_type != XA_ATOM || actual_format != 32 || nitems < 1)
+  exists = (actual_type == XA_ATOM && actual_format == 32 && nitems >= 1);
+
+  if (exists && value != NULL)
+    *value = ((Atom*)buffer)[0];
+
+  XFree (buffer);
+  return exists;
+}
+
+static gboolean
+output_get_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                 MetaOutput               *output)
+{
+  MetaOutputXrandr *output_xrandr = output->driver_private;
+  g_autofree char *str = NULL;
+  Atom underscan_atom;
+
+  if (!output_get_atom_property (manager_xrandr, output, "underscan", &underscan_atom))
     return FALSE;
 
-  str = XGetAtomName (manager_xrandr->xdisplay, *(Atom *)buffer);
+  str = XGetAtomName (manager_xrandr->xdisplay, underscan_atom);
   return g_strcmp0 (str, output_xrandr->underscan_value) == 0;
 }
 
@@ -312,25 +329,16 @@ output_get_supports_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xran
                                           MetaOutput               *output,
                                           char                    **underscan_value)
 {
-  Atom atom, actual_type;
-  int actual_format, i;
-  unsigned long nitems, bytes_after;
-  g_autofree unsigned char *buffer = NULL;
-  XRRPropertyInfo *property_info;
+  Atom atom;
   Atom *values;
+  int i;
   gboolean supports_underscanning = FALSE;
+  XRRPropertyInfo *property_info;
 
-  atom = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
-  XRRGetOutputProperty (manager_xrandr->xdisplay,
-                        (XID)output->winsys_id,
-                        atom,
-                        0, G_MAXLONG, False, False, XA_ATOM,
-                        &actual_type, &actual_format,
-                        &nitems, &bytes_after, &buffer);
-
-  if (actual_type != XA_ATOM || actual_format != 32 || nitems < 1)
+  if (!output_get_atom_property (manager_xrandr, output, "underscan", NULL))
     return FALSE;
 
+  atom = XInternAtom (manager_xrandr->xdisplay, "underscan", False);
   property_info = XRRQueryOutputProperty (manager_xrandr->xdisplay,
                                           (XID) output->winsys_id,
                                           atom);
@@ -606,23 +614,11 @@ static MetaConnectorType
 output_get_connector_type_from_prop (MetaMonitorManagerXrandr *manager_xrandr,
                                      MetaOutput               *output)
 {
-  Atom atom, actual_type, connector_type_atom;
-  int actual_format;
-  unsigned long nitems, bytes_after;
-  g_autofree unsigned char *buffer = NULL;
+  Atom connector_type_atom;
 
-  atom = XInternAtom (manager_xrandr->xdisplay, "ConnectorType", False);
-  XRRGetOutputProperty (manager_xrandr->xdisplay,
-                        (XID)output->winsys_id,
-                        atom,
-                        0, G_MAXLONG, False, False, XA_ATOM,
-                        &actual_type, &actual_format,
-                        &nitems, &bytes_after, &buffer);
-
-  if (actual_type != XA_ATOM || actual_format != 32 || nitems < 1)
+  if (!output_get_atom_property (manager_xrandr, output, "ConnectorType", &connector_type_atom))
     return META_CONNECTOR_TYPE_Unknown;
 
-  connector_type_atom = ((Atom *) buffer)[0];
   return connector_type_from_atom (manager_xrandr, connector_type_atom);
 }
 
