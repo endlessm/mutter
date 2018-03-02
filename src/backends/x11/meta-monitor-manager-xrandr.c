@@ -86,6 +86,8 @@ G_DEFINE_TYPE (MetaMonitorManagerXrandr, meta_monitor_manager_xrandr, META_TYPE_
 typedef struct _MetaOutputXrandr
 {
   char *underscan_value;
+  int underscan_hborder;
+  int underscan_vborder;
 } MetaOutputXrandr;
 
 #ifdef HAVE_XRANDR15
@@ -259,6 +261,24 @@ output_get_presentation_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
                                 MetaOutput *output)
 {
   return output_get_boolean_property (manager_xrandr, output, "_MUTTER_PRESENTATION_OUTPUT");
+}
+
+static void
+output_get_underscanning_borders_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
+                                         MetaOutput               *output,
+                                         int                      *underscan_hborder,
+                                         int                      *underscan_vborder)
+{
+  int hborder, vborder;
+
+  if (!output_get_integer_property (manager_xrandr, output, "underscan hborder", &hborder))
+    return;
+
+  if (!output_get_integer_property (manager_xrandr, output, "underscan vborder", &vborder))
+    return;
+
+  *underscan_hborder = hborder;
+  *underscan_vborder = vborder;
 }
 
 static gboolean
@@ -942,6 +962,9 @@ meta_monitor_manager_xrandr_read_current (MetaMonitorManager *manager)
 	  output->is_underscanning = output_get_underscanning_xrandr (manager_xrandr, output);
 
 	  output_get_backlight_limits_xrandr (manager_xrandr, output);
+	  output_get_underscanning_borders_xrandr (manager_xrandr, output,
+                                                   &output_xrandr->underscan_hborder,
+                                                   &output_xrandr->underscan_vborder);
 
 	  if (!(output->backlight_min == 0 && output->backlight_max == 0))
 	    output->backlight = output_get_backlight_xrandr (manager_xrandr, output);
@@ -1093,26 +1116,33 @@ output_set_underscanning_xrandr (MetaMonitorManagerXrandr *manager_xrandr,
    * make the border configurable. */
   if (underscanning)
     {
-      uint32_t border_value;
-
-      prop = XInternAtom (manager_xrandr->xdisplay, "underscan hborder", False);
-      border_value = output->crtc->current_mode->width * 0.05;
-
-      xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
-                                        (XID)output->winsys_id,
-                                        prop, XCB_ATOM_INTEGER, 32,
-                                        XCB_PROP_MODE_REPLACE,
-                                        1, &border_value);
-
-      prop = XInternAtom (manager_xrandr->xdisplay, "underscan vborder", False);
-      border_value = output->crtc->current_mode->height * 0.05;
-
-      xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
-                                        (XID)output->winsys_id,
-                                        prop, XCB_ATOM_INTEGER, 32,
-                                        XCB_PROP_MODE_REPLACE,
-                                        1, &border_value);
+      /* If this function is called again when underscanning is already on,
+       * we don't want to touch the borders.
+       */
+      if (output_xrandr->underscan_hborder == 0)
+        output_xrandr->underscan_hborder = output->crtc->current_mode->width * OVERSCAN_COMPENSATION_BORDER;
+      if (output_xrandr->underscan_vborder == 0)
+        output_xrandr->underscan_vborder = output->crtc->current_mode->height * OVERSCAN_COMPENSATION_BORDER;
     }
+  else
+    {
+      output_xrandr->underscan_hborder = 0;
+      output_xrandr->underscan_vborder = 0;
+    }
+
+  prop = XInternAtom (manager_xrandr->xdisplay, "underscan hborder", False);
+  xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
+                                    (XID)output->winsys_id,
+                                    prop, XCB_ATOM_INTEGER, 32,
+                                    XCB_PROP_MODE_REPLACE,
+                                    1, &output_xrandr->underscan_hborder);
+
+  prop = XInternAtom (manager_xrandr->xdisplay, "underscan vborder", False);
+  xcb_randr_change_output_property (XGetXCBConnection (manager_xrandr->xdisplay),
+                                    (XID)output->winsys_id,
+                                    prop, XCB_ATOM_INTEGER, 32,
+                                    XCB_PROP_MODE_REPLACE,
+                                    1, &output_xrandr->underscan_vborder);
 }
 
 static gboolean
