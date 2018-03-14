@@ -48,12 +48,6 @@ G_DEFINE_TYPE (MetaMonitorConfigManager, meta_monitor_config_manager,
 G_DEFINE_TYPE (MetaMonitorsConfig, meta_monitors_config,
                G_TYPE_OBJECT)
 
-static void
-meta_crtc_info_free (MetaCrtcInfo *info);
-
-static void
-meta_output_info_free (MetaOutputInfo *info);
-
 MetaMonitorConfigManager *
 meta_monitor_config_manager_new (MetaMonitorManager *monitor_manager)
 {
@@ -1285,14 +1279,14 @@ meta_monitors_config_class_init (MetaMonitorsConfigClass *klass)
   object_class->finalize = meta_monitors_config_finalize;
 }
 
-static void
+void
 meta_crtc_info_free (MetaCrtcInfo *info)
 {
   g_ptr_array_free (info->outputs, TRUE);
   g_slice_free (MetaCrtcInfo, info);
 }
 
-static void
+void
 meta_output_info_free (MetaOutputInfo *info)
 {
   g_slice_free (MetaOutputInfo, info);

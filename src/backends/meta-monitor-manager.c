@@ -963,10 +963,10 @@ make_display_name (MetaMonitorManager *manager,
     }
 }
 
-static const char *
-get_connector_type_name (MetaConnectorType connector_type)
+const char *
+meta_output_get_connector_type_name (MetaOutput *output)
 {
-  switch (connector_type)
+  switch (output->connector_type)
     {
     case META_CONNECTOR_TYPE_Unknown: return "Unknown";
     case META_CONNECTOR_TYPE_VGA: return "VGA";
@@ -1072,7 +1072,7 @@ meta_monitor_manager_handle_get_resources (MetaDBusDisplayConfig *skeleton,
       g_variant_builder_add (&properties, "{sv}", "presentation",
                              g_variant_new_boolean (output->is_presentation));
       g_variant_builder_add (&properties, "{sv}", "connector-type",
-                             g_variant_new_string (get_connector_type_name (output->connector_type)));
+                             g_variant_new_string (meta_output_get_connector_type_name (output)));
       g_variant_builder_add (&properties, "{sv}", "underscanning",
                              g_variant_new_boolean (output->is_underscanning));
       g_variant_builder_add (&properties, "{sv}", "supports-underscanning",
@@ -1618,6 +1618,7 @@ create_monitor_config_from_variant (MetaMonitorManager *manager,
   MetaMonitor *monitor;
   MetaMonitorSpec *monitor_spec;
   MetaMonitorModeSpec *monitor_mode_spec;
+  MetaOutput *output;
   g_autoptr (GVariant) properties_variant = NULL;
   gboolean enable_underscanning = FALSE;
 
@@ -1642,7 +1643,17 @@ create_monitor_config_from_variant (MetaMonitorManager *manager,
       return NULL;
     }
 
-  g_variant_lookup (properties_variant, "underscanning", "b", &enable_underscanning);
+  output = meta_monitor_get_main_output (monitor);
+  if (g_variant_lookup (properties_variant, "underscanning", "b", &enable_underscanning))
+    {
+      if (enable_underscanning && !output->supports_underscanning)
+        {
+          g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                       "Underscanning requested but unsupported");
+          return NULL;
+
+        }
+    }
 
   monitor_spec = meta_monitor_spec_clone (meta_monitor_get_spec (monitor));
 

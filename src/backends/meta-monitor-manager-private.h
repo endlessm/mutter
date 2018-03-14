@@ -161,6 +161,12 @@ struct _MetaTileInfo
   guint32 tile_h;
 };
 
+/* For now, underscan to 95% of the claimed display size whenever that
+ * option is enabled. In the future there may be a UI to configure this
+ * value.
+ */
+#define OVERSCAN_COMPENSATION_BORDER 0.025
+
 struct _MetaOutput
 {
   /* The CRTC driving this output, NULL if the output is not enabled */
@@ -485,6 +491,8 @@ void                meta_monitor_manager_confirm_configuration (MetaMonitorManag
 void               meta_output_parse_edid (MetaOutput *output,
                                            GBytes     *edid);
 gboolean           meta_output_is_laptop  (MetaOutput *output);
+
+const char *       meta_output_get_connector_type_name (MetaOutput *output);
 
 gboolean           meta_monitor_manager_has_hotplug_mode_update (MetaMonitorManager *manager);
 void               meta_monitor_manager_read_current_state (MetaMonitorManager *manager);
