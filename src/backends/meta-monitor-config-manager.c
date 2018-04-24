@@ -236,6 +236,38 @@ assign_monitor_crtcs (MetaMonitorManager       *manager,
   monitor_mode = meta_monitor_get_mode_from_spec (monitor, monitor_mode_spec);
   if (!monitor_mode)
     {
+      MetaOutput *current_output = meta_monitor_get_main_output (monitor);
+
+      /* When switching from underscanning to non-underscanning modes, the
+       * target modes from the configuration won't match any of the currently
+       * available modes and no valid mode will be found, so we need to adjust
+       * the values of the mode we are searching for to account for that.
+       *
+       * Since we can't check from here whether we're using the normal implementation
+       * of underscanning (i.e. using 'on' for the 'underscan' atom, instead of 'crop'),
+       * we do these additional checks once we have failed to obtain a valid mode, so
+       * that this works when using either the armsoc and the xf86-video-intel drivers.
+       */
+      if (current_output->is_underscanning != monitor_config->enable_underscanning)
+        {
+          g_autofree MetaMonitorModeSpec *underscanning_mode_spec = g_memdup (monitor_mode_spec, sizeof (MetaMonitorModeSpec));
+          if (monitor_config->enable_underscanning)
+            {
+              underscanning_mode_spec->width = monitor_mode_spec->width / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+              underscanning_mode_spec->height = monitor_mode_spec->height / (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+            }
+          else
+            {
+              underscanning_mode_spec->width = monitor_mode_spec->width * (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+              underscanning_mode_spec->height = monitor_mode_spec->height * (1 - 2 * OVERSCAN_COMPENSATION_BORDER);
+            }
+
+          monitor_mode = meta_monitor_get_mode_from_spec (monitor, underscanning_mode_spec);
+        }
+    }
+
+  if (!monitor_mode)
+    {
       g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
                    "Invalid mode %dx%d (%f) for monitor '%s %s'",
                    monitor_mode_spec->width, monitor_mode_spec->height,
