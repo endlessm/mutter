@@ -2155,6 +2155,7 @@ update_cursor_theme (void)
       {
         Display *xdisplay = meta_backend_x11_get_xdisplay (META_BACKEND_X11 (backend));
         set_cursor_theme (xdisplay);
+        meta_backend_x11_reload_cursor (META_BACKEND_X11 (backend));
       }
   }
 }
