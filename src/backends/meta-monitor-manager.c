@@ -2607,7 +2607,7 @@ static GVariant *
 meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
                                                    MetaOutput         *output)
 {
-  GBytes *edid;
+  g_autoptr(GBytes) edid = NULL;
   GVariant *edid_variant;
   const guint8 *raw_edid = NULL;
   gsize edid_length = 0;
@@ -2615,10 +2615,7 @@ meta_monitor_manager_get_output_auxiliary_payload (MetaMonitorManager *manager,
 
   edid = manager_class->read_edid (manager, output);
   if (edid != NULL)
-    {
-      raw_edid = g_bytes_get_data (edid, &edid_length);
-      g_bytes_unref (edid);
-    }
+    raw_edid = g_bytes_get_data (edid, &edid_length);
 
   edid_variant =
     g_variant_new_fixed_array (G_VARIANT_TYPE_BYTE,
