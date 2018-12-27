@@ -102,4 +102,6 @@ MetaInhibitShortcutsDialog *
 
 void meta_plugin_manager_locate_pointer (MetaPluginManager *mgr);
 
+void meta_plugin_manager_stop (MetaPluginManager *plugin_mgr);
+
 #endif
