@@ -44,6 +44,7 @@ typedef struct _MetaPluginInfo    MetaPluginInfo;
 /**
  * MetaPluginClass:
  * @start: virtual function called when the compositor starts managing a screen
+ * @stop: virtual function called when the compositor stops managing a screen
  * @minimize: virtual function called when a window is minimized
  * @size_change: virtual function called when a window changes size to/from constraints
  * @map: virtual function called when a window is mapped
@@ -73,6 +74,13 @@ struct _MetaPluginClass
    * Virtual function called when the compositor starts managing a screen
    */
   void (*start)            (MetaPlugin         *plugin);
+
+  /**
+   * MetaPluginClass::stop:
+   *
+   * Virtual function called when the compositor stops managing a screen
+   */
+  void (*stop)             (MetaPlugin         *plugin);
 
   /**
    * MetaPluginClass::minimize:
