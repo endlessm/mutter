@@ -595,7 +595,12 @@ meta_compositor_manage (MetaCompositor *compositor)
 void
 meta_compositor_unmanage (MetaCompositor *compositor)
 {
+  MetaCompositorPrivate *priv =
+    meta_compositor_get_instance_private (compositor);
+
   META_COMPOSITOR_GET_CLASS (compositor)->unmanage (compositor);
+
+  meta_plugin_manager_stop (priv->plugin_mgr);
 }
 
 void
