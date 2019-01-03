@@ -118,6 +118,16 @@ meta_plugin_manager_new (MetaCompositor *compositor)
   return plugin_mgr;
 }
 
+void
+meta_plugin_manager_stop (MetaPluginManager *plugin_mgr)
+{
+  MetaPlugin *plugin = plugin_mgr->plugin;
+  MetaPluginClass *klass = META_PLUGIN_GET_CLASS (plugin);
+
+  if (klass->stop)
+    klass->stop (plugin);
+}
+
 static void
 meta_plugin_manager_kill_window_effects (MetaPluginManager *plugin_mgr,
                                          MetaWindowActor   *actor)
