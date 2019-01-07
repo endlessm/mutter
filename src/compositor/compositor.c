@@ -580,8 +580,6 @@ meta_compositor_unmanage (MetaCompositor *compositor)
        * window manager won't be able to redirect subwindows */
       XCompositeUnredirectSubwindows (xdisplay, xroot, CompositeRedirectManual);
     }
-
-  meta_plugin_manager_stop (compositor->plugin_mgr);
 }
 
 /**
