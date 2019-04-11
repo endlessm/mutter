@@ -1,73 +1,92 @@
 #!/usr/bin/make -f
 
--include /usr/share/gnome-pkg-tools/1/rules/gnome-get-source.mk
-
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 export DEB_LDFLAGS_MAINT_APPEND = -Wl,-O1 -Wl,--as-needed
 
 %:
-	dh $@ --with gir,gnome
+	dh $@
 
 override_dh_autoreconf:
 	dh_autoreconf --as-needed
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
 CONFFLAGS = \
-	--enable-egl-device \
-	--enable-native-backend
-
-# With the exception of --<enable|disable>-wayland, all the following
-# parameters are passed for the in-tree version of cogl and clutter.
-ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armhf))
-CONFFLAGS += \
-	--disable-wayland \
-	--disable-gl \
-	--enable-cogl-gles2=yes \
-	--enable-gles2=yes \
-	--with-default-driver=gles2 \
-	--with-gles2-libname=libGLESv2.so.2
+	-Degl_device=true \
+	-Dwayland=true \
+	-Dwayland_eglstream=true \
+	-Dnative_backend=true
 else
 CONFFLAGS += \
-	--enable-wayland \
-	--enable-gl=yes \
-	--with-default-driver=gl
+	-Degl=false \
+	-Dwayland=false \
+	-Dnative_backend=false \
+	-Dremote_desktop=false
 endif
-CONFFLAGS += --enable-kms-egl-platform=yes
+
+ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
+CONFFLAGS += \
+	-Ddefault_driver=gles2
 else
 CONFFLAGS += \
-	--disable-wayland-egl-platform \
-	--disable-wayland-egl-server \
-	--disable-kms-egl-platform \
-	--disable-wayland \
-	--disable-native-backend
+	-Ddefault_driver=gl
+endif
+
+# pipewire is not in Ubuntu main yet
+ifeq ($(DEB_HOST_ARCH_OS),linux)
+ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
+	CONFFLAGS += -Dremote_desktop=false
+else
+	CONFFLAGS += -Dremote_desktop=true
+endif
 endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
-		--libexecdir="\$${prefix}/lib/mutter" \
-		--enable-startup-notification \
-		--enable-compile-warnings \
+		--libexecdir="/usr/lib/mutter" \
+		-Dstartup_notification=true \
+		-Dgles2=true \
+		-Dgles2_libname=libGLESv2.so.2 \
+		-Dinstalled_tests=false \
 		$(CONFFLAGS)
 
-# See https://bugs.debian.org/874077
-# Ignore test failures on Debian and on s390x
-override_dh_auto_test:
-ifneq (,$(findstring $(DEB_HOST_ARCH),"s390x"))
-	-xvfb-run dh_auto_test
-else ifeq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
-	xvfb-run dh_auto_test
-else
-	-xvfb-run dh_auto_test
+# Use meson test directly as it allows us to use the timeout multiplier
+BUILDDIR=$(CURDIR)/obj-$(DEB_HOST_GNU_TYPE)
+TEST_COMMAND=env \
+	XDG_RUNTIME_DIR=$(BUILDDIR)/XRD \
+	GSETTINGS_SCHEMA_DIR=$(BUILDDIR)/data \
+	dbus-run-session -- xvfb-run -s '+iglx -noreset' -a \
+	meson test -C $(BUILDDIR) --no-rebuild --verbose --timeout-multiplier 4
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+  NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+  TEST_COMMAND += --num-processes $(NUMJOBS)
 endif
 
-override_dh_install:
-	dh_install --list-missing
+# Ignore test failures on hurd, kfreebsd and s390x. Although the test results
+# indicate there may be a serious issue, the port maintainers may
+# prefer we do the build anyway. I plan to file a bug for this later.
+# Don't run the tests on mips since they either time out or fail too much,
+# blocking migration to testing
+override_dh_auto_test:
+	glib-compile-schemas $(BUILDDIR)/data
+	mkdir -m 700 $(BUILDDIR)/XRD
+ifneq (,$(filter hurd-i386 kfreebsd-i386 kfreebsd-amd64 s390x,$(DEB_HOST_ARCH)))
+	-$(TEST_COMMAND)
+else ifeq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
+	$(TEST_COMMAND)
+endif
+
+override_dh_missing:
+	dh_missing --fail-missing
 
 override_dh_girepository:
-	dh_girepository /usr/lib/$(DEB_HOST_MULTIARCH)/mutter
+	dh_girepository /usr/lib/$(DEB_HOST_MULTIARCH)/mutter-4
 
 override_dh_makeshlibs:
-	dh_makeshlibs -V'libmutter-1-0 (>= 3.25.90)'
+	dh_makeshlibs -V
+
+override_dh_shlibdeps:
+	dh_shlibdeps -Llibmutter-4-0 -l/usr/lib/$(DEB_HOST_MULTIARCH)/mutter-4
 
 override_dh_strip:
 	dh_strip --dbgsym-migration='mutter-dbg (<< 3.18.3-2~)'
-
