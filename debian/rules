@@ -73,7 +73,7 @@ override_dh_auto_test:
 ifneq (,$(filter hurd-i386 kfreebsd-i386 kfreebsd-amd64 s390x,$(DEB_HOST_ARCH)))
 	-$(TEST_COMMAND)
 else ifeq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
-	$(TEST_COMMAND)
+	-$(TEST_COMMAND)
 endif
 
 override_dh_missing:
