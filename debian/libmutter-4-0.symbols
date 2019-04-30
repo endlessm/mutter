@@ -459,7 +459,6 @@ libmutter-4.so.0 libmutter-4-0 #MINVER#
  meta_shadow_mode_get_type@Base 3.28.2
  meta_shadow_paint@Base 3.28.2
  meta_shadow_ref@Base 3.28.2
- meta_shadow_set_cull_back_face@Base 3.32.0-1endless0bem1
  meta_shadow_unref@Base 3.28.2
  meta_shaped_texture_get_image@Base 3.28.2
  meta_shaped_texture_get_texture@Base 3.28.2
@@ -2976,7 +2975,6 @@ libmutter-cogl-4.so.0 libmutter-4-0 #MINVER#
  cogl_swap_chain_new@Base 3.29.4
  cogl_swap_chain_set_has_alpha@Base 3.29.4
  cogl_swap_chain_set_length@Base 3.29.4
- cogl_test_verbose@Base 3.29.4
  cogl_texture_2d_get_gtype@Base 3.29.4
  cogl_texture_2d_gl_new_from_foreign@Base 3.29.4
  cogl_texture_2d_new_from_bitmap@Base 3.29.4
