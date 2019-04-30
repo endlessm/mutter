@@ -101,13 +101,13 @@ option('introspection',
 
 option('cogl_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable cogl tests'
 )
 
 option('clutter_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable clutter tests'
 )
 
@@ -119,7 +119,7 @@ option('core_tests',
 
 option('tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable tests globally. Specific test suites can be controlled with core_tests, clutter_tests, and cogl_tests'
 )
 
@@ -131,7 +131,7 @@ option('profiler',
 
 option('installed_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable mutter installed tests'
 )
 
