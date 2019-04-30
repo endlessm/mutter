@@ -101,25 +101,25 @@ option('introspection',
 
 option('cogl_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable cogl tests'
 )
 
 option('clutter_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable clutter tests'
 )
 
 option('tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable mutter tests'
 )
 
 option('installed_tests',
   type: 'boolean',
-  value: true,
+  value: false,
   description: 'Enable mutter installed tests'
 )
 
