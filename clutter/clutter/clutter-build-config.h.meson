@@ -12,3 +12,6 @@
 
 /* Supports PangoFt2 */
 #mesondefine HAVE_PANGO_FT2
+
+/* Default Clutter Driver */
+#mesondefine CLUTTER_DEFAULT_DRIVER

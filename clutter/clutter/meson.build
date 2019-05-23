@@ -396,6 +396,10 @@ cdata.set('HAVE_EVDEV', have_native_backend)
 cdata.set('HAVE_LIBWACOM', have_libwacom)
 cdata.set('HAVE_PANGO_FT2', have_pango_ft2)
 
+if default_driver != 'auto'
+  cdata.set_quoted('CLUTTER_DEFAULT_DRIVER', default_driver)
+endif
+
 clutter_build_config_h = configure_file(
   input: 'clutter-build-config.h.meson',
   output: 'clutter-build-config.h',

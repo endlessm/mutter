@@ -320,7 +320,7 @@ error:
   return FALSE;
 }
 
-static const struct {
+static struct {
   const char *driver_name;
   const char *driver_desc;
   CoglDriver driver_id;
@@ -329,7 +329,12 @@ static const struct {
   { "gl", "OpenGL legacy profile", COGL_DRIVER_GL },
   { "gles2", "OpenGL ES 2.0", COGL_DRIVER_GLES2 },
   { "any", "Default Cogl driver", COGL_DRIVER_ANY },
-};
+}
+#ifdef CLUTTER_DEFAULT_DRIVER
+ , temp_driver;
+#else
+ ;
+#endif
 
 static const char *allowed_drivers;
 
@@ -342,6 +347,19 @@ clutter_backend_real_create_context (ClutterBackend  *backend,
   char **known_drivers;
   gboolean allow_any;
   int i;
+
+#ifdef CLUTTER_DEFAULT_DRIVER
+  for (i = 1; i < G_N_ELEMENTS (all_known_drivers); i++)
+    {
+      if (g_str_equal (all_known_drivers[i].driver_name, CLUTTER_DEFAULT_DRIVER))
+        {
+          temp_driver = all_known_drivers[i];
+          all_known_drivers[i] = all_known_drivers[0];
+          all_known_drivers[0] = temp_driver;
+          break;
+        }
+    }
+#endif
 
   if (backend->cogl_context != NULL)
     return TRUE;
