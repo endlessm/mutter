@@ -173,10 +173,21 @@ paint_egl_image (MetaGles3   *gles3,
                                          GL_TEXTURE_2D, texture, 0));
 
   GLBAS (gles3, glBindFramebuffer, (GL_READ_FRAMEBUFFER, framebuffer));
+/* Filthy hack: glBlitFramebuffer adds a hard dependency on GLESv3, but our
+ * Mali drivers on the endless mini are GLESv2. However, this path is only
+ * used for dual GPU systems, where the GPU doing scanout is not the GPU
+ * doing rendering. This is not something we've seen on ARM.
+ *
+ * Mercilessly break this code path on ARM since we never get here.
+ *
+ * https://phabricator.endlessm.com/T26795
+ */
+#ifndef __arm__
   GLBAS (gles3, glBlitFramebuffer, (0, height, width, 0,
                                     0, 0, width, height,
                                     GL_COLOR_BUFFER_BIT,
                                     GL_NEAREST));
+#endif
 }
 
 gboolean
