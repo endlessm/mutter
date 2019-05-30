@@ -27,7 +27,7 @@ endif
 
 ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
 CONFFLAGS += \
-	-Ddefault_driver=gles2
+	-Dopengl=false -Dglx=false
 else
 CONFFLAGS += \
 	-Ddefault_driver=gl
