@@ -2302,7 +2302,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  _cogl_winsys_egl_renderer_connect_common@Base 3.29.4
  _cogl_winsys_egl_xlib_get_vtable@Base 3.29.4
  _cogl_winsys_error_quark@Base 3.29.4
- _cogl_winsys_glx_get_vtable@Base 3.29.4
+ (arch=!armhf !armel) _cogl_winsys_glx_get_vtable@Base 3.29.4
  cogl_atlas_texture_get_gtype@Base 3.29.4
  cogl_atlas_texture_new_from_bitmap@Base 3.29.4
  cogl_atlas_texture_new_from_data@Base 3.29.4
@@ -2525,7 +2525,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_get_viewport@Base 3.29.4
  cogl_glib_renderer_source_new@Base 3.29.4
  cogl_glib_source_new@Base 3.29.4
- cogl_glx_context_get_glx_context@Base 3.29.4
+ (arch=!armhf !armel) cogl_glx_context_get_glx_context@Base 3.29.4
  cogl_gtype_matrix_get_type@Base 3.29.4
  cogl_handle_get_type@Base 3.29.4
  cogl_handle_ref@Base 3.29.4
