@@ -28,6 +28,7 @@ mutter_pkg_private_deps = [
   gnome_settings_daemon_dep,
   json_glib_dep,
   libcanberra_dep,
+  malcontent_dep,
   xkbcommon_dep,
 ]
 
