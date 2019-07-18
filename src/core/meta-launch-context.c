@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include <gio/gdesktopappinfo.h>
+#include <libmalcontent/malcontent.h>
 
 #include "core/display-private.h"
 #include "meta/meta-launch-context.h"
@@ -137,8 +138,46 @@ meta_launch_context_get_startup_notify_id (GAppLaunchContext *launch_context,
 {
   MetaLaunchContext *context = META_LAUNCH_CONTEXT (launch_context);
   MetaDisplay *display = context->display;
+  g_autoptr(GDBusConnection) system_bus = NULL;
   int workspace_idx = -1;
   char *startup_id = NULL;
+
+  system_bus = g_bus_get_sync (G_BUS_TYPE_SYSTEM, NULL, NULL);
+  if (system_bus != NULL)
+    {
+      g_autoptr(MctManager) manager = NULL;
+      g_autoptr(MctAppFilter) app_filter = NULL;
+      g_autoptr(GError) error = NULL;
+
+      manager = mct_manager_new (system_bus);
+      app_filter = mct_manager_get_app_filter (manager, getuid (),
+                                               MCT_GET_APP_FILTER_FLAGS_NONE,
+                                               NULL, &error);
+      if (error != NULL)
+        {
+          if (g_error_matches (error, MCT_APP_FILTER_ERROR,
+                               MCT_APP_FILTER_ERROR_DISABLED))
+          {
+            g_debug ("Parental controls globally disabled");
+          }
+          else
+            {
+              g_warning ("Failed to get parental controls settings for app %s "
+                         "- skipping startup notification",
+                         g_app_info_get_name (info));
+              return NULL;
+            }
+        }
+
+      if (app_filter != NULL &&
+          !mct_app_filter_is_appinfo_allowed (app_filter, info))
+        {
+          g_warning ("Running app %s is not allowed by the policy set by "
+                     "your administrator - skipping startup notification",
+                     g_app_info_get_name (info));
+          return NULL;
+        }
+    }
 
   if (context->workspace)
     workspace_idx = meta_workspace_index (context->workspace);
