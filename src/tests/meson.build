@@ -135,8 +135,12 @@ stacking_tests = [
 ]
 
 foreach stacking_test: stacking_tests
+  suites = ['core', 'mutter/stacking']
+  if stacking_test.startswith('closed-transient-no-input')
+    suites += ['flaky']
+  endif
   test(stacking_test, test_runner,
-    suite: ['core', 'mutter/stacking'],
+    suite: suites,
     env: test_env,
     args: [
       files(join_paths('stacking', stacking_test + '.metatest')),
