@@ -73,8 +73,12 @@ foreach test : clutter_conform_tests
     install: false,
   )
 
+  suites = ['clutter', 'clutter/conform']
+  if test in ['timeline', 'timeline-interpolate']
+    suites += ['flaky']
+  endif
   test(test, test_executable,
-    suite: ['clutter', 'clutter/conform'],
+    suite: suites,
     env: test_env,
     is_parallel: false,
   )
