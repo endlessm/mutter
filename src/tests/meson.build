@@ -197,7 +197,7 @@ test('headless-start', headless_start_test,
 )
 
 test('stage-view', stage_view_tests,
-  suite: ['core', 'mutter/unit'],
+  suite: ['core', 'mutter/unit', 'flaky'],
   env: test_env,
   is_parallel: false,
   timeout: 60,
