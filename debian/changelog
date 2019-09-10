@@ -1,3 +1,11 @@
+mutter (3.34.1-1endless1) eos; urgency=medium
+
+  * Update to 3.34.1 with Endless changes applied
+    + Add dependency on libmalcontent
+    + Build without full GL or GLX on ARM
+
+ -- Georges Basile Stavracas Neto <georges@endlessm.com>  Tue, 09 Sep 2019 18:38:01 -0300
+
 mutter (3.34.1-1) unstable; urgency=medium
 
   * New upstream release
