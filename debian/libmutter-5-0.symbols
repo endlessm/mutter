@@ -79,6 +79,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_compositor_window_shape_changed@Base 3.28.2
  meta_create_monitors_config_key_for_current_state@Base 3.28.2
  meta_crtc_get_type@Base 3.28.2
+ meta_crtc_info_free@Base 3.34.0-1endless1bem1
  meta_crtc_mode_get_type@Base 3.28.2
  meta_cursor_get_type@Base 3.28.2
  meta_cursor_tracker_get_for_display@Base 3.29.4
@@ -306,6 +307,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_monitor_mode_foreach_output@Base 3.28.2
  meta_monitor_mode_get_flags@Base 3.28.2
  meta_monitor_mode_get_id@Base 3.28.2
+ meta_monitor_mode_get_name@Base 3.34.0-1endless1bem1
  meta_monitor_mode_get_refresh_rate@Base 3.28.2
  meta_monitor_mode_get_resolution@Base 3.28.2
  meta_monitor_mode_get_spec@Base 3.28.2
@@ -330,8 +332,10 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_motion_direction_get_type@Base 3.28.2
  meta_output_assign_crtc@Base 3.28.2
  meta_output_get_assigned_crtc@Base 3.28.2
+ meta_output_get_connector_type_name@Base 3.34.0-1endless1bem1
  meta_output_get_gpu@Base 3.28.2
  meta_output_get_type@Base 3.28.2
+ meta_output_info_free@Base 3.34.0-1endless1bem1
  meta_output_unassign_crtc@Base 3.28.2
  meta_override_compositor_configuration@Base 3.28.2
  meta_pad_action_type_get_type@Base 3.28.2
@@ -515,6 +519,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_verify_monitor_config@Base 3.28.2
  meta_verify_monitor_mode_spec@Base 3.28.2
  meta_verify_monitor_spec@Base 3.28.2
+#MISSING: 3.34.0-1endless1bem1# meta_verify_monitor_mode_spec@Base 3.28.2
  meta_verify_monitors_config@Base 3.28.2
  meta_virtual_modifier_get_type@Base 3.28.2
  meta_warning@Base 3.28.2
@@ -545,6 +550,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_window_client_type_get_type@Base 3.28.2
  meta_window_compute_group@Base 3.28.2
  meta_window_delete@Base 3.28.2
+ meta_window_expand_allocated_geometry@Base 3.34.0-1endless1bem1
  meta_window_find_root_ancestor@Base 3.28.2
  meta_window_focus@Base 3.28.2
  meta_window_foreach_ancestor@Base 3.28.2
@@ -572,6 +578,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_window_get_id@Base 3.31.90
  meta_window_get_layer@Base 3.28.2
  meta_window_get_maximized@Base 3.28.2
+ meta_window_get_minimum_size_hints@Base 3.34.0-1endless1bem1
  meta_window_get_monitor@Base 3.28.2
  meta_window_get_mutter_hints@Base 3.28.2
  meta_window_get_pid@Base 3.28.2
@@ -2938,7 +2945,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_swap_chain_new@Base 3.29.4
  cogl_swap_chain_set_has_alpha@Base 3.29.4
  cogl_swap_chain_set_length@Base 3.29.4
- cogl_test_verbose@Base 3.29.4
+#MISSING: 3.34.0-1endless1bem1# cogl_test_verbose@Base 3.29.4
  cogl_texture_2d_get_gtype@Base 3.29.4
  cogl_texture_2d_gl_new_from_foreign@Base 3.29.4
  cogl_texture_2d_new_from_bitmap@Base 3.29.4
@@ -3030,27 +3037,27 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_xlib_renderer_set_event_retrieval_enabled@Base 3.29.4
  cogl_xlib_renderer_set_foreign_display@Base 3.29.4
  cogl_xlib_set_display@Base 3.29.4
- test_ctx@Base 3.33.4
- test_fb@Base 3.33.4
- test_utils_check_pixel@Base 3.33.4
- test_utils_check_pixel_and_alpha@Base 3.33.4
- test_utils_check_pixel_rgb@Base 3.33.4
- test_utils_check_region@Base 3.33.4
- test_utils_compare_pixel@Base 3.33.4
- test_utils_compare_pixel_and_alpha@Base 3.33.4
- test_utils_create_color_texture@Base 3.33.4
- test_utils_fini@Base 3.33.4
- test_utils_init@Base 3.33.4
- test_utils_texture_new_from_bitmap@Base 3.33.4
- test_utils_texture_new_from_data@Base 3.33.4
- test_utils_texture_new_with_size@Base 3.33.4
- unit_test_check_bitmask_api@Base 3.33.4
- unit_test_check_blend_constant_ancestry@Base 3.33.4
- unit_test_check_gl_blend_enable@Base 3.33.4
- unit_test_check_mesa_driver_package_parser@Base 3.33.4
- unit_test_check_pipeline_pruning@Base 3.33.4
- unit_test_check_point_size_shader@Base 3.33.4
- unit_test_check_uniform_ancestry@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_ctx@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_fb@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel_and_alpha@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel_rgb@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_check_region@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_compare_pixel@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_compare_pixel_and_alpha@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_create_color_texture@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_fini@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_init@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_from_bitmap@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_from_data@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_with_size@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_bitmask_api@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_blend_constant_ancestry@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_gl_blend_enable@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_mesa_driver_package_parser@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_pipeline_pruning@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_point_size_shader@Base 3.33.4
+#MISSING: 3.34.0-1endless1bem1# unit_test_check_uniform_ancestry@Base 3.33.4
 libmutter-cogl-pango-5.so.0 libmutter-5-0 #MINVER#
 * Build-Depends-Package: libmutter-5-dev
  cogl_pango_ensure_glyph_cache_for_layout@Base 3.29.4
