@@ -1,8 +1,320 @@
-mutter (3.32.1-1endless0) eos; urgency=medium
+mutter (3.34.1-1) unstable; urgency=medium
 
-  * Update to 3.32.1 with Endless changes applied
+  * New upstream release
+    + Fix focusing of Java applications (LP: #1847184)
+    + Fix freeze of pointer event delivery on X11
+    + Fix initial view perspective
+    + Fix memory leak when using implicit animations
+    + Fix _NET_ACTIVE_WINDOW emission
+    + Fix numlock state for native backend (LP: #1845031)
+    + Fix scaling of DND surface actors
+    + Fix scaling of stylus input coordinates with HiDPI
+    + Fix screenshots and window animations when scaled
+    + Fix startup of X11 session services on wayland
+    + kms: Predict state changes when processing update (LP: #1847044)
+    + Optimize blitting of untransformed offscreen stage views
+    + Re-enable coredumps when capabilities are set
+  * Drop several upstream backports which are now applied
+    - d/p/build-Compile-with-ffloat-store-on-x86-32-bit.patch
+    - d/p/clutter-actor-Cancel-delayed-timelines-on-removal.patch
+    - d/p/clutter-timeline-Don-t-emit-paused-signal-on-delayed-time.patch
+    - d/p/clutter-timeline-Use-a-function-to-cancel-the-delay-timeo.patch
+    - d/p/core-Split-x11-display-initialization-in-2-signals.patch
+    - d/p/x11-Minor-refactor-of-input-focus-handling-code.patch
+    - d/p/x11-Use-the-currently-focused-X-window-for-_NET_ACTIVE_WI.patch
+  * rules: Skip tests when DEB_BUILD_OPTIONS=nocheck is set
 
- -- Georges Basile Stavracas Neto <georges@endlessm.com>  Thu, 11 Apr 2019 15:42:11 -0300
+ -- Iain Lane <laney@debian.org>  Wed, 09 Oct 2019 11:17:08 +0100
+
+mutter (3.34.0-4) unstable; urgency=medium
+
+  * Team upload.
+  * Upload to unstable.
+
+ -- Andreas Henriksson <andreas@fatal.se>  Mon, 30 Sep 2019 13:26:44 +0200
+
+mutter (3.34.0-3) experimental; urgency=medium
+
+  * d/p/clutter-*: Cherry-pick from upstream to fix a crash. During
+    animations, which was particularly bad when using Dash-to-Dock in
+    auto-hide mode. (LP: #1841794)
+
+ -- Iain Lane <laney@debian.org>  Fri, 20 Sep 2019 16:08:03 +0100
+
+mutter (3.34.0-2) experimental; urgency=medium
+
+  * d/p/core-Split-x11-display-initialization-in-2-signals.patch: Cherry-pick.
+    Fixes starting up of gsd-xsettings on Wayland. (LP: #1843107)
+
+ -- Iain Lane <laney@debian.org>  Fri, 13 Sep 2019 11:10:15 +0100
+
+mutter (3.34.0-1) experimental; urgency=medium
+
+  [ Simon McVittie ]
+  * libmutter-5-0: Add Breaks on apparmor (<< 2.13.3-5~).
+    This ensures that #935058 has been fixed, so X11 apps with the X
+    abstraction can read /run/user/1000/.mutter-Xwaylandauth.*
+    (Closes: #939736)
+  * d/tests: Add a superficial build-test for the -dev package.
+    I'm deliberately not testing the included forks of clutter and cogl here
+    since those are an implementation detail of Mutter.
+  * Use default libexecdir.
+    The version of the FHS used in Debian has supported this since
+    Policy 4.1.5.
+  * d/rules: Use a temporary home directory for build-time tests
+  * d/clean: Clean up temporary home directory and XDG_RUNTIME_DIR
+  * Standards-Version: 4.4.0 (no changes required)
+  * Rewrite package descriptions based on the upstream README.
+    This removes the strange breakfast cereal references, and reframes
+    Mutter as primarily a shared library used by GNOME Shell and only
+    secondarily a standalone window manager, matching its real upstream
+    maintenance status.
+
+  [ Iain Lane ]
+  * d/p/x11*: Cherry pick fixes from upstream to fix focus order on X11
+    (LP: #1842971)
+  * New upstream release
+    + Fix xdg-output v3 support
+    + Fix crash when changing decoration state
+    + Add and remove connectors on hot-plug
+  * d/p/*: Drop upstream cherry-picks
+  * d/p/build-Compile-with-ffloat-store-on-x86-32-bit.patch: Take from MR 785.
+    This fixes the testsuite on i386, which is broken because of the use of
+    x87 extended precision introducing rounding errors.
+
+ -- Iain Lane <laney@debian.org>  Tue, 10 Sep 2019 11:46:06 +0100
+
+mutter (3.33.92-1) experimental; urgency=medium
+
+  * New upstream release
+    + Add additional sysprof trace points
+    + Add meta_window_actor_get_image()
+    + Fix lost keyboard focus after DND
+    + Fix position of drag surfaces
+    + Implement geometric picking
+    + Implement subsurface.place_below() for parents
+    + Misc. pointer a11y improvements
+    + Remove GLX "threaded swap wait" used on Nvidia
+    + Restore inhibit shortcut for overlay key
+    + Revert faulty optimization from !719
+    + Turn MetaShapedTexture into a ClutterContent implementation
+  * control: Bump libxi-dev per upstream
+  * d/p/*: Refresh. In particular synaptics-support.patch needed rebasing.
+    Hopefully this can be dropped soon.
+  * d/p: Sync with upstream as of 5111e339487b4bfb4b90b3281d57b1ee4cbf7f95
+  * d/libmutter-5-0.symbols: Refresh up to 3.33.92. There are dropped symbols
+    here. As a reminder, libmutter5 is not considered ABI stable until 3.34.0
+
+ -- Iain Lane <laney@debian.org>  Thu, 05 Sep 2019 15:25:59 +0100
+
+mutter (3.33.91-1) experimental; urgency=medium
+
+  [ Dmitry Shachnev ]
+  * Update dh_girepository argument from mutter-4 to mutter-5
+
+  [ Iain Lane ]
+  * New upstream release
+    + Fix primary selection copy and paste between X11 and wayland
+    + Improve monitor hotplug support
+    + Remove a source of frame skips
+    + Fix windows being lowered after unmaximizing with double click
+    + Remove Clutter API for global grabs
+    + Improve processing of incompressible events
+    + Add xdg-output v3 support
+  * control: Bump BDs per upstream
+  * debian/libmutter-5-0.symbols: Update for new/dropped symbols.
+    The ABI of libmutter-5-0 is *not* considered stable until the final
+    release.
+
+ -- Iain Lane <laney@debian.org>  Fri, 23 Aug 2019 15:15:50 +0100
+
+mutter (3.33.90-2) experimental; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * debian/rules: Use more verbose logging, printing failure output
+
+  [ Iain Lane ]
+  * tests-Tag-closed-transient-no-input-tests-as-flaky.patch, rules: Tag some
+    tests as 'flaky' and run them non-fatally.
+  * rules: Add mips64el to mips arches to not run tests on
+
+ -- Iain Lane <laney@debian.org>  Wed, 14 Aug 2019 16:26:24 +0100
+
+mutter (3.33.90-1) experimental; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * New upstream release
+    + Avoid repainting covered areas
+    + Start Xwayland on demand
+    + Expose layout manager properties to transitions
+  * debian/patches: Refresh
+
+  [ Simon McVittie ]
+  * d/libmutter-5-0.bug-control: Include GL drivers in bug reports
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 13 Aug 2019 09:58:27 +0100
+
+mutter (3.33.4-1) experimental; urgency=medium
+
+  * New upstream release
+    + Add API to reorder workspaces
+    + Add a Sysprof-based profiler
+    + Add initial KMS transactional support
+    + Add xdg-output v2 support
+    + Consolidate frame throttling
+    + Defer actor allocation till shown
+    + Discard page flip retries on hotplug
+    + Don't emit ::size-changed when only position changed
+    + Don't use grab modifiers when shortcuts are inhibited
+    + Expose workspace layout properties
+    + Fix background corruption on Nvidia after resuming from suspend (LP:
+      #1809407)
+    + Fix black shadows when using fractional scaling
+    + Fix modifier-drag on wayland subsurfaces
+    + Fix running X11 applications with sudo under wayland
+    + Fix setting blank cursor under wayland
+    + Fix stuttering due to unchanged power save mode notifications
+    + Fix text selection color rendering
+    + Handle returning from fullscreen/maximization better
+    + Honor startup sequence workspace on wayland
+    + Implement locate-pointer accessibility feature
+    + Implement mouse accessibility
+    + Implement toggle-keys notification
+    + Improve finding new focus window when the old one is closed
+    + Improve screencast support on multi-monitor systems
+    + Make picking a new focus window more reliable
+    + Only emit 'grab-op-end` signal after dropping grabs
+    + Only grab the locate-pointer key when necessary
+    + Pixel-align OpenGL cursors
+    + Prepare for running Xwayland on demand
+    + Relax "xwayland-allow-grabs" setting
+    + Restore DRM format fallbacks
+    + Try to use primary GPU for copy instead of glReadPixels
+    + Unset pointer focus when the cursor is hidden
+  * debian/control: Update dependencies per meson.build
+  * debian/rules: Disable profiler.
+    We need to split sysprof into a library before we can enable this, so
+    that all users don't get headers / the profiler application installed
+  * Drop patches applied upstream
+    - window-x11-Focus-a-window-in-the-active-workspace-as-take.patch
+    - metatest-Dispatch-the-destruction-instead-of-sleeping-aft.patch
+    - debian/Revert-meson-Bump-meson-requirement-to-0.50.0.patch
+  * cogl-tests-Only-install-run-tests.sh-when-building-instal.patch:
+    Cherry-pick to fix building without installed tests
+  * build-Bump-API-version-automatically-each-development-cyc.patch:
+    Cherry-pick - bump ABI
+  * Refresh patches
+  * Bump to libmutter-5 and update symbols
+  * BD on a gnome-desktop that provides libgnome-desktop-3-18
+
+ -- Iain Lane <laney@debian.org>  Tue, 30 Jul 2019 18:16:52 +0100
+
+mutter (3.32.2+git20190711-2) experimental; urgency=medium
+
+  * d/p/window-x11-Focus-a-window-in-the-active-workspace-as-take.patch:
+    - Fix possible crash on closing Java dialogs (Related to LP: #1834583)
+    d/p/metatest-Dispatch-the-destruction-instead-of-sleeping-aft.patch:
+    - Tests: don't wait too much after window destruction, causing failures
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 19 Jul 2019 16:55:02 +0100
+
+mutter (3.32.2+git20190711-1) experimental; urgency=medium
+
+  * New upstream snapshot up to commit ccab0f470
+    - Fix No-input WM_TAKE_FOCUS dialogs causing GNOME Shell to hang
+      and ensure we always have a window focused if we have a valid
+      focus canididate (LP: #1834583)
+    - Don't crash on shell close / reload under X11 when releasing
+      surface actor display resources (LP: #1826918)
+  * d/p/debian/Revert-meson-Bump-meson-requirement-to-0.50.0.patch:
+    - Revert dependency on meson 0.50.0
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 12 Jul 2019 14:11:53 +0100
+
+mutter (3.32.2+git20190626-1) experimental; urgency=medium
+
+  * New upstream snapshot release:
+    - Don't crash when try to focus unfocusable windows (LP: #1791574)
+    - Valgrind use-after-free warning fixes in the native backend
+    - renderer/native: add missing eglTerminate in EGLDevice error path
+    - Fix Alt+F2 -> restart to work again in X11
+    - window: Emit an error and return when trying to activate an unmanaged
+      (LP: #1827401)
+    - Setting cursor to "none" doesn't hide it under Wayland
+    - Fix broken selected text in entries
+    - Tests memory fixes
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 27 Jun 2019 13:02:32 +0100
+
+mutter (3.32.2-1) experimental; urgency=medium
+
+  * New upstream release
+  * d/p/clutter-evdev-disable-mousekeys-with-Numlock-ON.patch,
+    d/p/clutter-x11-disable-mousekeys-with-Numlock-ON.patch,
+    d/p/compositor-Destroy-window-actors-list-on-destruction.patch,
+    d/p/compositor-Disconnect-from-stage-signals-on-destruction.patch,
+    d/p/input-settings-Use-0-initialized-struct-for-kbd-a11y.patch:
+    - Dropped, merged upstream.
+  * d/p/meson-add-back-default_driver-option.patch:
+    - Refreshed
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 21 May 2019 12:31:38 +0100
+
+mutter (3.32.1-2) experimental; urgency=medium
+
+  * Cherry-pick patches from upstream gnome-3-32 branch:
+    - compositor-Destroy-window-actors-list-on-destruction.patch,
+      compositor-Disconnect-from-stage-signals-on-destruction.patch: Fix crash
+      when exiting. (LP: #1813716)
+    - 0-initialize a struct we'll be memcmp()ing.
+  * Reorder patch series so upstream patches come first (no conflicts, no
+    refreshing required).
+
+ -- Iain Lane <laney@debian.org>  Wed, 01 May 2019 09:34:30 +0100
+
+mutter (3.32.1-1) experimental; urgency=medium
+
+  * New upstream release
+  * debian/patches: disable mousekeys with Numlock ON to match the
+    documentation (cherry picked from the 3.32 branch)
+
+ -- Laurent Bigonville <bigon@debian.org>  Mon, 22 Apr 2019 21:57:33 +0200
+
+mutter (3.32.0+git20190410-2) experimental; urgency=medium
+
+  [ Gunnar Hjalmarsson ]
+  * Add gnome-control-center-data to Build-Depends. This package provides
+    gnome-keybindings.{its,loc}. These are needed if the translation template
+    is regenerated at build-time to translate the key bindings defined in
+    data/50-*.xml. (LP: #1823722)
+
+ -- Iain Lane <laney@debian.org>  Sun, 14 Apr 2019 11:11:22 +0100
+
+mutter (3.32.0+git20190410-1) experimental; urgency=medium
+
+  * New upstream snapshot up to commit
+    b2d0184c6efa164ad5dd7a2ca8b10cf13acf5b4c. Fixes Launchpad bugs:
+    + GNOME Shell task bar menus not updated with external monitor primary and
+      laptop screen fractionally scaled (LP: #1803319)
+    + (In Xorg sessions only) apps launched from gnome shell do not get input
+      focus (LP: #1817924)
+    + Touch input is offset with two screens (even appearing on the wrong
+      screen) in Xorg sessions (LP: #1821933)
+    + gnome-shell crashed with SIGABRT. Assertion failure in
+      meta_gpu_kms_flip_crtc: "monitor_manager->power_save_mode ==
+      META_POWER_SAVE_ON" (LP: #1820331)
+  * debian/patches/various: Drop upstream cherry-picks. We had cherry-picked
+    the stable branch into Debian patches in the previous upload, but that
+    would get out of hand if we carried on. Instead we are using a tarball
+    snapshot. So drop the cherry-picks.
+  * Update symbols. A typo was fixed in a public symbol. This is an ABI break,
+    but upstream didn't consider this worthy of a SONAME change. A codesearch
+    / github / web search doesn't reveal any external users either, so we will
+    eat this to avoid another transition.
+  * Use debhelper-compat 12 and BD on dh-sequence-{gnome,gir}. We were missing
+    a direct BD on the providers. Thanks, Lintian.
+
+ -- Iain Lane <laney@debian.org>  Wed, 10 Apr 2019 16:36:23 +0100
 
 mutter (3.32.0-1) experimental; urgency=medium
 
