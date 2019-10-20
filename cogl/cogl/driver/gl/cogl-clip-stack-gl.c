@@ -553,7 +553,6 @@ _cogl_clip_stack_gl_flush (CoglClipStack *stack,
     {
       COGL_NOTE (CLIPPING, "Flushed empty clip stack");
 
-      ctx->current_clip_stack_uses_stencil = FALSE;
       GE (ctx, glDisable (GL_SCISSOR_TEST));
       return;
     }
@@ -697,6 +696,4 @@ _cogl_clip_stack_gl_flush (CoglClipStack *stack,
      setting up the stencil buffer */
   if (using_clip_planes)
     enable_clip_planes (ctx);
-
-  ctx->current_clip_stack_uses_stencil = using_stencil_buffer;
 }
