@@ -1903,8 +1903,8 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_stage_get_minimum_size@Base 3.29.4
  clutter_stage_get_motion_events_enabled@Base 3.29.4
  clutter_stage_get_no_clear_hint@Base 3.29.4
+ clutter_stage_get_redraw_clip@Base 3.34.1+dev63.a95d695-4bem1
  clutter_stage_get_perspective@Base 3.29.4
- clutter_stage_get_redraw_clip_bounds@Base 3.29.4
  clutter_stage_get_throttle_motion_events@Base 3.29.4
  clutter_stage_get_title@Base 3.29.4
  clutter_stage_get_type@Base 3.29.4
@@ -2310,6 +2310,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  _cogl_winsys_egl_xlib_get_vtable@Base 3.29.4
  _cogl_winsys_error_quark@Base 3.29.4
  (arch=!armhf !armel) _cogl_winsys_glx_get_vtable@Base 3.29.4
+ cogl_2d_primitives_immediate@Base 3.34.1+dev63.a95d695-4bem1
  cogl_atlas_texture_get_gtype@Base 3.29.4
  cogl_atlas_texture_new_from_bitmap@Base 3.29.4
  cogl_atlas_texture_new_from_data@Base 3.29.4
@@ -2357,6 +2358,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_buffer_unmap@Base 3.29.4
  cogl_check_extension@Base 3.29.4
  cogl_clear@Base 3.29.4
+ cogl_clip_stack_push_region@Base 3.34.1+dev63.a95d695-4bem1
  cogl_clutter_check_extension_CLUTTER@Base 3.29.4
  cogl_clutter_winsys_has_feature_CLUTTER@Base 3.29.4
  cogl_clutter_winsys_xlib_get_visual_info_CLUTTER@Base 3.29.4
@@ -2492,6 +2494,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_framebuffer_push_matrix@Base 3.29.4
  cogl_framebuffer_push_primitive_clip@Base 3.29.4
  cogl_framebuffer_push_rectangle_clip@Base 3.29.4
+ cogl_framebuffer_push_region_clip@Base 3.34.1+dev63.a95d695-4bem1
  cogl_framebuffer_push_scissor_clip@Base 3.29.4
  cogl_framebuffer_read_pixels@Base 3.29.4
  cogl_framebuffer_read_pixels_into_bitmap@Base 3.29.4
