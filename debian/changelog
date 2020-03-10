@@ -1,10 +1,134 @@
-mutter (3.34.1-1endless1) eos; urgency=medium
+mutter (3.36.0-1) UNRELEASED; urgency=medium
 
-  * Update to 3.34.1 with Endless changes applied
-    + Add dependency on libmalcontent
-    + Build without full GL or GLX on ARM
+  * New upstream release
+    + Fix placement of popup windows in multi-monitor setups
+    + Fix invisible mouse cursor on some hardware
+    + Updated translations
 
- -- Georges Basile Stavracas Neto <georges@endlessm.com>  Tue, 10 Sep 2019 18:54:19 -0300
+ -- Andre Moreira Magalhaes <andre@endlessm.com>  Tue, 10 Mar 2020 19:37:45 -0300
+
+mutter (3.35.92-1) experimental; urgency=medium
+
+  * New upstream release
+    + Add side channel for starting required X11 services
+    + Allow remote desktop services to inhibit animations
+    + Avoid flicker when (un)redirecting windows
+    + Fix clipping glitches in long text entries
+    + Fix visibility of initially hidden windows
+    + Implement scaled/transformed hardware cursors
+    + Let BindConstraints update the preferred size
+    + Make check-alive timeouts configurable
+    + Make each stage view correspond to a single CRTC
+    + Make Xwayland startup asynchronous
+    + Ping windows on every window focus
+    + Remove overhead from hot code paths
+    + Support synchronized wayland popup moving
+    + Update screen-cast code to PipeWire 0.3 API
+    + Use DMA buffers for screencasting if possible
+  * d/p/*: Rebase
+  * rules: Disable remote-desktop temporarily. This now requires pipewire 0.3
+    which is not packaged yet and needs to be worked on
+  * control: Bump wayland-protocols dep to 1.19 per meson.build
+  * debian/libmutter-6-0.symbols: Add new symbols for this release. One symbol
+    which was introduced in .90 was dropped; -6's ABI is not stable yet.
+
+ -- Iain Lane <laney@debian.org>  Tue, 03 Mar 2020 16:34:25 +0000
+
+mutter (3.35.91-1) experimental; urgency=medium
+
+  * New upstream release
+    - Fix clipboard handling when an app provides multiple types (LP: #1852183)
+    - Fixed flickers around windows in Wayland sessions (LP: #1751593)
+    - Fixed white Background when using scaling in vmware (LP: #1825842)
+    - Fixed crash in meta_surface_actor_get_texture() (LP: #1859259)
+    - Fixed Subpixel font rendering in shell panels (LP: #1836700)
+    - Fixed bug causing workspaces not to be preserved on restart
+      under X11 (LP :#1819890)
+    - Using graphene (insted of cogl) for handling various primitives
+    - Honor accelerometer orientation on monitor config changes
+    - Make the cursor renderer use the transactional KMS API
+    - Lots of crash fixes and cleanups
+  * debian/patches:
+    - refreshed
+    - d/p/EGL-Include-EGL-eglmesaext.h.patch:
+      + dropped, merged upstream
+  * debian/control:
+    - build-depend on graphene (1.9.3)
+    - Add libgraphene-1.0-dev as libmutter-6-dev dependency
+    - bump build dependency on meson 0.50
+    - bump build dependency on libinput 1.7
+    - bump package name to mutter-6
+  * d/libmutter-6-0.symbols: update symbols
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Mon, 24 Feb 2020 17:42:35 +0000
+
+mutter (3.34.3-1) unstable; urgency=medium
+
+  * New upstream release
+    + Fix window recording on HiDPI
+    + Fix top-left pixel being insensitive to clicks (LP: #1849135)
+
+ -- Iain Lane <laney@debian.org>  Mon, 06 Jan 2020 13:39:48 +0000
+
+mutter (3.34.2-2) unstable; urgency=medium
+
+  * d/p/EGL-Include-EGL-eglmesaext.h.patch: Cherry pick from master. This
+    fixes the generated EGL includes for the move of exlext.h from mesa to
+    libglvnd, which has just happened in Debian.
+
+ -- Iain Lane <laney@debian.org>  Sun, 22 Dec 2019 15:42:09 +0000
+
+mutter (3.34.2-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream release
+    - d/libmutter-5-0.symbols: Update
+    - d/copyright: Update
+  * d/gbp.conf: Use upstream/3.34.x branch
+  * Remove obsolete Lintian override
+  * Standards-Version: 4.4.1 (no changes required)
+  * d/tests: Use correct compiler for proposed autopkgtest
+    cross-architecture testing support
+
+ -- Simon McVittie <smcv@debian.org>  Mon, 16 Dec 2019 16:55:47 +0000
+
+mutter (3.34.1+git20191107-1) unstable; urgency=high
+
+  * New upstream snapshot
+    - Fixes a regression from the previous upload, which caused a hang when
+      interacting with the desktop icons.
+  * x11-Update-X11-focus-before-updating-MetaDisplay-focus.patch: Drop. This
+    was a cherrry-pick that is included in this snapshot.
+  * debian/libmutter-5-0.symbols: Add new symbol in this snapshot
+
+ -- Iain Lane <laney@debian.org>  Thu, 07 Nov 2019 11:10:59 +0000
+
+mutter (3.34.1+git20191022-2) unstable; urgency=medium
+
+  * debian/patches: Update X11 focus before display focus:
+    - Fixes an infinite loop causing an hang when showing the "application is
+      not responding" dialog (LP: #1845302)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 25 Oct 2019 17:56:43 +0100
+
+mutter (3.34.1+git20191022-1) unstable; urgency=medium
+
+  * New upstream snapshot release
+    + Fix night mode in wayland session (LP: #1847551)
+    + Don't emit key-focus-out events on destroyed actors (LP: #1848119)
+    + Fix an headers syntax error (LP: #1841709)
+    + backends: Update inhibited state for the monitor and respect that state
+    + clutter-backend-x11: Don't push keymap events to clutter
+    + Fix drag and drop for applications in wayland
+    + Avoid X11 roundtrips on underscanning checks
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 23 Oct 2019 10:53:23 +0100
+
+mutter (3.34.1-3) unstable; urgency=medium
+
+  * Bump meson test timeout multiplier from 4 to 6 for armel
+
+ -- Jeremy Bicha <jbicha@debian.org>  Sun, 20 Oct 2019 22:48:29 -0400
 
 mutter (3.34.1-1) unstable; urgency=medium
 

@@ -1,6 +1,7 @@
-libmutter-5.so.0 libmutter-5-0 #MINVER#
-* Build-Depends-Package: libmutter-5-dev
+libmutter-6.so.0 libmutter-6-0 #MINVER#
+* Build-Depends-Package: libmutter-6-dev
  (arch=linux-any)meta_activate_session@Base 3.28.2
+ meta_add_clutter_debug_flags@Base 3.35.90
  meta_add_verbose_topic@Base 3.28.2
  meta_backend_add_gpu@Base 3.33.4
  meta_backend_get_dnd@Base 3.28.2
@@ -11,6 +12,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_backend_get_settings@Base 3.28.2
  meta_backend_get_stage@Base 3.28.2
  meta_backend_get_type@Base 3.28.2
+ meta_backend_is_rendering_hardware_accelerated@Base 3.35.92
  meta_backend_lock_layout_group@Base 3.28.2
  meta_backend_set_keymap@Base 3.28.2
  meta_backend_set_numlock@Base 3.28.2
@@ -79,8 +81,9 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_compositor_window_shape_changed@Base 3.28.2
  meta_create_monitors_config_key_for_current_state@Base 3.28.2
  meta_crtc_get_type@Base 3.28.2
- meta_crtc_info_free@Base 3.34.0-1endless1bem1
  meta_crtc_mode_get_type@Base 3.28.2
+ meta_crtc_set_config@Base 3.35.92
+ meta_crtc_unset_config@Base 3.35.92
  meta_cursor_get_type@Base 3.28.2
  meta_cursor_tracker_get_for_display@Base 3.29.4
  meta_cursor_tracker_get_hot@Base 3.28.2
@@ -179,6 +182,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_gpu_take_modes@Base 3.28.2
  meta_gpu_take_outputs@Base 3.28.2
  meta_grab_op_get_type@Base 3.28.2
+ meta_gravity_get_type@Base 3.35.92
  meta_gravity_to_string@Base 3.28.2
  meta_group_get_size@Base 3.28.2
  meta_group_get_startup_id@Base 3.28.2
@@ -188,7 +192,6 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_idle_monitor_add_idle_watch@Base 3.28.2
  meta_idle_monitor_add_user_active_watch@Base 3.28.2
  meta_idle_monitor_get_core@Base 3.28.2
- meta_idle_monitor_get_for_device@Base 3.28.2
  meta_idle_monitor_get_idletime@Base 3.28.2
  meta_idle_monitor_get_type@Base 3.28.2
  meta_idle_monitor_remove_watch@Base 3.28.2
@@ -307,7 +310,6 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_monitor_mode_foreach_output@Base 3.28.2
  meta_monitor_mode_get_flags@Base 3.28.2
  meta_monitor_mode_get_id@Base 3.28.2
- meta_monitor_mode_get_name@Base 3.34.0-1endless1bem1
  meta_monitor_mode_get_refresh_rate@Base 3.28.2
  meta_monitor_mode_get_resolution@Base 3.28.2
  meta_monitor_mode_get_spec@Base 3.28.2
@@ -322,6 +324,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_monitor_switch_config_type_get_type@Base 3.28.2
  meta_monitor_tiled_get_tile_group_id@Base 3.28.2
  meta_monitor_tiled_new@Base 3.28.2
+ meta_monitor_transform_transform@Base 3.35.92
  meta_monitors_config_get_switch_config@Base 3.30.1
  meta_monitors_config_key_equal@Base 3.28.2
  meta_monitors_config_key_free@Base 3.28.2
@@ -332,10 +335,8 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_motion_direction_get_type@Base 3.28.2
  meta_output_assign_crtc@Base 3.28.2
  meta_output_get_assigned_crtc@Base 3.28.2
- meta_output_get_connector_type_name@Base 3.34.0-1endless1bem1
  meta_output_get_gpu@Base 3.28.2
  meta_output_get_type@Base 3.28.2
- meta_output_info_free@Base 3.34.0-1endless1bem1
  meta_output_unassign_crtc@Base 3.28.2
  meta_override_compositor_configuration@Base 3.28.2
  meta_pad_action_type_get_type@Base 3.28.2
@@ -368,6 +369,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_prefs_get_auto_raise_delay@Base 3.28.2
  meta_prefs_get_button_layout@Base 3.28.2
  meta_prefs_get_center_new_windows@Base 3.28.2
+ meta_prefs_get_check_alive_timeout@Base 3.35.92
  meta_prefs_get_cursor_size@Base 3.28.2
  meta_prefs_get_cursor_theme@Base 3.28.2
  meta_prefs_get_disable_workarounds@Base 3.28.2
@@ -434,8 +436,10 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_rectangle_vert_overlap@Base 3.28.2
  meta_register_with_session@Base 3.28.2
  meta_remote_access_controller_get_type@Base 3.29.90
+ meta_remote_access_handle_get_disable_animations@Base 3.35.92
  meta_remote_access_handle_get_type@Base 3.29.90
  meta_remote_access_handle_stop@Base 3.29.90
+ meta_remove_clutter_debug_flags@Base 3.35.90
  meta_remove_verbose_topic@Base 3.28.2
  meta_renderer_get_views@Base 3.28.2
  meta_restart@Base 3.28.2
@@ -519,10 +523,10 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_verify_monitor_config@Base 3.28.2
  meta_verify_monitor_mode_spec@Base 3.28.2
  meta_verify_monitor_spec@Base 3.28.2
-#MISSING: 3.34.0-1endless1bem1# meta_verify_monitor_mode_spec@Base 3.28.2
  meta_verify_monitors_config@Base 3.28.2
  meta_virtual_modifier_get_type@Base 3.28.2
  meta_warning@Base 3.28.2
+ meta_wayland_actor_surface_get_actor@Base 3.35.90
  (arch=linux-any)meta_wayland_compositor_get_default@Base 3.28.2
  (arch=linux-any)meta_wayland_get_wayland_display_name@Base 3.28.2
  (arch=linux-any)meta_wayland_get_xwayland_display_name@Base 3.28.2
@@ -550,7 +554,6 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_window_client_type_get_type@Base 3.28.2
  meta_window_compute_group@Base 3.28.2
  meta_window_delete@Base 3.28.2
- meta_window_expand_allocated_geometry@Base 3.34.0-1endless1bem1
  meta_window_find_root_ancestor@Base 3.28.2
  meta_window_focus@Base 3.28.2
  meta_window_foreach_ancestor@Base 3.28.2
@@ -578,7 +581,6 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_window_get_id@Base 3.31.90
  meta_window_get_layer@Base 3.28.2
  meta_window_get_maximized@Base 3.28.2
- meta_window_get_minimum_size_hints@Base 3.34.0-1endless1bem1
  meta_window_get_monitor@Base 3.28.2
  meta_window_get_mutter_hints@Base 3.28.2
  meta_window_get_pid@Base 3.28.2
@@ -647,6 +649,7 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_window_showing_on_its_workspace@Base 3.28.2
  meta_window_shutdown_group@Base 3.28.2
  meta_window_stick@Base 3.28.2
+ meta_window_tile@Base 3.34.1+git20191107
  meta_window_titlebar_is_onscreen@Base 3.28.2
  meta_window_type_get_type@Base 3.28.2
  meta_window_unmake_above@Base 3.28.2
@@ -694,14 +697,10 @@ libmutter-5.so.0 libmutter-5-0 #MINVER#
  meta_x11_error_trap_pop_with_return@Base 3.29.4
  meta_x11_error_trap_push@Base 3.29.4
  meta_x11_init_gdk_display@Base 3.29.4
- meta_xwayland_override_display_number@Base 3.31.90
-libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
-* Build-Depends-Package: libmutter-5-dev
- _clutter_backend_reset_cogl_framebuffer@Base 3.29.4
+ (arch=linux-any)meta_xwayland_override_display_number@Base 3.31.90
+libmutter-clutter-6.so.0 libmutter-6-0 #MINVER#
+* Build-Depends-Package: libmutter-6-dev
  _clutter_backend_translate_event@Base 3.33.92
- _clutter_device_manager_add_device@Base 3.33.92
- _clutter_device_manager_remove_device@Base 3.33.92
- _clutter_device_manager_select_stage_events@Base 3.33.92
  _clutter_event_get_platform_data@Base 3.33.92
  _clutter_event_process_filters@Base 3.33.92
  _clutter_event_push@Base 3.33.92
@@ -764,8 +763,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  cally_stage_new@Base 3.29.4
  cally_text_get_type@Base 3.29.4
  cally_text_new@Base 3.29.4
- cally_texture_get_type@Base 3.29.4
- cally_texture_new@Base 3.29.4
  cally_util_get_type@Base 3.29.4
  clutter_action_get_type@Base 3.29.4
  clutter_actor_add_action@Base 3.29.4
@@ -782,11 +779,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_allocate_available_size@Base 3.29.4
  clutter_actor_allocate_preferred_size@Base 3.29.4
  clutter_actor_animate@Base 3.29.4
- clutter_actor_animate_with_alpha@Base 3.29.4
- clutter_actor_animate_with_alphav@Base 3.29.4
  clutter_actor_animate_with_timeline@Base 3.29.4
- clutter_actor_animate_with_timelinev@Base 3.29.4
- clutter_actor_animatev@Base 3.29.4
  clutter_actor_apply_relative_transform_to_point@Base 3.29.4
  clutter_actor_apply_transform_to_point@Base 3.29.4
  clutter_actor_bind_model@Base 3.29.4
@@ -819,11 +812,11 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_clear_effects@Base 3.29.4
  clutter_actor_contains@Base 3.29.4
  clutter_actor_continue_paint@Base 3.29.4
+ clutter_actor_continue_pick@Base 3.35.90
  clutter_actor_create_pango_context@Base 3.29.4
  clutter_actor_create_pango_layout@Base 3.29.4
  clutter_actor_destroy@Base 3.29.4
  clutter_actor_destroy_all_children@Base 3.29.4
- clutter_actor_detach_animation@Base 3.29.4
  clutter_actor_event@Base 3.29.4
  clutter_actor_flags_get_type@Base 3.29.4
  clutter_actor_get_abs_allocation_vertices@Base 3.29.4
@@ -831,11 +824,8 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_get_action@Base 3.29.4
  clutter_actor_get_actions@Base 3.29.4
  clutter_actor_get_allocation_box@Base 3.29.4
- clutter_actor_get_allocation_geometry@Base 3.29.4
  clutter_actor_get_allocation_vertices@Base 3.29.4
- clutter_actor_get_anchor_point@Base 3.29.4
  clutter_actor_get_anchor_point_gravity@Base 3.29.4
- clutter_actor_get_animation@Base 3.29.4
  clutter_actor_get_background_color@Base 3.29.4
  clutter_actor_get_child_at_index@Base 3.29.4
  clutter_actor_get_child_transform@Base 3.29.4
@@ -859,7 +849,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_get_first_child@Base 3.29.4
  clutter_actor_get_fixed_position_set@Base 3.29.4
  clutter_actor_get_flags@Base 3.29.4
- clutter_actor_get_gid@Base 3.29.4
  clutter_actor_get_height@Base 3.29.4
  clutter_actor_get_last_child@Base 3.29.4
  clutter_actor_get_layout_manager@Base 3.29.4
@@ -900,7 +889,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_get_stage@Base 3.29.4
  clutter_actor_get_text_direction@Base 3.29.4
  clutter_actor_get_transform@Base 3.29.4
- clutter_actor_get_transformation_matrix@Base 3.29.4
  clutter_actor_get_transformed_paint_volume@Base 3.29.4
  clutter_actor_get_transformed_position@Base 3.29.4
  clutter_actor_get_transformed_size@Base 3.29.4
@@ -917,6 +905,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_get_z_position@Base 3.29.4
  clutter_actor_get_z_rotation_gravity@Base 3.29.4
  clutter_actor_grab_key_focus@Base 3.29.4
+ clutter_actor_has_accessible@Base 3.35.92
  clutter_actor_has_actions@Base 3.29.4
  clutter_actor_has_allocation@Base 3.29.4
  clutter_actor_has_clip@Base 3.29.4
@@ -928,7 +917,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_has_overlaps@Base 3.29.4
  clutter_actor_has_pointer@Base 3.29.4
  clutter_actor_hide@Base 3.29.4
- clutter_actor_hide_all@Base 3.29.4
  clutter_actor_insert_child_above@Base 3.29.4
  clutter_actor_insert_child_at_index@Base 3.29.4
  clutter_actor_insert_child_below@Base 3.29.4
@@ -944,8 +932,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_iter_next@Base 3.29.4
  clutter_actor_iter_prev@Base 3.29.4
  clutter_actor_iter_remove@Base 3.29.4
- clutter_actor_lower@Base 3.29.4
- clutter_actor_lower_bottom@Base 3.29.4
  clutter_actor_map@Base 3.29.4
  clutter_actor_meta_get_actor@Base 3.29.4
  clutter_actor_meta_get_enabled@Base 3.29.4
@@ -958,15 +944,14 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_move_by@Base 3.29.4
  clutter_actor_needs_expand@Base 3.29.4
  clutter_actor_new@Base 3.29.4
+ clutter_actor_node_get_type@Base 3.35.90
+ clutter_actor_node_new@Base 3.35.90
  clutter_actor_paint@Base 3.29.4
+ clutter_actor_pick@Base 3.35.90
  clutter_actor_pick_box@Base 3.33.92
- clutter_actor_pop_internal@Base 3.29.4
- clutter_actor_push_internal@Base 3.29.4
  clutter_actor_queue_redraw@Base 3.29.4
  clutter_actor_queue_redraw_with_clip@Base 3.29.4
  clutter_actor_queue_relayout@Base 3.29.4
- clutter_actor_raise@Base 3.29.4
- clutter_actor_raise_top@Base 3.29.4
  clutter_actor_realize@Base 3.29.4
  clutter_actor_remove_action@Base 3.29.4
  clutter_actor_remove_action_by_name@Base 3.29.4
@@ -979,7 +964,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_remove_effect@Base 3.29.4
  clutter_actor_remove_effect_by_name@Base 3.29.4
  clutter_actor_remove_transition@Base 3.29.4
- clutter_actor_reparent@Base 3.29.4
  clutter_actor_replace_child@Base 3.29.4
  clutter_actor_restore_easing_state@Base 3.29.4
  clutter_actor_save_easing_state@Base 3.29.4
@@ -1024,7 +1008,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_set_rotation_angle@Base 3.29.4
  clutter_actor_set_scale@Base 3.29.4
  clutter_actor_set_scale_full@Base 3.29.4
- clutter_actor_set_scale_with_gravity@Base 3.29.4
  clutter_actor_set_scale_z@Base 3.29.4
  clutter_actor_set_size@Base 3.29.4
  clutter_actor_set_text_direction@Base 3.29.4
@@ -1047,6 +1030,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_actor_unparent@Base 3.29.4
  clutter_actor_unrealize@Base 3.29.4
  clutter_actor_unset_flags@Base 3.29.4
+ clutter_add_debug_flags@Base 3.35.90
  clutter_align_axis_get_type@Base 3.29.4
  clutter_align_constraint_get_align_axis@Base 3.29.4
  clutter_align_constraint_get_factor@Base 3.29.4
@@ -1063,48 +1047,34 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_alpha_get_type@Base 3.29.4
  clutter_alpha_new@Base 3.29.4
  clutter_alpha_new_full@Base 3.29.4
- clutter_alpha_new_with_func@Base 3.29.4
- clutter_alpha_register_closure@Base 3.29.4
- clutter_alpha_register_func@Base 3.29.4
  clutter_alpha_set_closure@Base 3.29.4
  clutter_alpha_set_func@Base 3.29.4
  clutter_alpha_set_mode@Base 3.29.4
  clutter_alpha_set_timeline@Base 3.29.4
- clutter_animatable_animate_property@Base 3.29.4
  clutter_animatable_find_property@Base 3.29.4
  clutter_animatable_get_initial_state@Base 3.29.4
  clutter_animatable_get_type@Base 3.29.4
  clutter_animatable_interpolate_value@Base 3.29.4
  clutter_animatable_set_final_state@Base 3.29.4
- clutter_animation_bind@Base 3.29.4
- clutter_animation_bind_interval@Base 3.29.4
- clutter_animation_completed@Base 3.29.4
- clutter_animation_get_alpha@Base 3.29.4
  clutter_animation_get_duration@Base 3.29.4
  clutter_animation_get_interval@Base 3.29.4
  clutter_animation_get_loop@Base 3.29.4
  clutter_animation_get_mode@Base 3.29.4
- clutter_animation_get_object@Base 3.29.4
  clutter_animation_get_timeline@Base 3.29.4
  clutter_animation_get_type@Base 3.29.4
  clutter_animation_has_property@Base 3.29.4
  clutter_animation_mode_get_type@Base 3.29.4
  clutter_animation_new@Base 3.29.4
- clutter_animation_set_alpha@Base 3.29.4
  clutter_animation_set_duration@Base 3.29.4
  clutter_animation_set_loop@Base 3.29.4
  clutter_animation_set_mode@Base 3.29.4
  clutter_animation_set_object@Base 3.29.4
  clutter_animation_set_timeline@Base 3.29.4
- clutter_animation_unbind_property@Base 3.29.4
- clutter_animation_update@Base 3.29.4
- clutter_animation_update_interval@Base 3.29.4
- clutter_backend_bell_notify@Base 3.29.4
  (arch=linux-any)clutter_backend_egl_native_get_type@Base 3.29.4
  clutter_backend_get_cogl_context@Base 3.29.4
+ clutter_backend_get_default_seat@Base 3.35.90
  clutter_backend_get_font_options@Base 3.29.4
  clutter_backend_get_input_method@Base 3.29.4
- clutter_backend_get_keymap@Base 3.31.90
  clutter_backend_get_resolution@Base 3.29.4
  clutter_backend_get_stage_window@Base 3.33.92
  clutter_backend_get_type@Base 3.29.4
@@ -1112,35 +1082,9 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_backend_set_input_method@Base 3.29.4
  clutter_backend_x11_get_type@Base 3.29.4
  clutter_base_init@Base 3.29.4
- clutter_behaviour_actors_foreach@Base 3.29.4
- clutter_behaviour_apply@Base 3.29.4
- clutter_behaviour_depth_get_bounds@Base 3.29.4
- clutter_behaviour_depth_get_type@Base 3.29.4
- clutter_behaviour_depth_new@Base 3.29.4
- clutter_behaviour_depth_set_bounds@Base 3.29.4
- clutter_behaviour_get_actors@Base 3.29.4
- clutter_behaviour_get_alpha@Base 3.29.4
- clutter_behaviour_get_n_actors@Base 3.29.4
- clutter_behaviour_get_nth_actor@Base 3.29.4
- clutter_behaviour_get_type@Base 3.29.4
- clutter_behaviour_is_applied@Base 3.29.4
- clutter_behaviour_opacity_get_bounds@Base 3.29.4
- clutter_behaviour_opacity_get_type@Base 3.29.4
- clutter_behaviour_opacity_new@Base 3.29.4
- clutter_behaviour_opacity_set_bounds@Base 3.29.4
- clutter_behaviour_remove@Base 3.29.4
- clutter_behaviour_remove_all@Base 3.29.4
- clutter_behaviour_scale_get_bounds@Base 3.29.4
- clutter_behaviour_scale_get_type@Base 3.29.4
- clutter_behaviour_scale_new@Base 3.29.4
- clutter_behaviour_scale_set_bounds@Base 3.29.4
- clutter_behaviour_set_alpha@Base 3.29.4
  clutter_bin_alignment_get_type@Base 3.29.4
- clutter_bin_layout_add@Base 3.29.4
- clutter_bin_layout_get_alignment@Base 3.29.4
  clutter_bin_layout_get_type@Base 3.29.4
  clutter_bin_layout_new@Base 3.29.4
- clutter_bin_layout_set_alignment@Base 3.29.4
  clutter_bind_constraint_get_coordinate@Base 3.29.4
  clutter_bind_constraint_get_offset@Base 3.29.4
  clutter_bind_constraint_get_source@Base 3.29.4
@@ -1213,17 +1157,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_button_state_get_type@Base 3.29.4
  clutter_cairo_clear@Base 3.29.4
  clutter_cairo_set_source_color@Base 3.29.4
- clutter_cairo_texture_clear@Base 3.29.4
- clutter_cairo_texture_create@Base 3.29.4
- clutter_cairo_texture_create_region@Base 3.29.4
- clutter_cairo_texture_get_auto_resize@Base 3.29.4
- clutter_cairo_texture_get_surface_size@Base 3.29.4
- clutter_cairo_texture_get_type@Base 3.29.4
- clutter_cairo_texture_invalidate@Base 3.29.4
- clutter_cairo_texture_invalidate_rectangle@Base 3.29.4
- clutter_cairo_texture_new@Base 3.29.4
- clutter_cairo_texture_set_auto_resize@Base 3.29.4
- clutter_cairo_texture_set_surface_size@Base 3.29.4
  clutter_canvas_get_scale_factor@Base 3.31.92
  clutter_canvas_get_type@Base 3.29.4
  clutter_canvas_new@Base 3.29.4
@@ -1273,9 +1206,9 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_colorize_effect_new@Base 3.29.4
  clutter_colorize_effect_set_tint@Base 3.29.4
  clutter_constraint_get_type@Base 3.29.4
+ clutter_constraint_update_preferred_size@Base 3.35.92
  clutter_container_add@Base 3.29.4
  clutter_container_add_actor@Base 3.29.4
- clutter_container_add_valist@Base 3.29.4
  clutter_container_child_get@Base 3.29.4
  clutter_container_child_get_property@Base 3.29.4
  clutter_container_child_notify@Base 3.29.4
@@ -1286,8 +1219,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_container_create_child_meta@Base 3.29.4
  clutter_container_destroy_child_meta@Base 3.29.4
  clutter_container_find_child_by_name@Base 3.29.4
- clutter_container_foreach@Base 3.29.4
- clutter_container_foreach_with_internals@Base 3.29.4
  clutter_container_get_child_meta@Base 3.29.4
  clutter_container_get_children@Base 3.29.4
  clutter_container_get_type@Base 3.29.4
@@ -1295,7 +1226,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_container_raise_child@Base 3.29.4
  clutter_container_remove@Base 3.29.4
  clutter_container_remove_actor@Base 3.29.4
- clutter_container_remove_valist@Base 3.29.4
  clutter_container_sort_depth_order@Base 3.29.4
  clutter_content_get_preferred_size@Base 3.29.4
  clutter_content_get_type@Base 3.29.4
@@ -1303,6 +1233,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_content_invalidate@Base 3.29.4
  clutter_content_invalidate_size@Base 3.31.90
  clutter_content_repeat_get_type@Base 3.29.4
+ clutter_debug_flag_get_type@Base 3.35.90
  clutter_deform_effect_get_back_material@Base 3.29.4
  clutter_deform_effect_get_n_tiles@Base 3.29.4
  clutter_deform_effect_get_type@Base 3.29.4
@@ -1312,21 +1243,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_desaturate_effect_get_factor@Base 3.29.4
  clutter_desaturate_effect_get_type@Base 3.29.4
  clutter_desaturate_effect_new@Base 3.29.4
- clutter_desaturate_effect_set_factor@Base 3.29.4
- clutter_device_manager_create_virtual_device@Base 3.29.4
- clutter_device_manager_ensure_a11y_state@Base 3.33.92
- clutter_device_manager_get_core_device@Base 3.29.4
- clutter_device_manager_get_default@Base 3.29.4
- clutter_device_manager_get_device@Base 3.29.4
- clutter_device_manager_get_kbd_a11y_settings@Base 3.29.4
- clutter_device_manager_get_pointer_a11y_settings@Base 3.33.4
- clutter_device_manager_get_supported_virtual_device_types@Base 3.29.4
- clutter_device_manager_get_type@Base 3.29.4
- clutter_device_manager_list_devices@Base 3.29.4
- clutter_device_manager_peek_devices@Base 3.29.4
- clutter_device_manager_set_kbd_a11y_settings@Base 3.29.4
- clutter_device_manager_set_pointer_a11y_dwell_click_type@Base 3.33.4
- clutter_device_manager_set_pointer_a11y_settings@Base 3.33.4
+ clutter_desaturate_effect_set_factor@Base 3.29.43.29.43.33.4
  clutter_disable_accessibility@Base 3.29.4
  clutter_do_event@Base 3.29.4
  clutter_drag_action_get_drag_area@Base 3.29.4
@@ -1342,6 +1259,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_drag_action_set_drag_handle@Base 3.29.4
  clutter_drag_action_set_drag_threshold@Base 3.29.4
  clutter_drag_axis_get_type@Base 3.29.4
+ clutter_draw_debug_flag_get_type@Base 3.35.90
  clutter_drop_action_get_type@Base 3.29.4
  clutter_drop_action_new@Base 3.29.4
  clutter_effect_get_type@Base 3.29.4
@@ -1437,10 +1355,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_flow_layout_set_row_spacing@Base 3.29.4
  clutter_flow_layout_set_snap_to_grid@Base 3.29.4
  clutter_flow_orientation_get_type@Base 3.29.4
- clutter_fog_get_type@Base 3.29.4
- clutter_geometry_get_type@Base 3.29.4
- clutter_geometry_intersects@Base 3.29.4
- clutter_geometry_union@Base 3.29.4
  clutter_gesture_action_cancel@Base 3.29.4
  clutter_gesture_action_get_device@Base 3.29.4
  clutter_gesture_action_get_last_event@Base 3.29.4
@@ -1538,6 +1452,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_input_device_get_pointer_actor@Base 3.29.4
  clutter_input_device_get_pointer_stage@Base 3.29.4
  clutter_input_device_get_product_id@Base 3.29.4
+ clutter_input_device_get_seat@Base 3.35.90
  clutter_input_device_get_slave_devices@Base 3.29.4
  clutter_input_device_get_type@Base 3.29.4
  clutter_input_device_get_vendor_id@Base 3.29.4
@@ -1561,6 +1476,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_input_device_tool_type_get_type@Base 3.29.4
  clutter_input_device_type_get_type@Base 3.29.4
  clutter_input_device_ungrab@Base 3.29.4
+ clutter_input_device_update@Base 3.35.90
  clutter_input_device_update_from_event@Base 3.29.4
  clutter_input_device_update_from_tool@Base 3.33.92
  clutter_input_focus_filter_key_event@Base 3.29.4
@@ -1626,15 +1542,14 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_knot_equal@Base 3.29.4
  clutter_knot_free@Base 3.29.4
  clutter_knot_get_type@Base 3.29.4
+ clutter_layer_node_get_type@Base 3.35.90
+ clutter_layer_node_new@Base 3.35.90
  clutter_layout_manager_allocate@Base 3.29.4
- clutter_layout_manager_begin_animation@Base 3.29.4
  clutter_layout_manager_child_get@Base 3.29.4
  clutter_layout_manager_child_get_property@Base 3.29.4
  clutter_layout_manager_child_set@Base 3.29.4
  clutter_layout_manager_child_set_property@Base 3.29.4
- clutter_layout_manager_end_animation@Base 3.29.4
  clutter_layout_manager_find_child_property@Base 3.29.4
- clutter_layout_manager_get_animation_progress@Base 3.29.4
  clutter_layout_manager_get_child_meta@Base 3.29.4
  clutter_layout_manager_get_preferred_height@Base 3.29.4
  clutter_layout_manager_get_preferred_width@Base 3.29.4
@@ -1676,6 +1591,16 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_page_turn_effect_set_angle@Base 3.29.4
  clutter_page_turn_effect_set_period@Base 3.29.4
  clutter_page_turn_effect_set_radius@Base 3.29.4
+ clutter_paint_context_destroy@Base 3.35.90
+ clutter_paint_context_get_framebuffer@Base 3.35.90
+ clutter_paint_context_get_redraw_clip@Base 3.35.92
+ clutter_paint_context_get_stage_view@Base 3.35.90
+ clutter_paint_context_get_type@Base 3.35.90
+ clutter_paint_context_new_for_framebuffer@Base 3.35.90
+ clutter_paint_context_pop_framebuffer@Base 3.35.90
+ clutter_paint_context_push_framebuffer@Base 3.35.90
+ clutter_paint_context_ref@Base 3.35.90
+ clutter_paint_context_unref@Base 3.35.90
  clutter_paint_node_add_child@Base 3.29.4
  clutter_paint_node_add_multitexture_rectangle@Base 3.31.90
  clutter_paint_node_add_path@Base 3.29.4
@@ -1687,6 +1612,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_paint_node_paint@Base 3.31.90
  clutter_paint_node_ref@Base 3.29.4
  clutter_paint_node_set_name@Base 3.29.4
+ clutter_paint_node_set_static_name@Base 3.35.92
  clutter_paint_node_unref@Base 3.29.4
  clutter_paint_volume_copy@Base 3.29.4
  clutter_paint_volume_free@Base 3.29.4
@@ -1760,18 +1686,15 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_path_set_description@Base 3.29.4
  clutter_path_to_cairo_path@Base 3.29.4
  clutter_perspective_get_type@Base 3.29.4
+ clutter_pick_context_destroy@Base 3.35.90
+ clutter_pick_context_get_framebuffer@Base 3.35.90
+ clutter_pick_context_get_type@Base 3.35.90
+ clutter_pick_context_ref@Base 3.35.90
+ clutter_pick_context_unref@Base 3.35.90
+ clutter_pick_debug_flag_get_type@Base 3.35.90
  clutter_pick_mode_get_type@Base 3.29.4
  clutter_pipeline_node_get_type@Base 3.29.4
  clutter_pipeline_node_new@Base 3.29.4
- clutter_point_alloc@Base 3.29.4
- clutter_point_copy@Base 3.29.4
- clutter_point_distance@Base 3.29.4
- clutter_point_equals@Base 3.29.4
- clutter_point_free@Base 3.29.4
- clutter_point_get_type@Base 3.29.4
- clutter_point_init@Base 3.29.4
- clutter_point_inside_quadrilateral@Base 3.33.92
- clutter_point_zero@Base 3.29.4
  clutter_pointer_a11y_dwell_click_type_get_type@Base 3.33.4
  clutter_pointer_a11y_dwell_direction_get_type@Base 3.33.4
  clutter_pointer_a11y_dwell_mode_get_type@Base 3.33.4
@@ -1781,27 +1704,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_property_transition_get_type@Base 3.29.4
  clutter_property_transition_new@Base 3.29.4
  clutter_property_transition_set_property_name@Base 3.29.4
- clutter_rect_alloc@Base 3.29.4
- clutter_rect_clamp_to_pixel@Base 3.29.4
- clutter_rect_contains_point@Base 3.29.4
- clutter_rect_contains_rect@Base 3.29.4
- clutter_rect_copy@Base 3.29.4
- clutter_rect_equals@Base 3.29.4
- clutter_rect_free@Base 3.29.4
- clutter_rect_get_center@Base 3.29.4
- clutter_rect_get_height@Base 3.29.4
- clutter_rect_get_type@Base 3.29.4
- clutter_rect_get_width@Base 3.29.4
- clutter_rect_get_x@Base 3.29.4
- clutter_rect_get_y@Base 3.29.4
- clutter_rect_init@Base 3.29.4
- clutter_rect_inset@Base 3.29.4
- clutter_rect_intersection@Base 3.29.4
- clutter_rect_normalize@Base 3.29.4
- clutter_rect_offset@Base 3.29.4
- clutter_rect_scale@Base 3.31.92
- clutter_rect_union@Base 3.29.4
- clutter_rect_zero@Base 3.29.4
  clutter_rectangle_get_border_color@Base 3.29.4
  clutter_rectangle_get_border_width@Base 3.29.4
  clutter_rectangle_get_color@Base 3.29.4
@@ -1811,6 +1713,7 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_rectangle_set_border_color@Base 3.29.4
  clutter_rectangle_set_border_width@Base 3.29.4
  clutter_rectangle_set_color@Base 3.29.4
+ clutter_remove_debug_flags@Base 3.35.90
  clutter_repaint_flags_get_type@Base 3.29.4
  clutter_request_mode_get_type@Base 3.29.4
  clutter_root_node_get_type@Base 3.31.90
@@ -1856,6 +1759,25 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_scroll_finish_flags_get_type@Base 3.29.4
  clutter_scroll_mode_get_type@Base 3.29.4
  clutter_scroll_source_get_type@Base 3.29.4
+ clutter_seat_bell_notify@Base 3.35.90
+ clutter_seat_create_virtual_device@Base 3.35.90
+ clutter_seat_ensure_a11y_state@Base 3.35.90
+ clutter_seat_get_kbd_a11y_settings@Base 3.35.90
+ clutter_seat_get_keyboard@Base 3.35.90
+ clutter_seat_get_keymap@Base 3.35.90
+ clutter_seat_get_pointer@Base 3.35.90
+ clutter_seat_get_pointer_a11y_settings@Base 3.35.90
+ clutter_seat_get_supported_virtual_device_types@Base 3.35.90
+ clutter_seat_get_touch_mode@Base 3.35.91
+ clutter_seat_get_type@Base 3.35.90
+ clutter_seat_inhibit_unfocus@Base 3.35.92
+ clutter_seat_is_unfocus_inhibited@Base 3.35.92
+ clutter_seat_list_devices@Base 3.35.90
+ clutter_seat_set_kbd_a11y_settings@Base 3.35.90
+ clutter_seat_set_pointer_a11y_dwell_click_type@Base 3.35.90
+ clutter_seat_set_pointer_a11y_settings@Base 3.35.90
+ clutter_seat_uninhibit_unfocus@Base 3.35.92
+ clutter_seat_warp_pointer@Base 3.35.90
  clutter_set_custom_backend_func@Base 3.29.4
  clutter_settings_get_default@Base 3.29.4
  clutter_settings_get_type@Base 3.29.4
@@ -1870,12 +1792,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_shader_int_get_type@Base 3.29.4
  clutter_shader_matrix_get_type@Base 3.29.4
  clutter_shader_type_get_type@Base 3.29.4
- clutter_size_alloc@Base 3.29.4
- clutter_size_copy@Base 3.29.4
- clutter_size_equals@Base 3.29.4
- clutter_size_free@Base 3.29.4
- clutter_size_get_type@Base 3.29.4
- clutter_size_init@Base 3.29.4
  clutter_snap_constraint_get_edges@Base 3.29.4
  clutter_snap_constraint_get_offset@Base 3.29.4
  clutter_snap_constraint_get_source@Base 3.29.4
@@ -1897,19 +1813,15 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_stage_get_capture_final_size@Base 3.31.92
  clutter_stage_get_color@Base 3.29.4
  clutter_stage_get_default@Base 3.29.4
- clutter_stage_get_fog@Base 3.29.4
  clutter_stage_get_frame_counter@Base 3.29.4
  clutter_stage_get_key_focus@Base 3.29.4
  clutter_stage_get_minimum_size@Base 3.29.4
  clutter_stage_get_motion_events_enabled@Base 3.29.4
- clutter_stage_get_no_clear_hint@Base 3.29.4
- clutter_stage_get_redraw_clip@Base 3.34.1+dev63.a95d695-4bem1
  clutter_stage_get_perspective@Base 3.29.4
  clutter_stage_get_throttle_motion_events@Base 3.29.4
  clutter_stage_get_title@Base 3.29.4
  clutter_stage_get_type@Base 3.29.4
  clutter_stage_get_use_alpha@Base 3.29.4
- clutter_stage_get_use_fog@Base 3.29.4
  clutter_stage_get_view_at@Base 3.33.4
  clutter_stage_hide_cursor@Base 3.29.4
  clutter_stage_is_default@Base 3.29.4
@@ -1919,23 +1831,19 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_stage_manager_get_type@Base 3.29.4
  clutter_stage_manager_list_stages@Base 3.29.4
  clutter_stage_manager_peek_stages@Base 3.29.4
- clutter_stage_manager_set_default_stage@Base 3.29.4
  clutter_stage_new@Base 3.29.4
  clutter_stage_queue_redraw@Base 3.29.4
  clutter_stage_read_pixels@Base 3.29.4
  clutter_stage_set_accept_focus@Base 3.29.4
  clutter_stage_set_color@Base 3.29.4
- clutter_stage_set_fog@Base 3.29.4
  clutter_stage_set_key_focus@Base 3.29.4
  clutter_stage_set_minimum_size@Base 3.29.4
  clutter_stage_set_motion_events_enabled@Base 3.29.4
- clutter_stage_set_no_clear_hint@Base 3.29.4
  clutter_stage_set_perspective@Base 3.29.4
  clutter_stage_set_sync_delay@Base 3.29.4
  clutter_stage_set_throttle_motion_events@Base 3.29.4
  clutter_stage_set_title@Base 3.29.4
  clutter_stage_set_use_alpha@Base 3.29.4
- clutter_stage_set_use_fog@Base 3.29.4
  clutter_stage_show_cursor@Base 3.29.4
  clutter_stage_skip_sync_delay@Base 3.29.4
  clutter_stage_state_get_type@Base 3.29.4
@@ -1952,23 +1860,12 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_stage_view_transform_to_onscreen@Base 3.29.4
  clutter_stage_window_get_type@Base 3.31.92
  clutter_state_get_duration@Base 3.29.4
- clutter_state_get_keys@Base 3.29.4
  clutter_state_get_state@Base 3.29.4
  clutter_state_get_states@Base 3.29.4
- clutter_state_get_timeline@Base 3.29.4
  clutter_state_get_type@Base 3.29.4
- clutter_state_key_get_mode@Base 3.29.4
- clutter_state_key_get_object@Base 3.29.4
- clutter_state_key_get_post_delay@Base 3.29.4
- clutter_state_key_get_pre_delay@Base 3.29.4
- clutter_state_key_get_property_name@Base 3.29.4
  clutter_state_key_get_property_type@Base 3.29.4
- clutter_state_key_get_source_state_name@Base 3.29.4
- clutter_state_key_get_target_state_name@Base 3.29.4
  clutter_state_key_get_type@Base 3.29.4
- clutter_state_key_get_value@Base 3.29.4
  clutter_state_new@Base 3.29.4
- clutter_state_remove_key@Base 3.29.4
  clutter_state_set@Base 3.29.4
  clutter_state_set_duration@Base 3.29.4
  clutter_state_set_key@Base 3.29.4
@@ -1979,30 +1876,6 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_swipe_action_get_type@Base 3.29.4
  clutter_swipe_action_new@Base 3.29.4
  clutter_swipe_direction_get_type@Base 3.29.4
- clutter_table_alignment_get_type@Base 3.29.4
- clutter_table_layout_get_alignment@Base 3.29.4
- clutter_table_layout_get_column_count@Base 3.29.4
- clutter_table_layout_get_column_spacing@Base 3.29.4
- clutter_table_layout_get_easing_duration@Base 3.29.4
- clutter_table_layout_get_easing_mode@Base 3.29.4
- clutter_table_layout_get_expand@Base 3.29.4
- clutter_table_layout_get_fill@Base 3.29.4
- clutter_table_layout_get_row_count@Base 3.29.4
- clutter_table_layout_get_row_spacing@Base 3.29.4
- clutter_table_layout_get_span@Base 3.29.4
- clutter_table_layout_get_type@Base 3.29.4
- clutter_table_layout_get_use_animations@Base 3.29.4
- clutter_table_layout_new@Base 3.29.4
- clutter_table_layout_pack@Base 3.29.4
- clutter_table_layout_set_alignment@Base 3.29.4
- clutter_table_layout_set_column_spacing@Base 3.29.4
- clutter_table_layout_set_easing_duration@Base 3.29.4
- clutter_table_layout_set_easing_mode@Base 3.29.4
- clutter_table_layout_set_expand@Base 3.29.4
- clutter_table_layout_set_fill@Base 3.29.4
- clutter_table_layout_set_row_spacing@Base 3.29.4
- clutter_table_layout_set_span@Base 3.29.4
- clutter_table_layout_set_use_animations@Base 3.29.4
  clutter_tap_action_get_type@Base 3.29.4
  clutter_tap_action_new@Base 3.29.4
  clutter_text_activate@Base 3.29.4
@@ -2097,40 +1970,10 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_text_set_single_line_mode@Base 3.29.4
  clutter_text_set_text@Base 3.29.4
  clutter_text_set_use_markup@Base 3.29.4
- clutter_texture_error_get_type@Base 3.29.4
- clutter_texture_error_quark@Base 3.29.4
  clutter_texture_flags_get_type@Base 3.29.4
- clutter_texture_get_base_size@Base 3.29.4
- clutter_texture_get_cogl_material@Base 3.29.4
- clutter_texture_get_cogl_texture@Base 3.29.4
- clutter_texture_get_filter_quality@Base 3.29.4
- clutter_texture_get_keep_aspect_ratio@Base 3.29.4
- clutter_texture_get_load_async@Base 3.29.4
- clutter_texture_get_load_data_async@Base 3.29.4
- clutter_texture_get_max_tile_waste@Base 3.29.4
- clutter_texture_get_pick_with_alpha@Base 3.29.4
- clutter_texture_get_repeat@Base 3.29.4
- clutter_texture_get_sync_size@Base 3.29.4
- clutter_texture_get_type@Base 3.29.4
- clutter_texture_new@Base 3.29.4
- clutter_texture_new_from_actor@Base 3.29.4
- clutter_texture_new_from_file@Base 3.29.4
  clutter_texture_node_get_type@Base 3.29.4
  clutter_texture_node_new@Base 3.29.4
  clutter_texture_quality_get_type@Base 3.29.4
- clutter_texture_set_area_from_rgb_data@Base 3.29.4
- clutter_texture_set_cogl_material@Base 3.29.4
- clutter_texture_set_cogl_texture@Base 3.29.4
- clutter_texture_set_filter_quality@Base 3.29.4
- clutter_texture_set_from_file@Base 3.29.4
- clutter_texture_set_from_rgb_data@Base 3.29.4
- clutter_texture_set_from_yuv_data@Base 3.29.4
- clutter_texture_set_keep_aspect_ratio@Base 3.29.4
- clutter_texture_set_load_async@Base 3.29.4
- clutter_texture_set_load_data_async@Base 3.29.4
- clutter_texture_set_pick_with_alpha@Base 3.29.4
- clutter_texture_set_repeat@Base 3.29.4
- clutter_texture_set_sync_size@Base 3.29.4
  clutter_threads_add_idle@Base 3.29.4
  clutter_threads_add_idle_full@Base 3.29.4
  clutter_threads_add_repaint_func@Base 3.29.4
@@ -2180,6 +2023,8 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_timeline_start@Base 3.29.4
  clutter_timeline_stop@Base 3.29.4
  clutter_touchpad_gesture_phase_get_type@Base 3.29.4
+ clutter_transform_node_get_type@Base 3.35.90
+ clutter_transform_node_new@Base 3.35.90
  clutter_transition_get_animatable@Base 3.29.4
  clutter_transition_get_interval@Base 3.29.4
  clutter_transition_get_remove_on_complete@Base 3.29.4
@@ -2226,16 +2071,8 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_value_set_shader_matrix@Base 3.29.4
  clutter_value_set_units@Base 3.29.4
  clutter_value_take_paint_node@Base 3.29.4
- clutter_vertex_alloc@Base 3.29.4
- clutter_vertex_copy@Base 3.29.4
- clutter_vertex_equal@Base 3.29.4
- clutter_vertex_free@Base 3.29.4
- clutter_vertex_get_type@Base 3.29.4
- clutter_vertex_init@Base 3.29.4
- clutter_vertex_new@Base 3.29.4
  clutter_virtual_device_type_get_type@Base 3.29.4
  clutter_virtual_input_device_get_device_type@Base 3.33.92
- clutter_virtual_input_device_get_manager@Base 3.29.4
  clutter_virtual_input_device_get_type@Base 3.29.4
  clutter_virtual_input_device_notify_absolute_motion@Base 3.29.4
  clutter_virtual_input_device_notify_button@Base 3.29.4
@@ -2269,8 +2106,8 @@ libmutter-clutter-5.so.0 libmutter-5-0 #MINVER#
  clutter_zoom_action_new@Base 3.29.4
  clutter_zoom_action_set_zoom_axis@Base 3.29.4
  clutter_zoom_axis_get_type@Base 3.29.4
-libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
-* Build-Depends-Package: libmutter-5-dev
+libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
+* Build-Depends-Package: libmutter-6-dev
  _cogl_atlas_add_reorganize_callback@Base 3.29.4
  _cogl_atlas_new@Base 3.29.4
  _cogl_atlas_reserve_space@Base 3.29.4
@@ -2294,7 +2131,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  _cogl_pipeline_foreach_layer_internal@Base 3.29.4
  _cogl_pipeline_layer_get_texture@Base 3.29.4
  _cogl_pipeline_prune_to_n_layers@Base 3.29.4
- _cogl_pixel_format_get_bytes_per_pixel@Base 3.29.4
  _cogl_poll_renderer_add_fd@Base 3.29.4
  _cogl_poll_renderer_add_idle@Base 3.29.4
  _cogl_primitive_draw@Base 3.29.4
@@ -2309,8 +2145,8 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  _cogl_winsys_egl_renderer_connect_common@Base 3.29.4
  _cogl_winsys_egl_xlib_get_vtable@Base 3.29.4
  _cogl_winsys_error_quark@Base 3.29.4
- (arch=!armhf !armel) _cogl_winsys_glx_get_vtable@Base 3.29.4
- cogl_2d_primitives_immediate@Base 3.34.1+dev63.a95d695-4bem1
+ _cogl_winsys_glx_get_vtable@Base 3.29.4
+ cogl_2d_primitives_immediate@Base 3.35.90
  cogl_atlas_texture_get_gtype@Base 3.29.4
  cogl_atlas_texture_new_from_bitmap@Base 3.29.4
  cogl_atlas_texture_new_from_data@Base 3.29.4
@@ -2356,12 +2192,8 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_buffer_set_data@Base 3.29.4
  cogl_buffer_set_update_hint@Base 3.29.4
  cogl_buffer_unmap@Base 3.29.4
- cogl_check_extension@Base 3.29.4
- cogl_clear@Base 3.29.4
- cogl_clip_stack_push_region@Base 3.34.1+dev63.a95d695-4bem1
- cogl_clutter_check_extension_CLUTTER@Base 3.29.4
+ cogl_clip_stack_push_region@Base 3.35.90
  cogl_clutter_winsys_has_feature_CLUTTER@Base 3.29.4
- cogl_clutter_winsys_xlib_get_visual_info_CLUTTER@Base 3.29.4
  cogl_color_copy@Base 3.29.4
  cogl_color_equal@Base 3.29.4
  cogl_color_free@Base 3.29.4
@@ -2390,8 +2222,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_color_set_blue@Base 3.29.4
  cogl_color_set_blue_byte@Base 3.29.4
  cogl_color_set_blue_float@Base 3.29.4
- cogl_color_set_from_4f@Base 3.29.4
- cogl_color_set_from_4ub@Base 3.29.4
  cogl_color_set_green@Base 3.29.4
  cogl_color_set_green_byte@Base 3.29.4
  cogl_color_set_green_float@Base 3.29.4
@@ -2419,22 +2249,17 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_depth_state_set_test_enabled@Base 3.29.4
  cogl_depth_state_set_test_function@Base 3.29.4
  cogl_depth_state_set_write_enabled@Base 3.29.4
- cogl_disable_fog@Base 3.29.4
  cogl_display_get_gtype@Base 3.29.4
  cogl_display_get_renderer@Base 3.29.4
  cogl_display_new@Base 3.29.4
  cogl_display_set_onscreen_template@Base 3.29.4
  cogl_display_setup@Base 3.29.4
- cogl_egl_context_get_egl_context@Base 3.29.4
+ cogl_dma_buf_handle_free@Base 3.35.92
+ cogl_dma_buf_handle_get_fd@Base 3.35.92
+ cogl_dma_buf_handle_get_framebuffer@Base 3.35.92
+ cogl_dma_buf_handle_new@Base 3.35.92
  cogl_egl_context_get_egl_display@Base 3.29.4
  cogl_egl_texture_2d_new_from_image@Base 3.29.4
- cogl_euler_copy@Base 3.29.4
- cogl_euler_equal@Base 3.29.4
- cogl_euler_free@Base 3.29.4
- cogl_euler_get_gtype@Base 3.29.4
- cogl_euler_init@Base 3.29.4
- cogl_euler_init_from_matrix@Base 3.29.4
- cogl_features_available@Base 3.29.4
  cogl_fence_closure_get_user_data@Base 3.29.4
  cogl_flush@Base 3.29.4
  cogl_foreach_feature@Base 3.29.4
@@ -2451,8 +2276,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_framebuffer_clear4f@Base 3.29.4
  cogl_framebuffer_clear@Base 3.29.4
  cogl_framebuffer_discard_buffers@Base 3.29.4
- cogl_framebuffer_draw_attributes@Base 3.29.4
- cogl_framebuffer_draw_indexed_attributes@Base 3.29.4
  cogl_framebuffer_draw_multitextured_rectangle@Base 3.29.4
  cogl_framebuffer_draw_primitive@Base 3.29.4
  cogl_framebuffer_draw_rectangle@Base 3.29.4
@@ -2461,14 +2284,12 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_framebuffer_draw_textured_rectangles@Base 3.29.4
  cogl_framebuffer_error_quark@Base 3.29.4
  cogl_framebuffer_finish@Base 3.29.4
+ cogl_framebuffer_flush@Base 3.35.92
  cogl_framebuffer_frustum@Base 3.29.4
  cogl_framebuffer_get_alpha_bits@Base 3.29.4
  cogl_framebuffer_get_blue_bits@Base 3.29.4
- cogl_framebuffer_get_color_format@Base 3.29.4
  cogl_framebuffer_get_context@Base 3.29.4
  cogl_framebuffer_get_depth_bits@Base 3.29.4
- cogl_framebuffer_get_depth_texture@Base 3.29.4
- cogl_framebuffer_get_depth_texture_enabled@Base 3.29.4
  cogl_framebuffer_get_depth_write_enabled@Base 3.29.4
  cogl_framebuffer_get_dither_enabled@Base 3.29.4
  cogl_framebuffer_get_green_bits@Base 3.29.4
@@ -2494,7 +2315,7 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_framebuffer_push_matrix@Base 3.29.4
  cogl_framebuffer_push_primitive_clip@Base 3.29.4
  cogl_framebuffer_push_rectangle_clip@Base 3.29.4
- cogl_framebuffer_push_region_clip@Base 3.34.1+dev63.a95d695-4bem1
+ cogl_framebuffer_push_region_clip@Base 3.35.90
  cogl_framebuffer_push_scissor_clip@Base 3.29.4
  cogl_framebuffer_read_pixels@Base 3.29.4
  cogl_framebuffer_read_pixels_into_bitmap@Base 3.29.4
@@ -2502,44 +2323,28 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_framebuffer_resolve_samples_region@Base 3.29.4
  cogl_framebuffer_rotate@Base 3.29.4
  cogl_framebuffer_rotate_euler@Base 3.29.4
- cogl_framebuffer_rotate_quaternion@Base 3.29.4
  cogl_framebuffer_scale@Base 3.29.4
- cogl_framebuffer_set_depth_texture_enabled@Base 3.29.4
  cogl_framebuffer_set_depth_write_enabled@Base 3.29.4
  cogl_framebuffer_set_dither_enabled@Base 3.29.4
  cogl_framebuffer_set_modelview_matrix@Base 3.29.4
  cogl_framebuffer_set_projection_matrix@Base 3.29.4
  cogl_framebuffer_set_samples_per_pixel@Base 3.29.4
  cogl_framebuffer_set_stereo_mode@Base 3.29.4
+ cogl_framebuffer_set_viewport4fv@Base 3.35.90
  cogl_framebuffer_set_viewport@Base 3.29.4
  cogl_framebuffer_transform@Base 3.29.4
  cogl_framebuffer_translate@Base 3.29.4
- cogl_framebuffer_vdraw_attributes@Base 3.29.4
- cogl_framebuffer_vdraw_indexed_attributes@Base 3.29.4
- cogl_frustum@Base 3.29.4
  cogl_get_backface_culling_enabled@Base 3.29.4
- cogl_get_bitmasks@Base 3.29.4
  cogl_get_clock_time@Base 3.29.4
  cogl_get_depth_test_enabled@Base 3.29.4
- cogl_get_draw_framebuffer@Base 3.29.4
- cogl_get_features@Base 3.29.4
  cogl_get_graphics_reset_status@Base 3.29.4
- cogl_get_modelview_matrix@Base 3.29.4
  cogl_get_option_group@Base 3.29.4
  cogl_get_proc_address@Base 3.29.4
- cogl_get_projection_matrix@Base 3.29.4
  cogl_get_rectangle_indices@Base 3.29.4
- cogl_get_source@Base 3.29.4
- cogl_get_static_identity_quaternion@Base 3.29.4
- cogl_get_static_zero_quaternion@Base 3.29.4
- cogl_get_viewport@Base 3.29.4
  cogl_glib_renderer_source_new@Base 3.29.4
  cogl_glib_source_new@Base 3.29.4
- (arch=!armhf !armel) cogl_glx_context_get_glx_context@Base 3.29.4
  cogl_gtype_matrix_get_type@Base 3.29.4
  cogl_handle_get_type@Base 3.29.4
- cogl_handle_ref@Base 3.29.4
- cogl_handle_unref@Base 3.29.4
  cogl_has_feature@Base 3.29.4
  cogl_has_features@Base 3.29.4
  cogl_index_buffer_get_gtype@Base 3.29.4
@@ -2562,7 +2367,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_is_framebuffer@Base 3.29.4
  cogl_is_index_buffer@Base 3.29.4
  cogl_is_indices@Base 3.29.4
- cogl_is_material@Base 3.29.4
  cogl_is_matrix_stack@Base 3.29.4
  cogl_is_offscreen@Base 3.29.4
  cogl_is_onscreen@Base 3.29.4
@@ -2582,62 +2386,20 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_is_texture_2d@Base 3.29.4
  cogl_is_texture_2d_sliced@Base 3.29.4
  cogl_is_texture_pixmap_x11@Base 3.29.4
- cogl_is_vertex_buffer@Base 3.29.4
- cogl_is_vertex_buffer_indices@Base 3.29.4
- cogl_material_copy@Base 3.29.4
- cogl_material_foreach_layer@Base 3.29.4
- cogl_material_get_ambient@Base 3.29.4
- cogl_material_get_color@Base 3.29.4
- cogl_material_get_depth_state@Base 3.29.4
- cogl_material_get_diffuse@Base 3.29.4
- cogl_material_get_emission@Base 3.29.4
- cogl_material_get_layer_point_sprite_coords_enabled@Base 3.29.4
- cogl_material_get_layer_wrap_mode_p@Base 3.29.4
- cogl_material_get_layer_wrap_mode_s@Base 3.29.4
- cogl_material_get_layer_wrap_mode_t@Base 3.29.4
- cogl_material_get_layers@Base 3.29.4
- cogl_material_get_n_layers@Base 3.29.4
- cogl_material_get_point_size@Base 3.29.4
- cogl_material_get_shininess@Base 3.29.4
- cogl_material_get_specular@Base 3.29.4
  cogl_material_get_type@Base 3.29.4
- cogl_material_get_user_program@Base 3.29.4
- cogl_material_layer_get_mag_filter@Base 3.29.4
- cogl_material_layer_get_min_filter@Base 3.29.4
- cogl_material_layer_get_texture@Base 3.29.4
- cogl_material_layer_get_type@Base 3.29.4
- cogl_material_layer_get_wrap_mode_p@Base 3.29.4
- cogl_material_layer_get_wrap_mode_s@Base 3.29.4
- cogl_material_layer_get_wrap_mode_t@Base 3.29.4
  cogl_material_new@Base 3.29.4
- cogl_material_ref@Base 3.29.4
- cogl_material_remove_layer@Base 3.29.4
- cogl_material_set_alpha_test_function@Base 3.29.4
- cogl_material_set_ambient@Base 3.29.4
- cogl_material_set_ambient_and_diffuse@Base 3.29.4
  cogl_material_set_blend@Base 3.29.4
  cogl_material_set_blend_constant@Base 3.29.4
- cogl_material_set_color4f@Base 3.29.4
  cogl_material_set_color4ub@Base 3.29.4
  cogl_material_set_color@Base 3.29.4
- cogl_material_set_depth_state@Base 3.29.4
- cogl_material_set_diffuse@Base 3.29.4
- cogl_material_set_emission@Base 3.29.4
  cogl_material_set_layer@Base 3.29.4
  cogl_material_set_layer_combine@Base 3.29.4
  cogl_material_set_layer_combine_constant@Base 3.29.4
  cogl_material_set_layer_filters@Base 3.29.4
  cogl_material_set_layer_matrix@Base 3.29.4
  cogl_material_set_layer_point_sprite_coords_enabled@Base 3.29.4
- cogl_material_set_layer_wrap_mode@Base 3.29.4
- cogl_material_set_layer_wrap_mode_p@Base 3.29.4
- cogl_material_set_layer_wrap_mode_s@Base 3.29.4
- cogl_material_set_layer_wrap_mode_t@Base 3.29.4
  cogl_material_set_point_size@Base 3.29.4
- cogl_material_set_shininess@Base 3.29.4
- cogl_material_set_specular@Base 3.29.4
  cogl_material_set_user_program@Base 3.29.4
- cogl_material_unref@Base 3.29.4
  cogl_matrix_copy@Base 3.29.4
  cogl_matrix_entry_calculate_translation@Base 3.29.4
  cogl_matrix_entry_equal@Base 3.29.4
@@ -2654,19 +2416,16 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_matrix_get_inverse@Base 3.29.4
  cogl_matrix_init_from_array@Base 3.29.4
  cogl_matrix_init_from_euler@Base 3.29.4
- cogl_matrix_init_from_quaternion@Base 3.29.4
  cogl_matrix_init_identity@Base 3.29.4
  cogl_matrix_init_translation@Base 3.29.4
  cogl_matrix_is_identity@Base 3.29.4
  cogl_matrix_look_at@Base 3.29.4
  cogl_matrix_multiply@Base 3.29.4
- cogl_matrix_ortho@Base 3.29.4
  cogl_matrix_orthographic@Base 3.29.4
  cogl_matrix_perspective@Base 3.29.4
  cogl_matrix_project_points@Base 3.29.4
  cogl_matrix_rotate@Base 3.29.4
  cogl_matrix_rotate_euler@Base 3.29.4
- cogl_matrix_rotate_quaternion@Base 3.29.4
  cogl_matrix_scale@Base 3.29.4
  cogl_matrix_stack_frustum@Base 3.29.4
  cogl_matrix_stack_get@Base 3.29.4
@@ -2682,7 +2441,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_matrix_stack_push@Base 3.29.4
  cogl_matrix_stack_rotate@Base 3.29.4
  cogl_matrix_stack_rotate_euler@Base 3.29.4
- cogl_matrix_stack_rotate_quaternion@Base 3.29.4
  cogl_matrix_stack_scale@Base 3.29.4
  cogl_matrix_stack_set@Base 3.29.4
  cogl_matrix_stack_translate@Base 3.29.4
@@ -2704,13 +2462,9 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_offscreen_get_texture@Base 3.29.4
  cogl_offscreen_new_to_texture@Base 3.29.4
  cogl_offscreen_new_with_texture@Base 3.29.4
- cogl_offscreen_ref@Base 3.29.4
- cogl_offscreen_unref@Base 3.29.4
  cogl_onscreen_add_dirty_callback@Base 3.29.4
  cogl_onscreen_add_frame_callback@Base 3.29.4
  cogl_onscreen_add_resize_callback@Base 3.29.4
- cogl_onscreen_add_swap_buffers_callback@Base 3.29.4
- cogl_onscreen_clutter_backend_set_size_CLUTTER@Base 3.29.4
  cogl_onscreen_dirty_closure_get_gtype@Base 3.29.4
  cogl_onscreen_get_buffer_age@Base 3.29.4
  cogl_onscreen_get_frame_counter@Base 3.29.4
@@ -2721,7 +2475,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_onscreen_remove_dirty_callback@Base 3.29.4
  cogl_onscreen_remove_frame_callback@Base 3.29.4
  cogl_onscreen_remove_resize_callback@Base 3.29.4
- cogl_onscreen_remove_swap_buffers_callback@Base 3.29.4
  cogl_onscreen_resize_closure_get_gtype@Base 3.29.4
  cogl_onscreen_set_resizable@Base 3.29.4
  cogl_onscreen_show@Base 3.29.4
@@ -2732,7 +2485,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_onscreen_template_new@Base 3.29.4
  cogl_onscreen_template_set_samples_per_pixel@Base 3.29.4
  cogl_onscreen_template_set_stereo_enabled@Base 3.29.4
- cogl_ortho@Base 3.29.4
  cogl_output_get_gtype@Base 3.29.4
  cogl_output_get_height@Base 3.29.4
  cogl_output_get_mm_height@Base 3.29.4
@@ -2742,40 +2494,31 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_output_get_width@Base 3.29.4
  cogl_output_get_x@Base 3.29.4
  cogl_output_get_y@Base 3.29.4
- cogl_perspective@Base 3.29.4
  cogl_pipeline_add_layer_snippet@Base 3.29.4
  cogl_pipeline_add_snippet@Base 3.29.4
  cogl_pipeline_copy@Base 3.29.4
  cogl_pipeline_foreach_layer@Base 3.29.4
  cogl_pipeline_get_alpha_test_function@Base 3.29.4
  cogl_pipeline_get_alpha_test_reference@Base 3.29.4
- cogl_pipeline_get_ambient@Base 3.29.4
  cogl_pipeline_get_color@Base 3.29.4
  cogl_pipeline_get_cull_face_mode@Base 3.29.4
  cogl_pipeline_get_depth_state@Base 3.29.4
- cogl_pipeline_get_diffuse@Base 3.29.4
- cogl_pipeline_get_emission@Base 3.29.4
  cogl_pipeline_get_front_face_winding@Base 3.29.4
  cogl_pipeline_get_gtype@Base 3.29.4
  cogl_pipeline_get_layer_mag_filter@Base 3.29.4
  cogl_pipeline_get_layer_min_filter@Base 3.29.4
  cogl_pipeline_get_layer_point_sprite_coords_enabled@Base 3.29.4
  cogl_pipeline_get_layer_texture@Base 3.29.4
- cogl_pipeline_get_layer_wrap_mode_p@Base 3.29.4
  cogl_pipeline_get_layer_wrap_mode_s@Base 3.29.4
  cogl_pipeline_get_layer_wrap_mode_t@Base 3.29.4
  cogl_pipeline_get_n_layers@Base 3.29.4
  cogl_pipeline_get_per_vertex_point_size@Base 3.29.4
  cogl_pipeline_get_point_size@Base 3.29.4
- cogl_pipeline_get_shininess@Base 3.29.4
- cogl_pipeline_get_specular@Base 3.29.4
  cogl_pipeline_get_uniform_location@Base 3.29.4
  cogl_pipeline_get_user_program@Base 3.29.4
  cogl_pipeline_new@Base 3.29.4
  cogl_pipeline_remove_layer@Base 3.29.4
  cogl_pipeline_set_alpha_test_function@Base 3.29.4
- cogl_pipeline_set_ambient@Base 3.29.4
- cogl_pipeline_set_ambient_and_diffuse@Base 3.29.4
  cogl_pipeline_set_blend@Base 3.29.4
  cogl_pipeline_set_blend_constant@Base 3.29.4
  cogl_pipeline_set_color4f@Base 3.29.4
@@ -2783,8 +2526,6 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_pipeline_set_color@Base 3.29.4
  cogl_pipeline_set_cull_face_mode@Base 3.29.4
  cogl_pipeline_set_depth_state@Base 3.29.4
- cogl_pipeline_set_diffuse@Base 3.29.4
- cogl_pipeline_set_emission@Base 3.29.4
  cogl_pipeline_set_front_face_winding@Base 3.29.4
  cogl_pipeline_set_layer_combine@Base 3.29.4
  cogl_pipeline_set_layer_combine_constant@Base 3.29.4
@@ -2794,13 +2535,10 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_pipeline_set_layer_point_sprite_coords_enabled@Base 3.29.4
  cogl_pipeline_set_layer_texture@Base 3.29.4
  cogl_pipeline_set_layer_wrap_mode@Base 3.29.4
- cogl_pipeline_set_layer_wrap_mode_p@Base 3.29.4
  cogl_pipeline_set_layer_wrap_mode_s@Base 3.29.4
  cogl_pipeline_set_layer_wrap_mode_t@Base 3.29.4
  cogl_pipeline_set_per_vertex_point_size@Base 3.29.4
  cogl_pipeline_set_point_size@Base 3.29.4
- cogl_pipeline_set_shininess@Base 3.29.4
- cogl_pipeline_set_specular@Base 3.29.4
  cogl_pipeline_set_uniform_1f@Base 3.29.4
  cogl_pipeline_set_uniform_1i@Base 3.29.4
  cogl_pipeline_set_uniform_float@Base 3.29.4
@@ -2809,14 +2547,11 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_pipeline_set_user_program@Base 3.29.4
  cogl_pixel_buffer_get_gtype@Base 3.29.4
  cogl_pixel_buffer_new@Base 3.29.4
+ cogl_pixel_format_get_bytes_per_pixel@Base 3.35.90
+ cogl_pixel_format_get_n_planes@Base 3.35.90
  cogl_pixel_format_to_string@Base 3.33.4
  cogl_poll_renderer_dispatch@Base 3.29.4
  cogl_poll_renderer_get_info@Base 3.29.4
- cogl_polygon@Base 3.29.4
- cogl_pop_draw_buffer@Base 3.29.4
- cogl_pop_framebuffer@Base 3.29.4
- cogl_pop_matrix@Base 3.29.4
- cogl_pop_source@Base 3.29.4
  cogl_primitive_copy@Base 3.29.4
  cogl_primitive_draw@Base 3.29.4
  cogl_primitive_foreach_attribute@Base 3.29.4
@@ -2844,92 +2579,32 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_program_attach_shader@Base 3.29.4
  cogl_program_get_uniform_location@Base 3.29.4
  cogl_program_link@Base 3.29.4
- cogl_program_ref@Base 3.29.4
  cogl_program_set_uniform_1f@Base 3.29.4
  cogl_program_set_uniform_1i@Base 3.29.4
  cogl_program_set_uniform_float@Base 3.29.4
  cogl_program_set_uniform_int@Base 3.29.4
  cogl_program_set_uniform_matrix@Base 3.29.4
- cogl_program_uniform_1f@Base 3.29.4
- cogl_program_uniform_1i@Base 3.29.4
- cogl_program_uniform_float@Base 3.29.4
- cogl_program_uniform_int@Base 3.29.4
- cogl_program_uniform_matrix@Base 3.29.4
- cogl_program_unref@Base 3.29.4
- cogl_program_use@Base 3.29.4
- cogl_push_draw_buffer@Base 3.29.4
- cogl_push_framebuffer@Base 3.29.4
- cogl_push_matrix@Base 3.29.4
- cogl_push_source@Base 3.29.4
- cogl_quaternion_copy@Base 3.29.4
- cogl_quaternion_dot_product@Base 3.29.4
- cogl_quaternion_equal@Base 3.29.4
- cogl_quaternion_free@Base 3.29.4
- cogl_quaternion_get_gtype@Base 3.29.4
- cogl_quaternion_get_rotation_angle@Base 3.29.4
- cogl_quaternion_get_rotation_axis@Base 3.29.4
- cogl_quaternion_init@Base 3.29.4
- cogl_quaternion_init_from_angle_vector@Base 3.29.4
- cogl_quaternion_init_from_array@Base 3.29.4
- cogl_quaternion_init_from_euler@Base 3.29.4
- cogl_quaternion_init_from_matrix@Base 3.29.4
- cogl_quaternion_init_from_quaternion@Base 3.29.4
- cogl_quaternion_init_from_x_rotation@Base 3.29.4
- cogl_quaternion_init_from_y_rotation@Base 3.29.4
- cogl_quaternion_init_from_z_rotation@Base 3.29.4
- cogl_quaternion_init_identity@Base 3.29.4
- cogl_quaternion_invert@Base 3.29.4
- cogl_quaternion_multiply@Base 3.29.4
- cogl_quaternion_nlerp@Base 3.29.4
- cogl_quaternion_normalize@Base 3.29.4
- cogl_quaternion_pow@Base 3.29.4
- cogl_quaternion_slerp@Base 3.29.4
- cogl_quaternion_squad@Base 3.29.4
- cogl_read_pixels@Base 3.29.4
- cogl_rectangle@Base 3.29.4
- cogl_rectangle_with_multitexture_coords@Base 3.29.4
- cogl_rectangle_with_texture_coords@Base 3.29.4
- cogl_rectangles@Base 3.29.4
- cogl_rectangles_with_texture_coords@Base 3.29.4
  cogl_renderer_add_constraint@Base 3.29.4
  cogl_renderer_check_onscreen_template@Base 3.29.4
  cogl_renderer_connect@Base 3.29.4
+ cogl_renderer_create_dma_buf@Base 3.35.92
  cogl_renderer_error_quark@Base 3.29.4
  cogl_renderer_foreach_output@Base 3.29.4
  cogl_renderer_get_driver@Base 3.29.4
  cogl_renderer_get_gtype@Base 3.29.4
- cogl_renderer_get_n_fragment_texture_units@Base 3.29.4
  cogl_renderer_get_winsys_id@Base 3.29.4
  cogl_renderer_new@Base 3.29.4
  cogl_renderer_remove_constraint@Base 3.29.4
  cogl_renderer_set_custom_winsys@Base 3.29.4
  cogl_renderer_set_driver@Base 3.29.4
  cogl_renderer_set_winsys_id@Base 3.29.4
- cogl_rotate@Base 3.29.4
- cogl_scale@Base 3.29.4
  cogl_set_backface_culling_enabled@Base 3.29.4
  cogl_set_depth_test_enabled@Base 3.29.4
- cogl_set_draw_buffer@Base 3.29.4
- cogl_set_fog@Base 3.29.4
- cogl_set_framebuffer@Base 3.29.4
- cogl_set_modelview_matrix@Base 3.29.4
- cogl_set_projection_matrix@Base 3.29.4
- cogl_set_source@Base 3.29.4
- cogl_set_source_color4f@Base 3.29.4
- cogl_set_source_color4ub@Base 3.29.4
- cogl_set_source_color@Base 3.29.4
- cogl_set_source_texture@Base 3.29.4
  cogl_set_tracing_disabled_on_thread@Base 3.33.4
  cogl_set_tracing_enabled_on_thread@Base 3.33.4
  cogl_set_tracing_enabled_on_thread_with_fd@Base 3.33.4
- cogl_set_viewport@Base 3.29.4
- cogl_shader_compile@Base 3.29.4
- cogl_shader_get_info_log@Base 3.29.4
  cogl_shader_get_type@Base 3.29.4
- cogl_shader_is_compiled@Base 3.29.4
- cogl_shader_ref@Base 3.29.4
  cogl_shader_source@Base 3.29.4
- cogl_shader_unref@Base 3.29.4
  cogl_snippet_get_declarations@Base 3.29.4
  cogl_snippet_get_gtype@Base 3.29.4
  cogl_snippet_get_hook@Base 3.29.4
@@ -2948,9 +2623,8 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_swap_chain_new@Base 3.29.4
  cogl_swap_chain_set_has_alpha@Base 3.29.4
  cogl_swap_chain_set_length@Base 3.29.4
-#MISSING: 3.34.0-1endless1bem1# cogl_test_verbose@Base 3.29.4
+ cogl_test_verbose@Base 3.29.4
  cogl_texture_2d_get_gtype@Base 3.29.4
- cogl_texture_2d_gl_new_from_foreign@Base 3.29.4
  cogl_texture_2d_new_from_bitmap@Base 3.29.4
  cogl_texture_2d_new_from_data@Base 3.29.4
  cogl_texture_2d_new_from_egl_image_external@Base 3.29.4
@@ -2984,85 +2658,44 @@ libmutter-cogl-5.so.0 libmutter-5-0 #MINVER#
  cogl_texture_pixmap_x11_new@Base 3.29.4
  cogl_texture_pixmap_x11_new_left@Base 3.29.4
  cogl_texture_pixmap_x11_new_right@Base 3.29.4
- cogl_texture_pixmap_x11_set_damage_object@Base 3.29.4
  cogl_texture_pixmap_x11_update_area@Base 3.29.4
  cogl_texture_set_components@Base 3.29.4
  cogl_texture_set_data@Base 3.29.4
  cogl_texture_set_premultiplied@Base 3.29.4
  cogl_texture_set_region@Base 3.29.4
  cogl_texture_set_region_from_bitmap@Base 3.29.4
- cogl_transform@Base 3.29.4
- cogl_translate@Base 3.29.4
- cogl_vector3_add@Base 3.29.4
- cogl_vector3_copy@Base 3.29.4
- cogl_vector3_cross_product@Base 3.29.4
- cogl_vector3_distance@Base 3.29.4
- cogl_vector3_divide_scalar@Base 3.29.4
- cogl_vector3_dot_product@Base 3.29.4
- cogl_vector3_equal@Base 3.29.4
- cogl_vector3_equal_with_epsilon@Base 3.29.4
- cogl_vector3_free@Base 3.29.4
- cogl_vector3_init@Base 3.29.4
- cogl_vector3_init_zero@Base 3.29.4
- cogl_vector3_invert@Base 3.29.4
- cogl_vector3_magnitude@Base 3.29.4
- cogl_vector3_multiply_scalar@Base 3.29.4
- cogl_vector3_normalize@Base 3.29.4
- cogl_vector3_subtract@Base 3.29.4
- cogl_vertex_buffer_add@Base 3.29.4
- cogl_vertex_buffer_delete@Base 3.29.4
- cogl_vertex_buffer_disable@Base 3.29.4
- cogl_vertex_buffer_draw@Base 3.29.4
- cogl_vertex_buffer_draw_elements@Base 3.29.4
- cogl_vertex_buffer_enable@Base 3.29.4
- cogl_vertex_buffer_get_n_vertices@Base 3.29.4
- cogl_vertex_buffer_indices_get_for_quads@Base 3.29.4
- cogl_vertex_buffer_indices_get_type@Base 3.29.4
- cogl_vertex_buffer_indices_new@Base 3.29.4
- cogl_vertex_buffer_new@Base 3.29.4
- cogl_vertex_buffer_ref@Base 3.29.4
- cogl_vertex_buffer_submit@Base 3.29.4
- cogl_vertex_buffer_unref@Base 3.29.4
- cogl_viewport@Base 3.29.4
  (arch=linux-any)cogl_wayland_display_set_compositor_display@Base 3.29.4
- cogl_x11_onscreen_get_visual_xid@Base 3.29.4
  cogl_x11_onscreen_get_window_xid@Base 3.29.4
- cogl_x11_onscreen_set_foreign_window_xid@Base 3.29.4
- cogl_xlib_get_display@Base 3.29.4
- cogl_xlib_handle_event@Base 3.29.4
  cogl_xlib_renderer_add_filter@Base 3.29.4
  cogl_xlib_renderer_get_display@Base 3.29.4
  cogl_xlib_renderer_get_foreign_display@Base 3.29.4
- cogl_xlib_renderer_get_visual_info@Base 3.29.4
  cogl_xlib_renderer_handle_event@Base 3.29.4
  cogl_xlib_renderer_remove_filter@Base 3.29.4
  cogl_xlib_renderer_request_reset_on_video_memory_purge@Base 3.29.4
- cogl_xlib_renderer_set_event_retrieval_enabled@Base 3.29.4
  cogl_xlib_renderer_set_foreign_display@Base 3.29.4
- cogl_xlib_set_display@Base 3.29.4
-#MISSING: 3.34.0-1endless1bem1# test_ctx@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_fb@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel_and_alpha@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_check_pixel_rgb@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_check_region@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_compare_pixel@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_compare_pixel_and_alpha@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_create_color_texture@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_fini@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_init@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_from_bitmap@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_from_data@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# test_utils_texture_new_with_size@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_bitmask_api@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_blend_constant_ancestry@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_gl_blend_enable@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_mesa_driver_package_parser@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_pipeline_pruning@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_point_size_shader@Base 3.33.4
-#MISSING: 3.34.0-1endless1bem1# unit_test_check_uniform_ancestry@Base 3.33.4
-libmutter-cogl-pango-5.so.0 libmutter-5-0 #MINVER#
-* Build-Depends-Package: libmutter-5-dev
+ test_ctx@Base 3.33.4
+ test_fb@Base 3.33.4
+ test_utils_check_pixel@Base 3.33.4
+ test_utils_check_pixel_and_alpha@Base 3.33.4
+ test_utils_check_pixel_rgb@Base 3.33.4
+ test_utils_check_region@Base 3.33.4
+ test_utils_compare_pixel@Base 3.33.4
+ test_utils_compare_pixel_and_alpha@Base 3.33.4
+ test_utils_create_color_texture@Base 3.33.4
+ test_utils_fini@Base 3.33.4
+ test_utils_init@Base 3.33.4
+ test_utils_texture_new_from_bitmap@Base 3.33.4
+ test_utils_texture_new_from_data@Base 3.33.4
+ test_utils_texture_new_with_size@Base 3.33.4
+ unit_test_check_bitmask_api@Base 3.33.4
+ unit_test_check_blend_constant_ancestry@Base 3.33.4
+ unit_test_check_gl_blend_enable@Base 3.33.4
+ unit_test_check_mesa_driver_package_parser@Base 3.33.4
+ unit_test_check_pipeline_pruning@Base 3.33.4
+ unit_test_check_point_size_shader@Base 3.33.4
+ unit_test_check_uniform_ancestry@Base 3.33.4
+libmutter-cogl-pango-6.so.0 libmutter-6-0 #MINVER#
+* Build-Depends-Package: libmutter-6-dev
  cogl_pango_ensure_glyph_cache_for_layout@Base 3.29.4
  cogl_pango_font_map_clear_glyph_cache@Base 3.29.4
  cogl_pango_font_map_create_context@Base 3.29.4
@@ -3075,20 +2708,15 @@ libmutter-cogl-pango-5.so.0 libmutter-5-0 #MINVER#
  cogl_pango_glyph_cache_free@Base 3.29.4
  cogl_pango_glyph_cache_lookup@Base 3.29.4
  cogl_pango_glyph_cache_new@Base 3.29.4
- cogl_pango_render_layout@Base 3.29.4
- cogl_pango_render_layout_line@Base 3.29.4
- cogl_pango_render_layout_subpixel@Base 3.29.4
  cogl_pango_renderer_get_type@Base 3.29.4
  cogl_pango_show_layout@Base 3.29.4
  cogl_pango_show_layout_line@Base 3.29.4
-libmutter-cogl-path-5.so.0 libmutter-5-0 #MINVER#
-* Build-Depends-Package: libmutter-5-dev
- cogl2_clip_push_from_path@Base 3.29.4
+libmutter-cogl-path-6.so.0 libmutter-6-0 #MINVER#
+* Build-Depends-Package: libmutter-6-dev
  cogl2_path_arc@Base 3.29.4
  cogl2_path_close@Base 3.29.4
  cogl2_path_curve_to@Base 3.29.4
  cogl2_path_ellipse@Base 3.29.4
- cogl2_path_fill@Base 3.29.4
  cogl2_path_get_fill_rule@Base 3.29.4
  cogl2_path_line@Base 3.29.4
  cogl2_path_line_to@Base 3.29.4
@@ -3102,7 +2730,6 @@ libmutter-cogl-path-5.so.0 libmutter-5-0 #MINVER#
  cogl2_path_rel_move_to@Base 3.29.4
  cogl2_path_round_rectangle@Base 3.29.4
  cogl2_path_set_fill_rule@Base 3.29.4
- cogl2_path_stroke@Base 3.29.4
  cogl_framebuffer_fill_path@Base 3.29.4
  cogl_framebuffer_push_path_clip@Base 3.29.4
  cogl_framebuffer_stroke_path@Base 3.29.4

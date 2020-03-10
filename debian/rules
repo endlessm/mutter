@@ -17,15 +17,17 @@ CONFFLAGS = \
 	-Dnative_backend=true
 else
 CONFFLAGS += \
-	-Degl=false \
+	-Dudev=false \
+	-Dlibwacom=false \
 	-Dwayland=false \
+	-Dcore_tests=false \
 	-Dnative_backend=false \
 	-Dremote_desktop=false
 endif
 
 ifeq ($(DEB_HOST_ARCH),$(findstring $(DEB_HOST_ARCH),armel armhf))
 CONFFLAGS += \
-	-Dopengl=false -Dglx=false
+	-Ddefault_driver=gles2
 else
 CONFFLAGS += \
 	-Ddefault_driver=gl
@@ -36,13 +38,16 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 ifeq ($(shell dpkg-vendor --query vendor),Ubuntu)
 	CONFFLAGS += -Dremote_desktop=false
 else
-	CONFFLAGS += -Dremote_desktop=true
+	# this depends on Pipewire 0.3, which is not packaged yet
+	# and is quite complicated (e.g. it replaces Pulseaudio)
+	CONFFLAGS += -Dremote_desktop=false
 endif
 endif
 
 override_dh_auto_configure:
 	dh_auto_configure -- \
 		-Dstartup_notification=true \
+		-Degl=true \
 		-Dgles2=true \
 		-Dgles2_libname=libGLESv2.so.2 \
 		-Dinstalled_tests=false \
@@ -61,7 +66,7 @@ TEST_COMMAND_BASE=env \
 	XDG_RUNTIME_DIR=$(BUILDDIR)/XRD \
 	GSETTINGS_SCHEMA_DIR=$(BUILDDIR)/data \
 	dbus-run-session -- xvfb-run -s '+iglx -noreset' -a \
-	meson test -C $(BUILDDIR) --no-rebuild --verbose --timeout-multiplier 4 \
+	meson test -C $(BUILDDIR) --no-rebuild --verbose --timeout-multiplier 6 \
 	           --no-stdsplit --print-errorlogs
 TEST_COMMAND=$(TEST_COMMAND_BASE) --no-suite flaky
 TEST_COMMAND_FLAKY=$(TEST_COMMAND_BASE) --suite flaky
@@ -94,13 +99,13 @@ override_dh_missing:
 	dh_missing --fail-missing
 
 override_dh_girepository:
-	dh_girepository /usr/lib/$(DEB_HOST_MULTIARCH)/mutter-5
+	dh_girepository /usr/lib/$(DEB_HOST_MULTIARCH)/mutter-6
 
 override_dh_makeshlibs:
 	dh_makeshlibs -V
 
 override_dh_shlibdeps:
-	dh_shlibdeps -Llibmutter-5-0 -l/usr/lib/$(DEB_HOST_MULTIARCH)/mutter-5
+	dh_shlibdeps -Llibmutter-6-0 -l/usr/lib/$(DEB_HOST_MULTIARCH)/mutter-6
 
 override_dh_strip:
 	dh_strip --dbgsym-migration='mutter-dbg (<< 3.18.3-2~)'

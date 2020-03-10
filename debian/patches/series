@@ -1,0 +1,5 @@
+theme-use-gtk_render_icon_suface-to-paint-button-icon.patch
+theme-load-icons-as-Gtk-does-with-fallback-and-RTL-suppor.patch
+meson-add-back-default_driver-option.patch
+debian/synaptics-support.patch
+debian/tests-Tag-closed-transient-no-input-tests-as-flaky.patch
