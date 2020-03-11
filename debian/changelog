@@ -1,11 +1,17 @@
-mutter (3.36.0-1) UNRELEASED; urgency=medium
+mutter (3.36.0-0endless1) eos; urgency=medium
 
   * New upstream release
     + Fix placement of popup windows in multi-monitor setups
     + Fix invisible mouse cursor on some hardware
     + Updated translations
+  * Re-apply Endless customizations:
+    + Add dependency on libmalcontent (T26990)
+    + Add dependency on eos-metrics (T27545)
+    + Build without full GL or GLX on ARM (T26795)
+    + Update symbols for Endless specific changes
+    + Drop debian patches (they are applied in the source tree) (T28856)
 
- -- Andre Moreira Magalhaes <andre@endlessm.com>  Tue, 10 Mar 2020 19:37:45 -0300
+ -- Andre Moreira Magalhaes <andre@endlessm.com>  Tue, 11 Mar 2020 11:55:13 -0300
 
 mutter (3.35.92-1) experimental; urgency=medium
 
