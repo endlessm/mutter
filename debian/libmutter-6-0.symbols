@@ -2153,7 +2153,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  _cogl_winsys_egl_xlib_get_vtable@Base 3.29.4
  _cogl_winsys_error_quark@Base 3.29.4
  (arch=!armhf !armel)_cogl_winsys_glx_get_vtable@Base 3.29.4
- cogl_2d_primitives_immediate@Base 3.35.90
  cogl_atlas_texture_get_gtype@Base 3.29.4
  cogl_atlas_texture_new_from_bitmap@Base 3.29.4
  cogl_atlas_texture_new_from_data@Base 3.29.4
@@ -2190,7 +2189,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_bitmap_new_from_buffer@Base 3.29.4
  cogl_bitmap_new_from_file@Base 3.29.4
  cogl_bitmap_new_with_size@Base 3.29.4
- cogl_blend_string_error_quark@Base 3.29.4
  cogl_blit_framebuffer@Base 3.33.4
  cogl_buffer_get_size@Base 3.29.4
  cogl_buffer_get_update_hint@Base 3.29.4
@@ -2199,7 +2197,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_buffer_set_data@Base 3.29.4
  cogl_buffer_set_update_hint@Base 3.29.4
  cogl_buffer_unmap@Base 3.29.4
- cogl_clip_stack_push_region@Base 3.35.90
  cogl_clutter_winsys_has_feature_CLUTTER@Base 3.29.4
  cogl_color_copy@Base 3.29.4
  cogl_color_equal@Base 3.29.4
@@ -2291,7 +2288,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_framebuffer_draw_textured_rectangles@Base 3.29.4
  cogl_framebuffer_error_quark@Base 3.29.4
  cogl_framebuffer_finish@Base 3.29.4
- cogl_framebuffer_flush@Base 3.35.92
  cogl_framebuffer_frustum@Base 3.29.4
  cogl_framebuffer_get_alpha_bits@Base 3.29.4
  cogl_framebuffer_get_blue_bits@Base 3.29.4
@@ -2337,7 +2333,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_framebuffer_set_projection_matrix@Base 3.29.4
  cogl_framebuffer_set_samples_per_pixel@Base 3.29.4
  cogl_framebuffer_set_stereo_mode@Base 3.29.4
- cogl_framebuffer_set_viewport4fv@Base 3.35.90
  cogl_framebuffer_set_viewport@Base 3.29.4
  cogl_framebuffer_transform@Base 3.29.4
  cogl_framebuffer_translate@Base 3.29.4
@@ -2382,7 +2377,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_is_pipeline@Base 3.29.4
  cogl_is_pixel_buffer@Base 3.29.4
  cogl_is_primitive@Base 3.29.4
- cogl_is_primitive_texture@Base 3.29.4
  cogl_is_program@Base 3.29.4
  cogl_is_renderer@Base 3.29.4
  cogl_is_shader@Base 3.29.4
@@ -2463,8 +2457,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_object_ref@Base 3.29.4
  cogl_object_set_user_data@Base 3.29.4
  cogl_object_unref@Base 3.29.4
- cogl_object_value_get_object@Base 3.29.4
- cogl_object_value_set_object@Base 3.29.4
  cogl_offscreen_get_gtype@Base 3.29.4
  cogl_offscreen_get_texture@Base 3.29.4
  cogl_offscreen_new_to_texture@Base 3.29.4
@@ -2623,7 +2615,6 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_snippet_set_post@Base 3.29.4
  cogl_snippet_set_pre@Base 3.29.4
  cogl_snippet_set_replace@Base 3.29.4
- cogl_sub_texture_get_gtype@Base 3.29.4
  cogl_sub_texture_get_parent@Base 3.29.4
  cogl_sub_texture_new@Base 3.29.4
  cogl_swap_chain_get_gtype@Base 3.29.4
@@ -2742,5 +2733,4 @@ libmutter-cogl-path-6.so.0 libmutter-6-0 #MINVER#
  cogl_framebuffer_stroke_path@Base 3.29.4
  cogl_is_path@Base 3.29.4
  cogl_path_copy@Base 3.29.4
- cogl_path_fill_rule_get_type@Base 3.29.4
  cogl_path_get_gtype@Base 3.29.4
