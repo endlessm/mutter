@@ -238,6 +238,7 @@ click_action_query_long_press (ClutterClickAction *action)
 
   if (result)
     {
+      g_clear_handle_id (&priv->long_press_id, g_source_remove);
       priv->long_press_id =
         clutter_threads_add_timeout (timeout,
                                      click_action_emit_long_press,
@@ -345,12 +346,6 @@ on_captured_event (ClutterActor       *stage,
   ClutterActor *actor;
   ClutterModifierType modifier_state;
   gboolean has_button = TRUE;
-
-  if (!clutter_actor_meta_get_enabled (CLUTTER_ACTOR_META (action)))
-    {
-      clutter_click_action_release (action);
-      return CLUTTER_EVENT_PROPAGATE;
-    }
 
   actor = clutter_actor_meta_get_actor (CLUTTER_ACTOR_META (action));
 
@@ -474,6 +469,20 @@ clutter_click_action_set_actor (ClutterActorMeta *meta,
 }
 
 static void
+clutter_click_action_set_enabled (ClutterActorMeta *meta,
+                                  gboolean          is_enabled)
+{
+  ClutterClickAction *click_action = CLUTTER_CLICK_ACTION (meta);
+  ClutterActorMetaClass *parent_class =
+    CLUTTER_ACTOR_META_CLASS (clutter_click_action_parent_class);
+
+  if (!is_enabled)
+    clutter_click_action_release (click_action);
+
+  parent_class->set_enabled (meta, is_enabled);
+}
+
+static void
 clutter_click_action_set_property (GObject      *gobject,
                                    guint         prop_id,
                                    const GValue *value,
@@ -552,6 +561,7 @@ clutter_click_action_class_init (ClutterClickActionClass *klass)
   ClutterActorMetaClass *meta_class = CLUTTER_ACTOR_META_CLASS (klass);
 
   meta_class->set_actor = clutter_click_action_set_actor;
+  meta_class->set_enabled = clutter_click_action_set_enabled;
 
   gobject_class->dispose = clutter_click_action_dispose;
   gobject_class->set_property = clutter_click_action_set_property;
