@@ -2457,6 +2457,8 @@ libmutter-cogl-6.so.0 libmutter-6-0 #MINVER#
  cogl_object_ref@Base 3.29.4
  cogl_object_set_user_data@Base 3.29.4
  cogl_object_unref@Base 3.29.4
+ cogl_object_value_get_object@Base 3.29.4
+ cogl_object_value_set_object@Base 3.29.4
  cogl_offscreen_get_gtype@Base 3.29.4
  cogl_offscreen_get_texture@Base 3.29.4
  cogl_offscreen_new_to_texture@Base 3.29.4
