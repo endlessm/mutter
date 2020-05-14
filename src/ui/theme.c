@@ -787,13 +787,14 @@ meta_frame_layout_draw_with_style (MetaFrameLayout         *layout,
       if (text_width < logical.width)
         pango_layout_set_width (title_layout, PANGO_SCALE * text_width);
 
-      /* Center vertically within the frame */
+      /* Center within the frame if possible */
+      x = titlebar_rect.x + (titlebar_rect.width - text_width) / 2;
       y = titlebar_rect.y + (titlebar_rect.height - logical.height) / 2;
 
-      if (meta_get_locale_direction() == META_LOCALE_DIRECTION_RTL)
-        x = (fgeom->title_rect.x + fgeom->title_rect.width) / scale - text_width;
-      else
+      if (x < fgeom->title_rect.x / scale)
         x = fgeom->title_rect.x / scale;
+      else if (x + text_width > (fgeom->title_rect.x + fgeom->title_rect.width) / scale)
+        x = (fgeom->title_rect.x + fgeom->title_rect.width) / scale - text_width;
 
       style = style_info->styles[META_STYLE_ELEMENT_TITLE];
       gtk_render_layout (style, cr, x, y, title_layout);
