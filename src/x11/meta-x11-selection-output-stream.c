@@ -60,6 +60,8 @@ G_DEFINE_TYPE_WITH_PRIVATE (MetaX11SelectionOutputStream,
                             meta_x11_selection_output_stream,
                             G_TYPE_OUTPUT_STREAM);
 
+static size_t get_element_size (int format);
+
 static void
 meta_x11_selection_output_stream_notify_selection (MetaX11SelectionOutputStream *stream)
 {
@@ -97,6 +99,9 @@ meta_x11_selection_output_stream_can_flush (MetaX11SelectionOutputStream *stream
 
   if (priv->delete_pending)
     return FALSE;
+  if (!g_output_stream_is_closing (G_OUTPUT_STREAM (stream)) &&
+      priv->data->len < get_element_size (priv->format))
+    return FALSE;
 
   return TRUE;
 }
@@ -110,7 +115,7 @@ get_max_request_size (MetaX11Display *display)
   if (size <= 0)
     size = XMaxRequestSize (display->xdisplay);
 
-  return size - 100;
+  return (size - 100) * 4;
 }
 
 static gboolean
@@ -120,7 +125,12 @@ meta_x11_selection_output_stream_needs_flush_unlocked (MetaX11SelectionOutputStr
     meta_x11_selection_output_stream_get_instance_private (stream);
 
   if (priv->data->len == 0)
-    return FALSE;
+    {
+      if (priv->incr)
+        return g_output_stream_is_closing (G_OUTPUT_STREAM (stream));
+      else
+        return FALSE;
+    }
 
   if (g_output_stream_is_closing (G_OUTPUT_STREAM (stream)))
     return TRUE;
@@ -193,7 +203,8 @@ meta_x11_selection_output_stream_perform_flush (MetaX11SelectionOutputStream *st
   MetaX11SelectionOutputStreamPrivate *priv =
     meta_x11_selection_output_stream_get_instance_private (stream);
   Display *xdisplay;
-  size_t element_size, n_elements;
+  size_t element_size, n_elements, max_size;
+  gboolean first_chunk = FALSE;
   int error_code;
 
   g_assert (!priv->delete_pending);
@@ -207,8 +218,12 @@ meta_x11_selection_output_stream_perform_flush (MetaX11SelectionOutputStream *st
 
   element_size = get_element_size (priv->format);
   n_elements = priv->data->len / element_size;
+  max_size = get_max_request_size (priv->x11_display);
 
-  if (!g_output_stream_is_closing (G_OUTPUT_STREAM (stream)))
+  if (!priv->incr)
+    first_chunk = TRUE;
+
+  if (!priv->incr && priv->data->len > max_size)
     {
       XWindowAttributes attrs;
 
@@ -224,14 +239,22 @@ meta_x11_selection_output_stream_perform_flush (MetaX11SelectionOutputStream *st
       XChangeProperty (xdisplay,
                        priv->xwindow,
                        priv->xproperty,
-                       XInternAtom (priv->x11_display->xdisplay, "INCR", True),
+                       XInternAtom (priv->x11_display->xdisplay, "INCR", False),
                        32,
                        PropModeReplace,
                        (guchar *) &(long) { n_elements },
                        1);
+      priv->delete_pending = TRUE;
     }
   else
     {
+      size_t copy_n_elements;
+
+      if (priv->incr && priv->data->len > 0)
+        priv->delete_pending = TRUE;
+
+      copy_n_elements = MIN (n_elements, max_size / element_size);
+
       XChangeProperty (xdisplay,
                        priv->xwindow,
                        priv->xproperty,
@@ -239,15 +262,13 @@ meta_x11_selection_output_stream_perform_flush (MetaX11SelectionOutputStream *st
                        priv->format,
                        PropModeReplace,
                        priv->data->data,
-                       n_elements);
-      g_byte_array_remove_range (priv->data, 0, n_elements * element_size);
-      if (priv->data->len < element_size)
-        priv->flush_requested = FALSE;
+                       copy_n_elements);
+      g_byte_array_remove_range (priv->data, 0, copy_n_elements * element_size);
     }
 
-  meta_x11_selection_output_stream_notify_selection (stream);
+  if (first_chunk)
+    meta_x11_selection_output_stream_notify_selection (stream);
 
-  priv->delete_pending = TRUE;
   g_cond_broadcast (&priv->cond);
   g_mutex_unlock (&priv->mutex);
 
@@ -257,19 +278,26 @@ meta_x11_selection_output_stream_perform_flush (MetaX11SelectionOutputStream *st
     {
       char error_str[100];
 
-      XGetErrorText (xdisplay, error_code, error_str, sizeof (error_str));
-      g_task_return_new_error (priv->pending_task,
-                               G_IO_ERROR,
-                               G_IO_ERROR_BROKEN_PIPE,
-                               "Failed to flush selection output stream: %s",
-                               error_str);
-      g_clear_object (&priv->pending_task);
+      priv->flush_requested = FALSE;
+      priv->delete_pending = FALSE;
       priv->pipe_error = TRUE;
+
+      if (priv->pending_task)
+        {
+          XGetErrorText (xdisplay, error_code, error_str, sizeof (error_str));
+          g_task_return_new_error (priv->pending_task,
+                                   G_IO_ERROR,
+                                   G_IO_ERROR_BROKEN_PIPE,
+                                   "Failed to flush selection output stream: %s",
+                                   error_str);
+          g_clear_object (&priv->pending_task);
+        }
     }
-  else if (priv->pending_task)
+  else if (priv->pending_task && priv->data->len == 0 && !priv->delete_pending)
     {
       size_t result;
 
+      priv->flush_requested = FALSE;
       result = GPOINTER_TO_SIZE (g_task_get_task_data (priv->pending_task));
       g_task_return_int (priv->pending_task, result);
       g_clear_object (&priv->pending_task);
@@ -281,12 +309,17 @@ meta_x11_selection_output_stream_invoke_flush (gpointer data)
 {
   MetaX11SelectionOutputStream *stream =
     META_X11_SELECTION_OUTPUT_STREAM (data);
+  MetaX11SelectionOutputStreamPrivate *priv =
+    meta_x11_selection_output_stream_get_instance_private (stream);
 
   if (meta_x11_selection_output_stream_needs_flush (stream) &&
       meta_x11_selection_output_stream_can_flush (stream))
     meta_x11_selection_output_stream_perform_flush (stream);
 
-  return G_SOURCE_REMOVE;
+  if (priv->delete_pending || priv->data->len > 0)
+    return G_SOURCE_CONTINUE;
+  else
+    return G_SOURCE_REMOVE;
 }
 
 static gssize
@@ -354,16 +387,11 @@ meta_x11_selection_output_stream_write_async (GOutputStream       *output_stream
       g_object_unref (task);
       return;
     }
-  else if (!meta_x11_selection_output_stream_can_flush (stream))
-    {
-      g_assert (priv->pending_task == NULL);
-      priv->pending_task = task;
-      g_task_set_task_data (task, GSIZE_TO_POINTER (count), NULL);
-      return;
-    }
   else
     {
-      meta_x11_selection_output_stream_perform_flush (stream);
+      if (meta_x11_selection_output_stream_can_flush (stream))
+        meta_x11_selection_output_stream_perform_flush (stream);
+
       g_task_return_int (task, count);
       g_object_unref (task);
       return;
@@ -391,7 +419,7 @@ meta_x11_selection_output_request_flush (MetaX11SelectionOutputStream *stream)
 
   g_mutex_lock (&priv->mutex);
 
-  if (priv->data->len >= get_element_size (priv->format))
+  if (priv->data->len > 0)
     priv->flush_requested = TRUE;
 
   needs_flush = meta_x11_selection_output_stream_needs_flush_unlocked (stream);
@@ -466,10 +494,9 @@ meta_x11_selection_output_stream_flush_async (GOutputStream       *output_stream
         }
     }
 
+  g_assert (priv->pending_task == NULL);
+  priv->pending_task = task;
   meta_x11_selection_output_stream_perform_flush (stream);
-  g_task_return_boolean (task, TRUE);
-  g_object_unref (task);
-  return;
 }
 
 static gboolean

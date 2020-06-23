@@ -934,7 +934,8 @@ clutter_stage_do_paint_view (ClutterStage         *stage,
   ClutterPaintContext *paint_context;
   cairo_rectangle_int_t clip_rect;
 
-  paint_context = clutter_paint_context_new_for_view (view, redraw_clip);
+  paint_context = clutter_paint_context_new_for_view (view, redraw_clip,
+                                                      CLUTTER_PAINT_FLAG_NONE);
 
   cairo_region_get_extents (redraw_clip, &clip_rect);
   setup_view_for_pick_or_paint (stage, view, &clip_rect);
@@ -1320,14 +1321,8 @@ clutter_stage_queue_actor_relayout (ClutterStage *stage,
 {
   ClutterStagePrivate *priv = stage->priv;
 
-  if (g_hash_table_contains (priv->pending_relayouts, stage))
-    return;
-
   if (g_hash_table_size (priv->pending_relayouts) == 0)
     _clutter_stage_schedule_update (stage);
-
-  if (actor == (ClutterActor *) stage)
-    g_hash_table_remove_all (priv->pending_relayouts);
 
   g_hash_table_add (priv->pending_relayouts, g_object_ref (actor));
   priv->pending_relayouts_version++;
@@ -4463,6 +4458,100 @@ clutter_stage_get_capture_final_size (ClutterStage          *stage,
   return TRUE;
 }
 
+/**
+ * clutter_stage_paint_to_framebuffer: (skip)
+ */
+void
+clutter_stage_paint_to_framebuffer (ClutterStage                *stage,
+                                    CoglFramebuffer             *framebuffer,
+                                    const cairo_rectangle_int_t *rect,
+                                    float                        scale,
+                                    ClutterPaintFlag             paint_flags)
+{
+  ClutterStagePrivate *priv = stage->priv;
+  ClutterPaintContext *paint_context;
+  cairo_region_t *redraw_clip;
+
+  redraw_clip = cairo_region_create_rectangle (rect);
+  paint_context = clutter_paint_context_new_for_framebuffer (framebuffer);
+  cairo_region_destroy (redraw_clip);
+
+  cogl_framebuffer_push_matrix (framebuffer);
+  cogl_framebuffer_set_projection_matrix (framebuffer, &priv->projection);
+  cogl_framebuffer_set_viewport (framebuffer,
+                                 -(rect->x * scale),
+                                 -(rect->y * scale),
+                                 priv->viewport[2] * scale,
+                                 priv->viewport[3] * scale);
+  clutter_actor_paint (CLUTTER_ACTOR (stage), paint_context);
+  cogl_framebuffer_pop_matrix (framebuffer);
+
+  clutter_paint_context_destroy (paint_context);
+}
+
+/**
+ * clutter_stage_paint_to_buffer: (skip)
+ */
+gboolean
+clutter_stage_paint_to_buffer (ClutterStage                 *stage,
+                               const cairo_rectangle_int_t  *rect,
+                               float                         scale,
+                               uint8_t                      *data,
+                               int                           stride,
+                               CoglPixelFormat               format,
+                               ClutterPaintFlag              paint_flags,
+                               GError                      **error)
+{
+  ClutterBackend *clutter_backend = clutter_get_default_backend ();
+  CoglContext *cogl_context =
+    clutter_backend_get_cogl_context (clutter_backend);
+  int texture_width, texture_height;
+  CoglTexture2D *texture;
+  CoglOffscreen *offscreen;
+  CoglFramebuffer *framebuffer;
+  CoglBitmap *bitmap;
+
+  texture_width = (int) ceilf (rect->width * scale);
+  texture_height = (int) ceilf (rect->height * scale);
+  texture = cogl_texture_2d_new_with_size (cogl_context,
+                                           texture_width,
+                                           texture_height);
+  if (!texture)
+    {
+      g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+                   "Failed to create %dx%d texture",
+                   texture_width, texture_height);
+      return FALSE;
+    }
+
+  offscreen = cogl_offscreen_new_with_texture (COGL_TEXTURE (texture));
+  framebuffer = COGL_FRAMEBUFFER (offscreen);
+
+  cogl_object_unref (texture);
+
+  if (!cogl_framebuffer_allocate (framebuffer, error))
+    return FALSE;
+
+  clutter_stage_paint_to_framebuffer (stage, framebuffer,
+                                      rect, scale, paint_flags);
+
+  bitmap = cogl_bitmap_new_for_data (cogl_context,
+                                     texture_width, texture_height,
+                                     format,
+                                     stride,
+                                     data);
+
+  cogl_framebuffer_read_pixels_into_bitmap (framebuffer,
+                                            0, 0,
+                                            COGL_READ_PIXELS_COLOR_BUFFER,
+                                            bitmap);
+
+  cogl_object_unref (bitmap);
+  cogl_object_unref (framebuffer);
+
+  return TRUE;
+}
+
 static void
 capture_view_into (ClutterStage          *stage,
                    gboolean               paint,
@@ -4471,50 +4560,17 @@ capture_view_into (ClutterStage          *stage,
                    uint8_t               *data,
                    int                    stride)
 {
-  CoglFramebuffer *framebuffer;
-  ClutterBackend *backend;
-  CoglContext *context;
-  CoglBitmap *bitmap;
-  cairo_rectangle_int_t view_layout;
+  g_autoptr (GError) error = NULL;
   float view_scale;
-  float texture_width;
-  float texture_height;
 
   g_return_if_fail (CLUTTER_IS_STAGE (stage));
 
-  framebuffer = clutter_stage_view_get_framebuffer (view);
-
-  if (paint)
-    {
-      cairo_region_t *region;
-
-      _clutter_stage_maybe_setup_viewport (stage, view);
-      region = cairo_region_create_rectangle (rect);
-      clutter_stage_do_paint_view (stage, view, region);
-      cairo_region_destroy (region);
-    }
-
   view_scale = clutter_stage_view_get_scale (view);
-  texture_width = roundf (rect->width * view_scale);
-  texture_height = roundf (rect->height * view_scale);
-
-  backend = clutter_get_default_backend ();
-  context = clutter_backend_get_cogl_context (backend);
-  bitmap = cogl_bitmap_new_for_data (context,
-                                     texture_width, texture_height,
-                                     CLUTTER_CAIRO_FORMAT_ARGB32,
-                                     stride,
-                                     data);
-
-  clutter_stage_view_get_layout (view, &view_layout);
-
-  cogl_framebuffer_read_pixels_into_bitmap (framebuffer,
-                                            roundf ((rect->x - view_layout.x) * view_scale),
-                                            roundf ((rect->y - view_layout.y) * view_scale),
-                                            COGL_READ_PIXELS_COLOR_BUFFER,
-                                            bitmap);
-
-  cogl_object_unref (bitmap);
+  if (!clutter_stage_paint_to_buffer (stage, rect, view_scale, data, stride,
+                                      CLUTTER_CAIRO_FORMAT_ARGB32,
+                                      CLUTTER_PAINT_FLAG_NO_CURSORS,
+                                      &error))
+    g_warning ("Failed to capture stage: %s", error->message);
 }
 
 void

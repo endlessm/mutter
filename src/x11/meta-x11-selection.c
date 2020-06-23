@@ -23,12 +23,21 @@
 
 #include <gdk/gdkx.h>
 
+#include "core/meta-selection-private.h"
+#include "meta/meta-selection-source-memory.h"
 #include "x11/meta-selection-source-x11-private.h"
 #include "x11/meta-x11-selection-output-stream-private.h"
 #include "x11/meta-x11-selection-private.h"
 
 #define UTF8_STRING_MIMETYPE "text/plain;charset=utf-8"
 #define STRING_MIMETYPE "text/plain"
+
+/* Set an arbitrary (although generous) threshold to determine whether a
+ * XFixesSelectionNotify corresponds to a XSetSelectionOwner from another
+ * client. The selection timestamp is not updated if the owner client is
+ * closed.
+ */
+#define SELECTION_CLEARED_BY_CLIENT(e) (e->timestamp - e->selection_timestamp < 50)
 
 static gboolean
 atom_to_selection_type (Display           *xdisplay,
@@ -296,8 +305,8 @@ source_new_cb (GObject      *object,
   source = meta_selection_source_x11_new_finish (res, &error);
   if (source)
     {
-      meta_selection_set_owner (selection, selection_type, source);
       g_set_object (&x11_display->selection.owners[selection_type], source);
+      meta_selection_set_owner (selection, selection_type, source);
       g_object_unref (source);
     }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
@@ -331,16 +340,27 @@ meta_x11_selection_handle_xfixes_selection_notify (MetaX11Display *x11_display,
 
   x11_display->selection.cancellables[selection_type] = g_cancellable_new ();
 
-  if (event->owner == None)
+  if (event->owner == None && x11_display->selection.owners[selection_type])
     {
-      if (x11_display->selection.owners[selection_type])
+      if (SELECTION_CLEARED_BY_CLIENT (event))
+        {
+          MetaSelectionSource *source;
+
+          /* Replace with an empty owner */
+          source = g_object_new (META_TYPE_SELECTION_SOURCE_MEMORY, NULL);
+          g_set_object (&x11_display->selection.owners[selection_type], source);
+          meta_selection_set_owner (selection, selection_type, source);
+          g_object_unref (source);
+        }
+      else
         {
           /* An X client went away, clear the selection */
           meta_selection_unset_owner (selection, selection_type,
                                       x11_display->selection.owners[selection_type]);
+          g_clear_object (&x11_display->selection.owners[selection_type]);
         }
     }
-  else if (event->owner != x11_display->selection.xwindow)
+  else if (event->owner != None && event->owner != x11_display->selection.xwindow)
     {
       SourceNewData *data;
 
@@ -374,14 +394,13 @@ meta_x11_selection_handle_event (MetaX11Display *x11_display,
 }
 
 static void
-owner_changed_cb (MetaSelection       *selection,
-                  MetaSelectionType    selection_type,
-                  MetaSelectionSource *new_owner,
-                  MetaX11Display      *x11_display)
+notify_selection_owner (MetaX11Display      *x11_display,
+                        MetaSelectionType    selection_type,
+                        MetaSelectionSource *new_owner)
 {
   Display *xdisplay = x11_display->xdisplay;
 
-  if (new_owner && !META_IS_SELECTION_SOURCE_X11 (new_owner))
+  if (new_owner && new_owner != x11_display->selection.owners[selection_type])
     {
       if (x11_display->selection.cancellables[selection_type])
         {
@@ -404,6 +423,7 @@ meta_x11_selection_init (MetaX11Display *x11_display)
 {
   XSetWindowAttributes attributes = { 0 };
   MetaDisplay *display = meta_get_display ();
+  MetaSelection *selection;
   guint mask, i;
 
   attributes.event_mask = PropertyChangeMask | SubstructureNotifyMask;
@@ -424,18 +444,24 @@ meta_x11_selection_init (MetaX11Display *x11_display)
     XFixesSelectionWindowDestroyNotifyMask |
     XFixesSelectionClientCloseNotifyMask;
 
+  selection = meta_display_get_selection (display);
+
   for (i = 0; i < META_N_SELECTION_TYPES; i++)
     {
+      MetaSelectionSource *owner;
+
       XFixesSelectSelectionInput (x11_display->xdisplay,
                                   x11_display->selection.xwindow,
                                   selection_to_atom (i, x11_display->xdisplay),
                                   mask);
+      owner = meta_selection_get_current_owner (selection, i);
+      notify_selection_owner (x11_display, i, owner);
     }
 
-  g_signal_connect (meta_display_get_selection (display),
-                    "owner-changed",
-                    G_CALLBACK (owner_changed_cb),
-                    x11_display);
+  g_signal_connect_swapped (selection,
+                            "owner-changed",
+                            G_CALLBACK (notify_selection_owner),
+                            x11_display);
 }
 
 void
@@ -445,7 +471,7 @@ meta_x11_selection_shutdown (MetaX11Display *x11_display)
   guint i;
 
   g_signal_handlers_disconnect_by_func (meta_display_get_selection (display),
-                                        owner_changed_cb,
+                                        notify_selection_owner,
                                         x11_display);
 
   for (i = 0; i < META_N_SELECTION_TYPES; i++)
