@@ -1,3 +1,9 @@
+mutter (3.37.3-0endless1) eos; urgency=medium
+
+  * Unstable release
+
+ -- Georges Basile Stavracas Neto <georges@endlessm.com>  Wed, 08 Jul 2020 16:51:33 -0300
+
 mutter (3.36.0-0endless1) eos; urgency=medium
 
   * New upstream release
