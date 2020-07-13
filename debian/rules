@@ -13,6 +13,7 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 CONFFLAGS = \
 	-Degl_device=true \
 	-Dwayland=true \
+	-Dcore_tests=false \
 	-Dwayland_eglstream=true \
 	-Dnative_backend=true
 else
