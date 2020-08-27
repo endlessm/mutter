@@ -747,7 +747,6 @@ meta_monitor_config_manager_create_linear (MetaMonitorConfigManager *config_mana
   int x;
   GList *monitors;
   GList *l;
-  MetaMonitorsConfig *monitors_config;
 
   primary_monitor = find_primary_monitor (monitor_manager);
   if (!primary_monitor)
@@ -791,15 +790,10 @@ meta_monitor_config_manager_create_linear (MetaMonitorConfigManager *config_mana
       x += logical_monitor_config->layout.width;
     }
 
-  monitors_config = meta_monitors_config_new (monitor_manager,
-                                              logical_monitor_configs,
-                                              layout_mode,
-                                              META_MONITORS_CONFIG_FLAG_NONE);
-
-  if (monitors_config)
-    meta_monitors_config_set_switch_config (monitors_config, META_MONITOR_SWITCH_CONFIG_ALL_LINEAR);
-
-  return monitors_config;
+  return meta_monitors_config_new (monitor_manager,
+                                   logical_monitor_configs,
+                                   layout_mode,
+                                   META_MONITORS_CONFIG_FLAG_NONE);
 }
 
 MetaMonitorsConfig *
@@ -1081,7 +1075,6 @@ create_for_switch_config_all_mirror (MetaMonitorConfigManager *config_manager)
   GList *modes;
   GList *monitors;
   GList *l;
-  MetaMonitorsConfig *monitors_config;
 
   monitors = meta_monitor_manager_get_monitors (monitor_manager);
   monitor = monitors->data;
@@ -1174,15 +1167,10 @@ create_for_switch_config_all_mirror (MetaMonitorConfigManager *config_manager)
 
   logical_monitor_configs = g_list_append (NULL, logical_monitor_config);
   layout_mode = meta_monitor_manager_get_default_layout_mode (monitor_manager);
-  monitors_config = meta_monitors_config_new (monitor_manager,
-                                              logical_monitor_configs,
-                                              layout_mode,
-                                              META_MONITORS_CONFIG_FLAG_NONE);
-
-  if (monitors_config)
-    meta_monitors_config_set_switch_config (monitors_config, META_MONITOR_SWITCH_CONFIG_ALL_MIRROR);
-
-  return monitors_config;
+  return meta_monitors_config_new (monitor_manager,
+                                   logical_monitor_configs,
+                                   layout_mode,
+                                   META_MONITORS_CONFIG_FLAG_NONE);
 }
 
 static MetaMonitorsConfig *
@@ -1194,7 +1182,6 @@ create_for_switch_config_external (MetaMonitorConfigManager *config_manager)
   MetaLogicalMonitorLayoutMode layout_mode;
   GList *monitors;
   GList *l;
-  MetaMonitorsConfig *monitors_config;
 
   layout_mode = meta_monitor_manager_get_default_layout_mode (monitor_manager);
 
@@ -1222,15 +1209,10 @@ create_for_switch_config_external (MetaMonitorConfigManager *config_manager)
       x += logical_monitor_config->layout.width;
     }
 
-  monitors_config = meta_monitors_config_new (monitor_manager,
-                                              logical_monitor_configs,
-                                              layout_mode,
-                                              META_MONITORS_CONFIG_FLAG_NONE);
-
-  if (monitors_config)
-    meta_monitors_config_set_switch_config (monitors_config, META_MONITOR_SWITCH_CONFIG_EXTERNAL);
-
-  return monitors_config;
+  return meta_monitors_config_new (monitor_manager,
+                                   logical_monitor_configs,
+                                   layout_mode,
+                                   META_MONITORS_CONFIG_FLAG_NONE);
 }
 
 static MetaMonitorsConfig *
@@ -1241,7 +1223,6 @@ create_for_switch_config_builtin (MetaMonitorConfigManager *config_manager)
   GList *logical_monitor_configs;
   MetaLogicalMonitorConfig *primary_logical_monitor_config;
   MetaMonitor *monitor;
-  MetaMonitorsConfig *monitors_config;
 
   monitor = meta_monitor_manager_get_laptop_panel (monitor_manager);
   if (!monitor)
@@ -1259,15 +1240,10 @@ create_for_switch_config_builtin (MetaMonitorConfigManager *config_manager)
   logical_monitor_configs = g_list_append (NULL,
                                            primary_logical_monitor_config);
 
-  monitors_config = meta_monitors_config_new (monitor_manager,
-                                              logical_monitor_configs,
-                                              layout_mode,
-                                              META_MONITORS_CONFIG_FLAG_NONE);
-
-  if (monitors_config)
-    meta_monitors_config_set_switch_config (monitors_config, META_MONITOR_SWITCH_CONFIG_BUILTIN);
-
-  return monitors_config;
+  return meta_monitors_config_new (monitor_manager,
+                                   logical_monitor_configs,
+                                   layout_mode,
+                                   META_MONITORS_CONFIG_FLAG_NONE);
 }
 
 MetaMonitorsConfig *
@@ -1299,6 +1275,9 @@ meta_monitor_config_manager_create_for_switch_config (MetaMonitorConfigManager  
       g_warn_if_reached ();
       return NULL;
     }
+
+  if (config)
+    meta_monitors_config_set_switch_config (config, config_type);
 
   return config;
 }
