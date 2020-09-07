@@ -1,1 +1,1 @@
-usr/lib/*/mutter-7/*.typelib
+usr/lib/${DEB_HOST_MULTIARCH}/mutter-${env:MUTTER_API_VERSION}/*.typelib

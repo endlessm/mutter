@@ -1,23 +1,278 @@
-mutter (3.37.90-0endless1) eos; urgency=medium
+mutter (3.37.92-1) UNRELEASED; urgency=medium
 
-  * Unstable release
+  * New upstream release
+    - Fix stale cursor positions in remote desktop sessions
+    - xwayland: Add a setting to disable selected X extensions
+    - Fix screencasting when using QXL
+    - Cull actors that don't intersect with the redraw clip
+    - Optimize painting of backgrounds when culling is unavailable
+    - Improve support for Hangul input method
+    - Support debug paint overlay for opaque regions
+    - Fix launching flatpak applications when autostarting Xwayland
+    - Add support for capture scanouts in screencasts
+    - Allow integrated tablet devices to cycle outputs
+    - Improve mapping input devices to the most relevant output
+    - Only enable auto-rotation in touch mode
+    - Fix various crashes
+  * d/control.in: Update libgbm build-dependency
+  * d/copyright: Update
+  * d/control.in, d/rules: Enable Pipewire on Debian (but not Ubuntu).
+    Now that we have Pipewire 0.3 in experimental, we can enable
+    screencasting and remote desktop support.
 
- -- Georges Basile Stavracas Neto <georges@endlessm.com>  Wed, 08 Jul 2020 16:51:33 -0300
+ -- Simon McVittie <smcv@debian.org>  Mon, 07 Sep 2020 09:36:35 +0100
 
-mutter (3.36.0-0endless1) eos; urgency=medium
+mutter (3.37.91-1) experimental; urgency=medium
+
+  * New upstream release
+    - Support unredirecting fullscreen wayland surfaces
+    - Support area screencasts
+    - Allow inhibiting remote access
+    - Drive each monitor by its own frame clock (LP: #1730460)
+    - Fix copy/paste failures on X11 (LP: #1879968)
+    - Make window-aliveness checks less aggressive
+    - Limit mipmap levels when rendering background (LP: #1862308)
+    - Remove more long-deprecated Clutter APIs
+    - Support custom keyboard layouts in $XDG_CONFIG_HOME/xkb
+    - Optimize resource scale computation for wayland fractional scaling
+    - Support tap-button-map and tap-drag-lock touchpad settings
+    - Fix wine copy & paste
+    - Add API to launch trusted wayland clients
+    - Invalidate offscreen effect cache on video memory purge (LP: #1855757)
+  * debian: Update package and file names to mutter API version
+  * debian/control: Bump dependencies to match upstream requirements
+  * debian/clean: Remove as HOME and XRD are managed now by dh
+  * debian/copyright: Avoid redundant globbing patterns
+  * debian/gbp.conf: target upstream/latest branch
+  * debian/libmutter-7-0.symbols: Update symbols file
+  * debian/patches: Refresh
+  * d/p/debian/tests-Tag-closed-transient-no-input-tests-as-flaky.patch:
+    - Renamed into d/p/debian/tests-Tag-unstable-tests-as-flaky.patch
+    - Reduced the number of "flaky" tests to the ones time-dependent only
+  * debian/rules:
+    - Compute and generate a MUTTER_API_VERSION and replace it everywhere
+    - Remove XDG_RUNTIME_DIR wrapper workaround
+    - Don't run tests at all in riscv64
+    - Don't set again default configuration values (it makes the delta clearer)
+    - Never ignore test failures in amd64
+    - Remove test num processes re-configuration
+    - Run tests in s390x, no failures currently
+    - Don't test in alpha hppa powerpc sparc64 x32 (Closes: #959415)
+  * debian/with-temp-xdg-runtime-dir: Dropped, new dh will handle it for us
+  * debian/watch: Scan for all versions, not just the stable-branch
+  * debian/*.install: Use dh variable substitution in install files
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Thu, 27 Aug 2020 16:39:49 +0100
+
+mutter (3.36.5-1) unstable; urgency=medium
+
+  * Team upload
+  * New upstream release
+    - Screencast fixes and improvements
+    - Fix glitches when subsurfaces extend outside the toplevel
+    - Improve background display in overview workspace switcher
+    - Fix wine copy & paste
+    - Plug memory leaks
+  * Drop patches that were applied upstream
+
+ -- Simon McVittie <smcv@debian.org>  Thu, 13 Aug 2020 10:19:59 +0100
+
+mutter (3.36.4-1) unstable; urgency=medium
+
+  * New upstream stable release (LP: #1887998)
+    - Fix crash on area screenshots with fractional scaling
+    - Do not paint textures of fully obscured windows
+    - Turn off CRTCs as well when enabling DPMS
+    - Improve selection support
+    - Use a more appropriate combine function on opaque areas
+    - Fix remote desktop being broken without screencast session
+    - Fix popovers disappearing on wayland and HiDPI
+    - Fixed crashes (LP: #1870867, LP: #1857947)
+    - Plugged memory leaks
+  * d/p/screen-cast-Let-the-reason-for-recording-determine-what-t.patch,
+    d/p/screen-cast-src-Add-flag-to-maybe_record.patch,
+    d/p/screen-cast-src-Fix-signedness-of-timestamp-field.patch,
+    d/p/screen-cast-src-Make-record-functions-return-an-error-whe.patch,
+    d/p/screen-cast-src-Make-the-two-record-vfuncs-more-similarly.patch,
+    d/p/screen-cast-src-Record-follow-up-frame-after-timeout.patch,
+    d/p/screen-cast-src-Remove-follow-up-timeout-source-on-disabl.patch,
+    d/p/screen-cast-src-Use-G_USEC_PER_SEC-instead-of-1000000.patch,
+    d/p/screen-cast-window-stream-src-Fix-indentation.patch:
+    - Import more fixes for screencasting and remote desktop
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Fri, 17 Jul 2020 21:12:56 +0200
+
+mutter (3.36.3-1) unstable; urgency=medium
+
+  * New upstream release (LP: #1881971)
+   - Broadcast clipboard/primary offers
+   - Fix monitor screen cast on X11
+   - Implement touch-mode detecation for the X11 backend (LP: #1880596)
+   - Drop external keyboard detection from touch-mode heuristics
+   - Fix leaked DMA buffers in screencasts
+   - Fixed crashes
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 03 Jun 2020 23:33:29 +0200
+
+mutter (3.36.2+12+gb425f1153-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream snapshot from the gnome-3-36 branch
+  * d/p/backend-x11-Reintroduce-XInitThreads.patch:
+    Drop patch, applied upstream
+
+ -- Simon McVittie <smcv@debian.org>  Sat, 30 May 2020 15:12:09 +0100
+
+mutter (3.36.2-3) unstable; urgency=medium
+
+  [ Simon McVittie ]
+  * d/rules, d/with-temp-xdg-runtime-dir: Create temporary XDG_RUNTIME_DIR
+    debhelper 13.1 creates a temporary XDG_RUNTIME_DIR so we don't have to.
+    Unfortunately, its absolute path is sufficiently long that the path to
+    Mutter's Wayland display socket no longer fits in the 108 bytes allowed
+    by struct sockaddr_un, causing FTBFS when the tests fail. Until this is
+    fixed, we'll have to create our own XDG_RUNTIME_DIR with a shorter
+    absolute path.
+    Wrapping with-temp-xdg-runtime-dir around dh_auto_test doesn't work,
+    because dh_auto_test will reset XDG_RUNTIME_DIR, so use
+    meson test --wrapper to wrap with-temp-xdg-runtime-dir around the
+    individual tests.
+    (Works around: #961655)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Wed, 27 May 2020 13:54:19 +0200
+
+mutter (3.36.2-2) unstable; urgency=medium
+
+  [ Daniel van Vugt ]
+  * d/p/backend-x11-Reintroduce-XInitThreads.patch:
+    Fix a very common crash when running in X11 (LP: #1877075)
+
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 26 May 2020 21:41:05 +0200
+
+mutter (3.36.2-1) unstable; urgency=medium
+
+  * Team upload
+
+  [ Simon McVittie ]
+  * New upstream stable release
+    - Fix FTBFS with Wayland disabled (non-Linux kernels)
+    - X11 copy/paste/selection fixes (LP: #1852183)
+    - Fix freeze with some DisplayLink devices
+    - Fix a memory leak
+    - Synchronize shadows to server-side decorations
+    - Fix overview key on X11 when using multiple keyboard layouts
+    - Fix painting the redraw clip with the damage region
+    - Fix capturing with multiple stage views
+    - Fix screencasting of non-maximized windows (LP: #1873942)
+    - Various misc fixes and cleanups (LP: #1874818)
+    - Update translation: de
+
+  [ Marco Trevisan (Treviño) ]
+  * debian/libmutter-6-0.symbols: Update
+  * debian/rules: Ignore build failures on riscv64
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 01 May 2020 11:26:55 +0100
+
+mutter (3.36.1+git20200419-1) unstable; urgency=medium
+
+  * Team upload
+
+  [ Simon McVittie ]
+  * New upstream snapshot from gnome-3-36 branch (3.36.1-42-gda9eb4718)
+    - Fix trackball button scrolling
+    - Fix tiled (MST) displays
+    - Copy/paste fixes, particularly for large images and incremental
+      transfers
+    - Fall back to closed laptop lid configuration if no other available
+      (LP: #1793496)
+
+  [ Jeremy Bicha ]
+  * Drop obsolete dh_strip dbgsym migration rule
+  * Bump debhelper-compat to 13
+    - dh_missing --fail-missing is the default
+    - dh_auto_test has several default improvements
+    - dh_autoreconf isn't needed with meson
+  * debian/watch: Only watch for stable releases
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 21 Apr 2020 13:46:42 +0100
+
+mutter (3.36.1-4) unstable; urgency=medium
+
+  * Team upload
+  * Merge changelog from unstable
+  * Upload to unstable (starts transition: #954422)
+  * Update to upstream gnome-3-36 branch, commit 3.36.1-17-g9a2471db4
+    - Fix caps-lock state becoming confused on VT switch
+  * d/gbp.conf: Follow upstream/3.36.x branch
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 10 Apr 2020 17:56:10 +0100
+
+mutter (3.34.4-1) unstable; urgency=medium
+
+  * Team upload
+  * d/gbp.conf: Follow debian/unstable branch
+  * New upstream release
+  * d/patches: Apply post-release fixes up to 3.34.4-5-g2709a4ffb
+  * Standards-Version: 4.5.0 (no changes required)
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 25 Feb 2020 16:26:10 +0000
+
+mutter (3.36.1-3) experimental; urgency=medium
+
+  * Team upload
+  * Update to upstream gnome-3-36 branch, commit 3.36.1-16-gdb164bcfa
+    - Fix a crash during X11 drag-and-drop, for example when dragging
+      a JPEG file onto GIMP's splash screen
+    - Fix a crash in X11 input device handling
+    - Translate coordinates of absolute input devices for rotated screens
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 08 Apr 2020 11:18:37 +0100
+
+mutter (3.36.1-2) experimental; urgency=medium
+
+  * Team upload
+  * Standards-Version: 4.5.0 (no changes required)
+  * d/copyright: Consolidate entries and update
+  * Update to upstream gnome-3-36 branch, commit 3.36.1-13-gbc47f0a1a
+
+ -- Simon McVittie <smcv@debian.org>  Tue, 07 Apr 2020 18:27:45 +0100
+
+mutter (3.36.1-1) experimental; urgency=medium
+
+  * Team upload
+  * New upstream release
+  * d/copyright: Update
+  * Refresh patches
+  * Update symbols file.
+    Note that this includes ABI breaks: some symbols that are only used
+    internally have disappeared from mutter's private fork of Clutter and
+    Cogl. The only user of this version of mutter is GNOME Shell, which
+    does not use these symbols.
+  * d/patches: Update from gnome-3-36 branch up to 3.36.1-8-ge339a57dd
+  * d/p/clutter-stage-Don-t-assume-stage-relayouts-reallocate-eve.patch:
+    Add patch proposed upstream to fix a gnome-shell crash with the
+    "Native window placement" extension.
+
+ -- Simon McVittie <smcv@debian.org>  Fri, 03 Apr 2020 14:23:52 +0100
+
+mutter (3.36.0-2) experimental; urgency=medium
+
+  * control: Build against gnome-desktop 3.36 and break old gnome-shell. So we
+    get dependencies on libgnome-desktop-3-19. Otherwise we get two different
+    versions of gnome-desktop loaded into GNOME Shell, which crashes. Break
+    old gnome-shell for the inverse reason - it needs to be upgraded otherwise
+    we get the mismatch the other way around.
+
+ -- Iain Lane <laney@debian.org>  Mon, 16 Mar 2020 13:20:44 +0000
+
+mutter (3.36.0-1) experimental; urgency=medium
 
   * New upstream release
     + Fix placement of popup windows in multi-monitor setups
     + Fix invisible mouse cursor on some hardware
     + Updated translations
-  * Re-apply Endless customizations:
-    + Add dependency on libmalcontent (T26990)
-    + Add dependency on eos-metrics (T27545)
-    + Build without full GL or GLX on ARM (T26795)
-    + Update symbols for Endless specific changes
-    + Drop debian patches (they are applied in the source tree) (T28856)
 
- -- Andre Moreira Magalhaes <andre@endlessm.com>  Tue, 11 Mar 2020 11:55:13 -0300
+ -- Andre Moreira Magalhaes <andre@endlessm.com>  Fri, 13 Mar 2020 19:36:29 +0000
 
 mutter (3.35.92-1) experimental; urgency=medium
 
