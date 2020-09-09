@@ -1,3 +1,10 @@
+mutter (3.37.92-1endless1) eos; urgency=medium
+
+  * New downstream release
+    - Add malcontent build dependency
+
+ -- Georges Basile Stavracas Neto <georges@endlessm.org>  Mon, 07 Sep 2020 15:27:15 -0300
+
 mutter (3.37.92-1) UNRELEASED; urgency=medium
 
   * New upstream release
