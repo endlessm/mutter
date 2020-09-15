@@ -41,6 +41,8 @@
 
 #include "backends/meta-monitor-manager-private.h"
 
+#include <eosmetrics/eosmetrics.h>
+
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -1616,6 +1618,24 @@ find_monitor_from_connector (MetaMonitorManager *manager,
   return NULL;
 }
 
+/*
+ * Recorded when underscanning is enabled on a monitor.
+ * https://phabricator.endlessm.com/T30766
+ */
+#define UNDERSCAN_ENABLED "304662c0-fdce-46b8-aa39-d1beb097efcd"
+
+static void
+send_underscan_metric ()
+{
+  static gboolean already_sent = FALSE;
+  if (already_sent)
+    return;
+
+  emtr_event_recorder_record_event (emtr_event_recorder_get_default (),
+                                    UNDERSCAN_ENABLED, NULL);
+  already_sent = TRUE;
+}
+
 #define MONITOR_CONFIG_FORMAT "(ssa{sv})"
 #define MONITOR_CONFIGS_FORMAT "a" MONITOR_CONFIG_FORMAT
 
@@ -1670,6 +1690,10 @@ create_monitor_config_from_variant (MetaMonitorManager *manager,
                        "Underscanning requested but unsupported");
           return NULL;
         }
+
+      /* Send a metric */
+      if (enable_underscanning)
+        send_underscan_metric ();
     }
 
   monitor_spec = meta_monitor_spec_clone (meta_monitor_get_spec (monitor));

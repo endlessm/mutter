@@ -133,6 +133,7 @@ libcanberra_dep = dependency('libcanberra', version: libcanberra_req)
 dbus_dep = dependency('dbus-1')
 eosmetrics_dep = dependency('eosmetrics-0')
 malcontent_dep = dependency('malcontent-0')
+eosmetrics_dep = dependency('eosmetrics-0')
 
 # For now always require X11 support
 have_x11 = true
