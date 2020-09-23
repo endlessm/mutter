@@ -71,8 +71,15 @@ TEST_COMMAND_FLAKY=$(TEST_COMMAND_BASE) --suite flaky
 # time out or fail too much, blocking migration to testing or ports
 override_dh_auto_test:
 	glib-compile-schemas $(BUILDDIR)/data
+ifeq ($(DEB_HOST_ARCH),amd64)
+	$(TEST_COMMAND_BASE)
+else ifneq (,$(filter hurd-i386 kfreebsd-i386 kfreebsd-amd64,$(DEB_HOST_ARCH)))
 	-$(TEST_COMMAND)
 	-$(TEST_COMMAND_FLAKY)
+else ifeq (,$(filter mips mips64el mipsel riscv64 alpha hppa powerpc sparc64 x32,$(DEB_HOST_ARCH)))
+	$(TEST_COMMAND)
+	-$(TEST_COMMAND_FLAKY)
+endif
 
 override_dh_girepository:
 	dh_girepository /usr/lib/$(DEB_HOST_MULTIARCH)/mutter-$(MUTTER_API_VERSION)

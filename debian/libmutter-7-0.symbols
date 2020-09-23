@@ -327,7 +327,6 @@ libmutter-7.so.0 libmutter-7-0 #MINVER#
  meta_monitor_mode_foreach_output@Base 3.28.2
  meta_monitor_mode_get_flags@Base 3.28.2
  meta_monitor_mode_get_id@Base 3.28.2
- meta_monitor_mode_get_name@Base 3.37.92+dev17.f891d29-2bem1
  meta_monitor_mode_get_refresh_rate@Base 3.28.2
  meta_monitor_mode_get_resolution@Base 3.28.2
  meta_monitor_mode_get_spec@Base 3.28.2
@@ -2562,6 +2561,7 @@ libmutter-cogl-7.so.0 libmutter-7-0 #MINVER#
  cogl_swap_chain_get_gtype@Base 3.29.4
  cogl_swap_chain_new@Base 3.29.4
  cogl_swap_chain_set_length@Base 3.29.4
+ cogl_test_verbose@Base 3.29.4
  cogl_texture_2d_get_gtype@Base 3.29.4
  cogl_texture_2d_new_from_bitmap@Base 3.29.4
  cogl_texture_2d_new_from_data@Base 3.29.4
@@ -2611,6 +2611,26 @@ libmutter-cogl-7.so.0 libmutter-7-0 #MINVER#
  cogl_xlib_renderer_remove_filter@Base 3.29.4
  cogl_xlib_renderer_request_reset_on_video_memory_purge@Base 3.29.4
  cogl_xlib_renderer_set_foreign_display@Base 3.29.4
+ test_ctx@Base 3.33.4
+ test_fb@Base 3.33.4
+ test_utils_check_pixel@Base 3.33.4
+ test_utils_check_pixel_and_alpha@Base 3.33.4
+ test_utils_check_pixel_rgb@Base 3.33.4
+ test_utils_check_region@Base 3.33.4
+ test_utils_compare_pixel@Base 3.33.4
+ test_utils_compare_pixel_and_alpha@Base 3.33.4
+ test_utils_create_color_texture@Base 3.33.4
+ test_utils_fini@Base 3.33.4
+ test_utils_init@Base 3.33.4
+ test_utils_texture_new_from_bitmap@Base 3.33.4
+ test_utils_texture_new_from_data@Base 3.33.4
+ test_utils_texture_new_with_size@Base 3.33.4
+ unit_test_check_bitmask_api@Base 3.33.4
+ unit_test_check_blend_constant_ancestry@Base 3.33.4
+ unit_test_check_gl_blend_enable@Base 3.33.4
+ unit_test_check_pipeline_pruning@Base 3.33.4
+ unit_test_check_point_size_shader@Base 3.33.4
+ unit_test_check_uniform_ancestry@Base 3.33.4
 libmutter-cogl-pango-7.so.0 libmutter-7-0 #MINVER#
 * Build-Depends-Package: libmutter-7-dev
  cogl_pango_ensure_glyph_cache_for_layout@Base 3.29.4

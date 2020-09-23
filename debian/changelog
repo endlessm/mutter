@@ -1,12 +1,25 @@
-mutter (3.37.92-1endless1) eos; urgency=medium
+mutter (3.38.0-1) experimental; urgency=medium
 
-  * New downstream release
-    - Add malcontent build dependency
+  * New upstream release:
+    - screencast: Only use DMA buffers for i915
+    - Fixed crashes
+  * debian/patches: Refresh
+  * d/p/input-mapper-Don-t-match-touchscreens-to-the-absence-of-a.patch:
+    - Dropped, applied upstream
 
- -- Georges Basile Stavracas Neto <georges@endlessm.org>  Mon, 07 Sep 2020 15:27:15 -0300
+ -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 15 Sep 2020 15:45:52 +0200
 
-mutter (3.37.92-1) UNRELEASED; urgency=medium
+mutter (3.37.92-2) experimental; urgency=medium
 
+  * Team upload
+  * d/p/input-mapper-Don-t-match-touchscreens-to-the-absence-of-a.patch:
+    Add patch to work around a crash with gnome-remote-desktop
+
+ -- Simon McVittie <smcv@debian.org>  Wed, 09 Sep 2020 12:00:31 +0100
+
+mutter (3.37.92-1) experimental; urgency=medium
+
+  * Team upload
   * New upstream release
     - Fix stale cursor positions in remote desktop sessions
     - xwayland: Add a setting to disable selected X extensions
@@ -26,8 +39,9 @@ mutter (3.37.92-1) UNRELEASED; urgency=medium
   * d/control.in, d/rules: Enable Pipewire on Debian (but not Ubuntu).
     Now that we have Pipewire 0.3 in experimental, we can enable
     screencasting and remote desktop support.
+  * debian/libmutter-7-0.symbols: Update
 
- -- Simon McVittie <smcv@debian.org>  Mon, 07 Sep 2020 09:36:35 +0100
+ -- Simon McVittie <smcv@debian.org>  Tue, 08 Sep 2020 15:50:11 +0100
 
 mutter (3.37.91-1) experimental; urgency=medium
 
