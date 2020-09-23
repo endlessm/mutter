@@ -1,3 +1,9 @@
+mutter (3.38.0-1endless1) eos; urgency=medium
+
+  * Reapply downstream changes
+
+ -- Andre Moreira Magalhaes <andre.magalhaes@endlessos.org>  Wed, 23 Sep 2020 18:16:11 -0300
+
 mutter (3.38.0-1) experimental; urgency=medium
 
   * New upstream release:
